@@ -3,18 +3,20 @@
     Author: Logan Hunter Gray
 '''
 
-import socket
+import socket   # Import necessary module
 
-skt=socket.socket() #creating the socket
+skt = socket.socket() # Establish socket
 
+# Assign host IP/name and port number
 host = 'localhost' # Should use socket.gethostname()
 port = 5125
 
-skt.connect((host, port)) #connecting to the server
+skt.connect((host, port))   # Connect to server
 
-print("The message from the server is ", skt.recv(1024).decode())
-#receiving the TCP message and printing it. Since the message is sent in bytes, we have to decode it before printing
+# Recieve TCP message and print it
+# Since the message is sent in bytes, we have to decode it before printing
+print('DEBUG: Recieved server message: ', skt.recv(1024).decode())
 
-skt.send(bytes('Happy to connect with you!','utf-8')) #sending the TCP message to the server in bytes form
+#skt.send(bytes('Happy to connect with you!','utf-8')) #sending the TCP message to the server in bytes form
 
-skt.close() #This stops the connection
+skt.close() # Close connection to server
