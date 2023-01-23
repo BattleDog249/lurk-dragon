@@ -1,4 +1,5 @@
 import socket   # Import necessary module
+import struct
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
 print('DEBUG: skt  =', skt)
@@ -18,7 +19,7 @@ print('DEBUG: Connecting to server:', host)
 print('DEBUG: Recieved server message:', skt.recv(1024).decode())
 
 # Send TCP message to server in bytes form
-#skt.send(bytes('Happy to connect with you!','utf-8'))
+skt.send('Happy to connect with you!'.encode())
 
 skt.close() # Close connection to server
 print('DEBUG: Closed connection')

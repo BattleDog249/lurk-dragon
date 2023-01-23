@@ -1,4 +1,7 @@
 import socket   # Import necessary module
+import struct
+import sys
+import threading
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
 print('DEBUG: skt  = ', skt)
@@ -18,19 +21,17 @@ skt.listen(maxConnections) # Listens and waits for 1 client
 print('DEBUG: Listening...')
 
 # Loop for each client that connects
-while True:
+while 1:
     # Accepts connection from client & returns client name and address
     client_fd, addr = skt.accept()
     print('\nDEBUG: client_fd: \n', client_fd)
     print('\nDEBUG: addr: \n', addr)
     
-    client_fd.send('Connected to server-test.py'.encode()) #sending a TCP message to the client in the form of bytes 
+    client_fd.send('Connected to server-test.py'.encode()) # Send message to client 
     print('DEBUG: Server message sent')
 
-
-    #client_msg = skt.recv(1024).decode() #getting the TCP message from the client and decoding it 
+    client_msg = skt.recv(1024).decode() # Get message from client and decode
+    print('DEBUG: Client {client_fd} message is {client_msg}')
     
-    #print(f'The message from the client {client} is {client_msg}') #printing the message
-    
-    skt.close() #This stops the connection
+    skt.close() # Close connection to client
     print('DEBUG: Closed connection')
