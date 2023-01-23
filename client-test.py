@@ -6,7 +6,7 @@
 import socket   # Import necessary module
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
-print('DEBUG: skt = ', skt)
+print('DEBUG: skt  = ', skt)
 
 # Assign host IP/name and port number
 host = 'localhost' # Should use socket.gethostname()

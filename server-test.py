@@ -28,9 +28,10 @@ while True:
     # Accepts connection from client & returns client name and address
     client_fd, addr = skt.accept()
 
-    print('DEBUG:   Client connecting from: ', client_fd)
+    print('\nDEBUG: Connection from: \n', client_fd)
+    print('DEBUG: Client Address: \n', addr)
     
-    client_fd.send(bytes('\nConnected to server-test.py', 'utf-8')) #sending a TCP message to the client in the form of bytes 
+    client_fd.send('Connected to server-test.py'.encode()) #sending a TCP message to the client in the form of bytes 
 
     #client_msg = skt.recv(1024).decode() #getting the TCP message from the client and decoding it 
     
