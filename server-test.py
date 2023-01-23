@@ -1,18 +1,12 @@
-'''
-    Python Testing Server
-    Author: Logan Hunter Gray
-'''
+import socket   # Import necessary module
 
-import socket
-
-skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create socket named skt
+skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
 print('DEBUG: skt  = ', skt)
 
 # Assign host IP/name and port number
 host = 'localhost'  # Should use socket.gethostname()
 port = 5125         # Testing port number
-maxConnections = 1  # Assign number of connections server can handle
-
+maxConnections = 2  # Assign number of connections server can handle
 print('DEBUG: host = ', host)
 print('DEBUG: port = ', port)
 print('DEBUG: max  = ', maxConnections)
@@ -27,14 +21,16 @@ print('DEBUG: Listening...')
 while True:
     # Accepts connection from client & returns client name and address
     client_fd, addr = skt.accept()
-
-    print('\nDEBUG: Connection from: \n', client_fd)
-    print('DEBUG: Client Address: \n', addr)
+    print('\nDEBUG: client_fd: \n', client_fd)
+    print('\nDEBUG: addr: \n', addr)
     
     client_fd.send('Connected to server-test.py'.encode()) #sending a TCP message to the client in the form of bytes 
+    print('DEBUG: Server message sent')
+
 
     #client_msg = skt.recv(1024).decode() #getting the TCP message from the client and decoding it 
     
     #print(f'The message from the client {client} is {client_msg}') #printing the message
     
     skt.close() #This stops the connection
+    print('DEBUG: Closed connection')
