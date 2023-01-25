@@ -25,7 +25,7 @@ print('DEBUG: Listening...')
 def sendVersion():
     majorVersion = int(2)
     minorVersion = int(3)
-
+    client_fd.send('')
 
 # Loop for each client that connects
 while 1:
