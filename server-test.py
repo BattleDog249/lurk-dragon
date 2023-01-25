@@ -4,6 +4,8 @@ import sys
 import threading
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
+if (skt == -1):
+    print('ERROR: skt not what is expected!')
 print('DEBUG: skt  = ', skt)
 
 # Assign host IP/name and port number
@@ -19,6 +21,11 @@ skt.bind((host, port))  # Bind to IP address of server and provided port number
 skt.listen(maxConnections) # Listens and waits for 1 client
 
 print('DEBUG: Listening...')
+
+def sendVersion():
+    majorVersion = int(2)
+    minorVersion = int(3)
+
 
 # Loop for each client that connects
 while 1:
