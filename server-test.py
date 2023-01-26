@@ -11,21 +11,14 @@ print('DEBUG: skt  = ', skt)
 # Assign host IP/name and port number
 host = 'localhost'  # Should use socket.gethostname()
 port = 5125         # Testing port number
-maxConnections = 2  # Assign number of connections server can handle
 print('DEBUG: host = ', host)
 print('DEBUG: port = ', port)
-print('DEBUG: max  = ', maxConnections)
 
 skt.bind((host, port))  # Bind to IP address of server and provided port number
 
-skt.listen(maxConnections) # Listens and waits for 1 client
+skt.listen() # Listens and waits for 1 client
 
 print('DEBUG: Listening...')
-
-def sendVersion():
-    majorVersion = int(2)
-    minorVersion = int(3)
-    client_fd.send('')
 
 # Loop for each client that connects
 while 1:
@@ -34,11 +27,17 @@ while 1:
     print('\nDEBUG: client_fd: \n', client_fd)
     print('\nDEBUG: addr: \n', addr)
     
-    client_fd.send('Connected to server-test.py'.encode()) # Send message to client 
-    print('DEBUG: Server message sent')
+    type = 14
+    majorVersion = int(2)
+    minorVersion = int(3)
+    
+    val = struct.pack('!i', majorVersion)
+    
+    client_fd.send(val) # Send message to client 
+    print('DEBUG: Server message sent!')
 
-    client_msg = skt.recv(1024).decode() # Get message from client and decode
-    print('DEBUG: Client {client_fd} message is {client_msg}')
+    #client_msg = skt.recv(1024).decode() # Get message from client and decode
+    #print('DEBUG: Client {client_fd} message is {client_msg}')
     
     skt.close() # Close connection to client
-    print('DEBUG: Closed connection')
+    #print('DEBUG: Closed connection')
