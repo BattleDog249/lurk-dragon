@@ -39,8 +39,8 @@ port = 5125
 # Bind server to machine's hostname & assigned port number
 skt.bind((socket.gethostname(), port))
 
-# Server listens and waits for client connection
-skt.listen()
+# Server listens and waits for 1 client connection
+skt.listen(1)
 print('Waiting for connection...')
 
 # Loop for each client that connects
@@ -50,7 +50,8 @@ while 1:
     #print('\nDEBUG: client_fd: \n', client_fd)
     #print('\nDEBUG: addr: \n', addr)
     
-    sendVersion() 
+    #sendVersion()
+    skt.sendall(b'Testing message!')
     print('DEBUG: Server message sent!')
 
     #client_msg = skt.recv(1024).decode() # Get message from client and decode
