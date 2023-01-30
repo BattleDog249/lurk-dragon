@@ -1,4 +1,5 @@
 '''
+CS435 Homework 2: Receive Binary Data
     Author: Logan Gray
     Email: lhgray@lcmail.lcsc.edu
     Instructions:
