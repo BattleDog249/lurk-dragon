@@ -1,26 +1,32 @@
 '''
-    Due Wednesday, February 1
-    Connect to port 5071 on isoptera.
-    There is a server running on that port that will send you 5 32-bit (20 bytes total) integers in big endian order.
-    Upload a text file with your name, the integers isoptera sent you, and explain how you received them (include source code if you wrote it).
-    You are welcome to start with the simple_client.c program from class, but you can just start your own program if you prefer. 
+    Author: Logan Gray
+    Email: lhgray@lcmail.lcsc.edu
+    Instructions:
+        Due Wednesday, February 1, 2023
+        Connect to port 5071 on isoptera.
+        There is a server running on that port that will send you 5 32-bit (20 bytes total) integers in big endian order.
+        Upload a text file with your name, the integers isoptera sent you, and explain how you received them (include source code if you wrote it).
+        You are welcome to start with the simple_client.c program from class, but you can just start your own program if you prefer.
 '''
 
+# Import socket module, necessary for network communications
 import socket
-
-address = 'isoptera.lcsc.edu'
-port = 5071
 
 # Length in bytes of message being received
 expectedBytes = 5
 
-# Establish socket
+# Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Connect to Isoptera
+# Variables defining IP address & port of server to connect to
+address = 'isoptera.lcsc.edu'
+port = 5071
+
+# Connect to server defined with above variables
 skt.connect((socket.gethostbyname(address), port))
 
-# Receive 20 bytes, store in 32 byte buffer
+# Receive bytes from server, store in 32 byte buffer
+# For this assignment, server always sends 20 bytes, which fits inside 32 byte buffer
 bytes = skt.recv(32)
 print('Full Raw Message: ', bytes)
 
