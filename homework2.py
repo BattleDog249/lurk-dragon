@@ -7,10 +7,12 @@
 '''
 
 import socket
-import struct
 
 address = 'isoptera.lcsc.edu'
 port = 5071
+
+# Length in bytes of integers to read
+len = 4
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -18,8 +20,13 @@ skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 skt.connect((socket.gethostbyname(address), port))
 
 # Recieve 20 bytes, store in 32 byte buffer
-message = skt.recv(32)
-print('Raw Message: ', message)
+bytes = skt.recv(32)
+#print('Full Raw Message: ', message)
 
-value = int.from_bytes(message, 'big', signed = False)
-print(value)
+start = 1
+end = 4
+for byte in bytes:
+    value = int.from_bytes(bytes[start:end], 'big', signed = False)
+    print(value)
+    start += 4
+    end += 4
