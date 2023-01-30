@@ -34,7 +34,7 @@ def sendGame(type = 11, initPoints = 100, statLimit = 65535, desLen = 19, descri
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Assign port number
-port = 5125
+port = 5126
 
 # Bind server to machine's hostname & assigned port number
 skt.bind((socket.gethostname(), port))
@@ -43,19 +43,17 @@ skt.bind((socket.gethostname(), port))
 skt.listen(1)
 print('Waiting for connection...')
 
-# Loop for each client that connects
-while 1:
-    # Accepts connection from client & returns client file descriptor and address
-    client_fd, addr = skt.accept()
-    #print('\nDEBUG: client_fd: \n', client_fd)
-    #print('\nDEBUG: addr: \n', addr)
+# Accepts connection from client & returns client file descriptor and address
+client_fd, addr = skt.accept()
+print('\nDEBUG: client_fd: \n', client_fd)
+print('\nDEBUG: addr: \n', addr)
     
-    #sendVersion()
-    skt.sendall(b'Testing message!')
-    print('DEBUG: Server message sent!')
+#sendVersion()
+skt.sendall(b'Testing message!')
+print('DEBUG: Server message sent!')
 
-    #client_msg = skt.recv(1024).decode() # Get message from client and decode
-    #print('DEBUG: Client {client_fd} message is {client_msg}')
-    
-    # Close connection to client
-    skt.close()
+#client_msg = skt.recv(1024).decode() # Get message from client and decode
+#print('DEBUG: Client {client_fd} message is {client_msg}')
+   
+# Close connection to client
+skt.close()
