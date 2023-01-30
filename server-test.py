@@ -7,6 +7,7 @@ CS435 LurkDragon: Server
 # Import socket module, necessary for network communications
 import socket
 
+# Function for sending VERSION message to client
 def sendVersion(type = 14, major = 2, minor = 3, extensionSize = 0, extensionList = 0):
     '''
     Sent by the server upon initial connection along with GAME.
@@ -18,6 +19,7 @@ def sendVersion(type = 14, major = 2, minor = 3, extensionSize = 0, extensionLis
     client_fd.send(int.to_bytes(extensionList, 'little', signed=False))
     return 0
 
+# Function for sending GAME message to client
 def sendGame(type = 11, initPoints = 100, statLimit = 65535, desLen = 19, description = 'Description default'):
     '''
     Used by the server to describe the game. The initial points is a combination of health, defense, and regen, and cannot be exceeded by the client when defining a new character.
