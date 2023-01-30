@@ -1,17 +1,30 @@
-import socket   # Import necessary module
+'''
+CS435 LurkDragon: Client
+    Author: Logan Hunter Gray
+    Email: lhgray@lcmail.lcsc.edu
+'''
+
+# Import socket module, necessary for network communications
+import socket
 import struct
 
-skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
-print('DEBUG: skt  =', skt)
+# Function for receiving VERSION message from server
+def recvVersion():
+    return 0
 
-# Assign host IP/name and port number
-host = 'localhost' # Should use socket.gethostname()
+# Function for receiving GAME message from server
+def recvGame():
+    return 0
+
+# Establish IPv4 TCP socket
+skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Variables defining host address & port of server to connect to
+host = 'localhost'
 port = 5125
 
-print('DEBUG: host =', host)
-print('DEBUG: port =', port)
-
-skt.connect((socket.gethostname(), port))   # Connect to server
+# Connect to server with assigned host & port
+skt.connect((socket.gethostname(), port))
 print('DEBUG: Connecting to server:', host)
 
 buffer = ''

@@ -45,8 +45,8 @@ print('Waiting for connection...')
 while 1:
     # Accepts connection from client & returns client name and address
     client_fd, addr = skt.accept()
-    print('\nDEBUG: client_fd: \n', client_fd)
-    print('\nDEBUG: addr: \n', addr)
+    #print('\nDEBUG: client_fd: \n', client_fd)
+    #print('\nDEBUG: addr: \n', addr)
     
     sendVersion() 
     print('DEBUG: Server message sent!')
@@ -54,5 +54,5 @@ while 1:
     #client_msg = skt.recv(1024).decode() # Get message from client and decode
     #print('DEBUG: Client {client_fd} message is {client_msg}')
     
-    skt.close() # Close connection to client
-    #print('DEBUG: Closed connection')
+    # Close connection to client
+    skt.close()
