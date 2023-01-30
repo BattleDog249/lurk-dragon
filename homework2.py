@@ -11,22 +11,25 @@ import socket
 address = 'isoptera.lcsc.edu'
 port = 5071
 
-# Length in bytes of integers to read
-len = 4
+# Length in bytes of message being received
+expectedBytes = 5
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect to Isoptera
 skt.connect((socket.gethostbyname(address), port))
 
-# Recieve 20 bytes, store in 32 byte buffer
+# Receive 20 bytes, store in 32 byte buffer
 bytes = skt.recv(32)
 #print('Full Raw Message: ', message)
 
+# Variables used to determine amount of bytes to read for each loop
 start = 1
 end = 4
-for byte in bytes:
+
+# Loop through whole message, reading 4 bytes each loop
+for i in range(1, expectedBytes + 1):
     value = int.from_bytes(bytes[start:end], 'big', signed = False)
-    print(value)
+    print('Integer ', i, ': ', value)
     start += 4
     end += 4
