@@ -1,24 +1,45 @@
-import socket   # Import necessary module
-import struct
-import sys
-import threading
+'''
+CS435 LurkDragon: Server
+    Author: Logan Hunter Gray
+    Email: lhgray@lcmail.lcsc.edu
+'''
 
-skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Establish socket
-if (skt == -1):
-    print('ERROR: skt not what is expected!')
-print('DEBUG: skt  = ', skt)
+# Import socket module, necessary for network communications
+import socket
 
-# Assign host IP/name and port number
-host = 'localhost'  # Should use socket.gethostname()
-port = 5125         # Testing port number
-print('DEBUG: host = ', host)
-print('DEBUG: port = ', port)
+def sendVersion(type = 14, major = 2, minor = 3, extensionSize = 0, extensionList = 0):
+    '''
+    Sent by the server upon initial connection along with GAME.
+    '''
+    client_fd.send(int.to_bytes(type, 'little', signed=False))
+    client_fd.send(int.to_bytes(major, 'little', signed=False))
+    client_fd.send(int.to_bytes(minor, 'little', signed=False))
+    client_fd.send(int.to_bytes(extensionSize, 'little', signed=False))
+    client_fd.send(int.to_bytes(extensionList, 'little', signed=False))
+    return 0
 
-skt.bind((host, port))  # Bind to IP address of server and provided port number
+def sendGame(type = 11, initPoints = 100, statLimit = 65535, desLen = 19, description = 'Description default'):
+    '''
+    Used by the server to describe the game. The initial points is a combination of health, defense, and regen, and cannot be exceeded by the client when defining a new character.
+    The stat limit is a hard limit for the combination for any player on the server regardless of experience.
+    If unused, it should be set to 65535, the limit of the unsigned 16-bit integer.
+    This message will be sent upon connecting to the server, and not re-sent.
+    '''
+    client_fd.send(int.to_bytes(type, 'little', signed=False))
+    return 0
 
-skt.listen() # Listens and waits for 1 client
+# Establish IPv4 TCP socket
+skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-print('DEBUG: Listening...')
+# Assign port number
+port = 5125
+
+# Bind server to machine's hostname & assigned port number
+skt.bind((socket.gethostname(), port))
+
+# Server listens and waits for client connection
+skt.listen()
+print('Waiting for connection...')
 
 # Loop for each client that connects
 while 1:
@@ -27,13 +48,7 @@ while 1:
     print('\nDEBUG: client_fd: \n', client_fd)
     print('\nDEBUG: addr: \n', addr)
     
-    type = 14
-    majorVersion = int(2)
-    minorVersion = int(3)
-    
-    val = struct.pack('!i', majorVersion)
-    
-    client_fd.send(val) # Send message to client 
+    sendVersion() 
     print('DEBUG: Server message sent!')
 
     #client_msg = skt.recv(1024).decode() # Get message from client and decode

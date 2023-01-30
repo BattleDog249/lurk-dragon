@@ -11,7 +11,7 @@ port = 5125
 print('DEBUG: host =', host)
 print('DEBUG: port =', port)
 
-skt.connect((host, port))   # Connect to server
+skt.connect((socket.gethostname(), port))   # Connect to server
 print('DEBUG: Connecting to server:', host)
 
 buffer = ''
