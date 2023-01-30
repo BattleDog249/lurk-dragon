@@ -1,0 +1,18 @@
+Name: Logan Hunter Gray
+Email: lhgray@lcmail.lcsc.edu
+
+
+Full Raw Message:  b'\x00\x00\x00o\x00\x00\x00\xfd\x00\x00\x01\xae\x00\x00\x01\xb3\x00\x00\x01\xe0'
+Converting bytes b'\x00\x00o'
+Integer value 1 : 111
+Converting bytes b'\x00\x00\xfd'
+Integer value 2 : 253
+Converting bytes b'\x00\x01\xae'
+Integer value 3 : 430
+Converting bytes b'\x00\x01\xb3'
+Integer value 4 : 435
+Converting bytes b'\x00\x01\xe0'
+Integer value 5 : 480
+
+
+Received using Python 3 program gray_logan_h2.py
