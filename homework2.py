@@ -11,11 +11,12 @@ import struct
 
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+# Connect to Isoptera directly, no DNS lookups
 skt.connect(('74.118.22.194', 5071))
 
-message = skt.recv(2048)
+message = skt.recv(1024)
 
-print(message)
+print('Raw Message: ', message)
 
 value = int.from_bytes(message, 'big', signed = False)
 
