@@ -45,7 +45,7 @@ print('Waiting for connection...')
 
 # Loop for each client that connects
 while 1:
-    # Accepts connection from client & returns client name and address
+    # Accepts connection from client & returns client file descriptor and address
     client_fd, addr = skt.accept()
     #print('\nDEBUG: client_fd: \n', client_fd)
     #print('\nDEBUG: addr: \n', addr)
