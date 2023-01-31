@@ -21,7 +21,7 @@ skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Variables defining host address & port of server to connect to
 host = 'localhost'
-port = 5125
+port = 5126
 
 # Connect to server with assigned host & port
 skt.connect((socket.gethostname(), port))
@@ -35,5 +35,5 @@ print('DEBUG: Received server message:', version_msg)
 # Send TCP message to server in bytes form
 #skt.send('Happy to connect with you!'.encode())
 
-skt.close() # Close connection to server
-print('DEBUG: Closed connection')
+#skt.close() # Close connection to server
+#print('DEBUG: Closed connection')

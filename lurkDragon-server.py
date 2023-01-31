@@ -56,4 +56,4 @@ print('DEBUG: Server message sent!')
 #print('DEBUG: Client {client_fd} message is {client_msg}')
    
 # Close connection to client
-skt.close()
+#skt.close()
