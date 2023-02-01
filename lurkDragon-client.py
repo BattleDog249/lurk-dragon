@@ -29,11 +29,11 @@ print('DEBUG: Connecting to server:', host)
 
 # Recieve TCP message and print it
 # Since the message is sent in bytes, we have to decode it before printing
-version_msg = skt.recv(1024).decode() # Get message from server and decode
-print('DEBUG: Received server message:', version_msg)
+version_msg = skt.recv(1024)#.decode() # Get message from server and decode
+print('DEBUG: Received server message:', version_msg.decode())
 
 # Send TCP message to server in bytes form
 #skt.send('Happy to connect with you!'.encode())
 
-#skt.close() # Close connection to server
-#print('DEBUG: Closed connection')
+skt.close() # Close connection to server
+print('DEBUG: Closed connection')
