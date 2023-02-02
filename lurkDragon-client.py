@@ -11,14 +11,16 @@ import struct
 
 # Function for receiving VERSION message from server
 def recvVersion():
-    version_msg = struct.unpack("<3BH", skt.recv(8))
+    version_msg = struct.unpack("<3BH", skt.recv(5))
     print('DEBUG: Received VERSION message:', version_msg)
     return 0
 
 # Function for receiving GAME message from server
 def recvGame():
     game_msg = struct.unpack("<B3H", skt.recv(7))
+    game_des = skt.recv(game_msg[3])                    # Read game description, recv only description length
     print('DEBUG: Received GAME message:', game_msg)
+    print('DEBUG: Received GAME message:', game_des)
     return 0
 
 # Establish IPv4 TCP socket

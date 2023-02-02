@@ -8,7 +8,7 @@ CS435 LurkDragon: Server
 import socket
 import struct
 
-gameDescription = "This is the server description! Not very exciting."
+gameDescription = "This is Logan's testing server description! Not very exciting, yet......"
 
 # Function for sending VERSION message to client
 def sendVersion(t = 14, major = 2, minor = 3, extSize = 0):
@@ -33,10 +33,10 @@ def sendGame(t = 11, initPoints = 100, statLimit = 65535):
     '''
     gameBytes = struct.pack("<B3H", t, initPoints, statLimit, len(gameDescription)) #gameDescription)  # Not yet sure what format to use for gameDescription
     desBytes = bytes(gameDescription, 'utf-8')
-    print(gameBytes)
-    print(desBytes)
-    gameMsg = struct.unpack("<B3H", gameBytes)
-    print(gameMsg)
+    #print(gameBytes)
+    #print(desBytes)
+    #gameMsg = struct.unpack("<B3H", gameBytes)
+    #print(gameMsg)
     clientSkt.sendall(gameBytes)
     clientSkt.sendall(desBytes)
     print('DEBUG: GAME sent!')
@@ -58,8 +58,8 @@ print('Waiting for connection...')
 while True:
     # Accepts connection from client & returns client socket (file descriptor) and address
     clientSkt, addr = serverSkt.accept()            # Accept & assign client connection to clientSkt
-    print('\nDEBUG: Client Socket: \n', clientSkt)
-    print('\nDEBUG: Client Address: \n', addr)
+    print('DEBUG: Client Socket:', clientSkt)
+    print('DEBUG: Client Address:', addr)
     sendVersion()                                   # Send VERSION to client
     sendGame()                                      # Send GAME to client
 
