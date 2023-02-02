@@ -4,16 +4,21 @@ CS435 LurkDragon: Client
     Email: lhgray@lcmail.lcsc.edu
 '''
 
-# Import socket module, necessary for network communications
+# Import socket module, required for network communications
 import socket
+# Import struct module, required for packing/unpacking structures
 import struct
 
 # Function for receiving VERSION message from server
 def recvVersion():
+    version_msg = struct.unpack("<3BH", skt.recv(8))
+    print('DEBUG: Received VERSION message:', version_msg)
     return 0
 
 # Function for receiving GAME message from server
 def recvGame():
+    game_msg = struct.unpack("<B3H", skt.recv(7))
+    print('DEBUG: Received GAME message:', game_msg)
     return 0
 
 # Establish IPv4 TCP socket
@@ -27,13 +32,8 @@ port = 5126
 skt.connect((socket.gethostname(), port))
 print('DEBUG: Connecting to server:', host)
 
-# Recieve TCP message and print it
-# Since the message is sent in bytes, we have to decode it before printing
-version_msg = skt.recv(1024)#.decode() # Get message from server and decode
-print('DEBUG: Received server message:', version_msg.decode())
-
-# Send TCP message to server in bytes form
-#skt.send('Happy to connect with you!'.encode())
+recvVersion()
+recvGame()
 
 skt.close() # Close connection to server
 print('DEBUG: Closed connection')
