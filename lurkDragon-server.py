@@ -48,10 +48,10 @@ def recvCharacter():
     """
     NEEDS WORK
     """
-    characterMsg = struct.unpack('<B32cB7H', clientSkt.recv(48))
-    characterDes = clientSkt.recv(characterMsg[10])
+    characterMsg = struct.unpack('<B32sB7H', clientSkt.recv(48))
+    characterDes = clientSkt.recv(characterMsg[9])
     print('DEBUG: Received CHARACTER message:', characterMsg)
-    print('DEBUG: Received CHARACTER Description:', characterDes)
+    print('DEBUG: Received CHARACTER Description:', characterDes.decode())
     return 0
     
 
@@ -59,8 +59,8 @@ def initConnect():
     """
     Executed when a client connects to the server, sends VERSION & GAME message to client
     """
-    sendVersion()
-    sendGame()
+    version = sendVersion()
+    game = sendGame()
     recvCharacter()
     return 0
 

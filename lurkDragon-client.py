@@ -23,13 +23,13 @@ def recvGame():
     print('DEBUG: Received GAME message:', game_des.decode())
     return 0
 
-def sendCharacter(t = 10, name = "Test Dummy", flags = 0, attack = 50, defense = 25, regen = 5, health = 20, gold = 0, room = 0):
+def sendCharacter(t = 10, name = "Test Dummy: ID 1 - Cannot > 32By", flags = 0, attack = 50, defense = 25, regen = 5, health = 20, gold = 0, room = 0):
     """
     Function to send CHARACTER message to server
     NEEDS WORK
     """
-    characterDescription = "This is a test dummy, don't feel bad for it."
-    characterBytes = struct.pack('<B%dcB7H' %len(name), t, name, flags, attack, defense, regen, health, gold, room, len(characterDescription))
+    characterDescription = "This is a test dummy, don't feel bad for it. It is not sentient!"
+    characterBytes = struct.pack('<B32sB7H', t, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, len(characterDescription))
     desBytes = bytes(characterDescription, 'utf-8')
     skt.sendall(characterBytes)
     skt.sendall(desBytes)
@@ -52,7 +52,9 @@ game = recvGame()
 if game == 0:
     sendCharacter()
     print('DEBUG: Sent CHARACTER message')
+else:
+    print('ERROR: Failed to send GAME message!')
 
-#skt.shutdown(2) # Not necessary AFAIK
-#skt.close() # Close connection to server
+skt.shutdown(2) # Not necessary AFAIK
+skt.close() # Close connection to server
 #print('DEBUG: Closed connection')
