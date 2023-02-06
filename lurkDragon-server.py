@@ -2,46 +2,70 @@
 CS435 LurkDragon: Server
     Author: Logan Hunter Gray
     Email: lhgray@lcmail.lcsc.edu
+    NOTES:
+        Perhaps a more efficient approach would be using the pickle module to serialize & send dictionaries directly? Not sure...
 '''
 
 # Import socket module, necessary for network communications
 import socket
 # Import struct module, required for packing/unpacking structures
 import struct
+# Import threading module, required for multithreading & handling multiple clients
 import threading
 
-gameDescription = "This is Logan's testing server description! Not very exciting, yet......"
+# Description of the game, sent in GAME message to client
+gameDescription = "This is Logan's testing server description! Not very exciting, thus far...."
+
+# VERSION dictionary
+version = {
+        'type': 14,
+        'major': 2,
+        'minor': 3,
+        'extSize': 0
+    }
+
+# GAME dictionary
+game = {
+    'type': 11,
+    'initPoints': 100,
+    'statLimit': 65535,
+    'gameDesLen': len(gameDescription),
+    'gameDes': bytes(gameDescription, 'utf-8')
+}
 
 # Function for sending VERSION message to client
-def sendVersion(t = 14, major = 2, minor = 3, extSize = 0):
+def sendVersion():
     """
     Sent by the server upon initial connection along with GAME.
     """
-    versionBytes = struct.pack("<3BH", t, major, minor, extSize)
-    #print(versionBytes)
-    #versionMsg = struct.unpack("<bbbh", versionBytes)
-    #print(versionMsg)
-    clientSkt.sendall(versionBytes)
-    print('DEBUG: VERSION sent!')
+    versionPacked = struct.pack('<3BH', version['type'], version['major'], version['minor'], version['extSize'])
+    #print('DEBUG: Packed version =', versionPacked)
+    
+    #versionUnpacked = struct.unpack('<3BH', versionPacked)
+    #print('DEBUG: Unpacked version =', versionUnpacked)
+    
+    clientSkt.sendall(versionPacked)
+    #print('DEBUG: VERSION sent!')
+    
     return 0
 
 # Function for sending GAME message to client
-def sendGame(t = 11, initPoints = 100, statLimit = 65535):
+def sendGame():
     """
     Used by the server to describe the game. The initial points is a combination of health, defense, and regen, and cannot be exceeded by the client when defining a new character.
     The stat limit is a hard limit for the combination for any player on the server regardless of experience.
     If unused, it should be set to 65535, the limit of the unsigned 16-bit integer.
     This message will be sent upon connecting to the server, and not re-sent.
     """
-    gameBytes = struct.pack("<B3H", t, initPoints, statLimit, len(gameDescription))
-    desBytes = bytes(gameDescription, 'utf-8')
-    #print(gameBytes)
-    #print(desBytes)
-    #gameMsg = struct.unpack("<B3H", gameBytes)
-    #print(gameMsg)
-    clientSkt.sendall(gameBytes)
-    clientSkt.sendall(desBytes)
-    print('DEBUG: GAME sent!')
+    gamePacked = struct.pack('<B3H%ds' %game['gameDesLen'], game['type'], game['initPoints'], game['statLimit'], game['gameDesLen'], game['gameDes'])
+    #print('DEBUG: Packed game =', gamePacked)
+    
+    #gameUnpacked = struct.unpack('<B3H%ds' %game['gameDesLen'], gamePacked)
+    #print('DEBUG: Unpacked game =', gameUnpacked)
+    
+    clientSkt.sendall(gamePacked)
+    #print('DEBUG: GAME sent!')
+    
     return 0
 
 def recvCharacter():
@@ -61,7 +85,7 @@ def initConnect():
     """
     version = sendVersion()
     game = sendGame()
-    recvCharacter()
+    character = recvCharacter()
     return 0
 
 # Establish IPv4 TCP socket
@@ -85,8 +109,3 @@ while True:
     clientThread = threading.Thread(target = initConnect)   # Create thread for connected client
     clientThread.start()                                    # Start thread
     print("DEBUG: Client Thread:", clientThread)
-    #sendVersion()                                          # Send VERSION to client
-    #sendGame()                                             # Send GAME to client
-
-#client_msg = skt.recv(1024).decode() # Get message from client and decode
-#print('DEBUG: Client {client_fd} message is {client_msg}')

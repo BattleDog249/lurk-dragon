@@ -11,16 +11,16 @@ import struct
 
 # Function for receiving VERSION message from server
 def recvVersion():
-    version_msg = struct.unpack("<3BH", skt.recv(5))
-    print('DEBUG: Received VERSION message:', version_msg)
+    versionUnpacked = struct.unpack('<3BH', skt.recv(5))
+    print('DEBUG: Received VERSION message:', versionUnpacked)
     return 0
 
 # Function for receiving GAME message from server
 def recvGame():
-    game_msg = struct.unpack("<B3H", skt.recv(7))
-    game_des = skt.recv(game_msg[3])                    # Read game description, recv only description length
-    print('DEBUG: Received GAME message:', game_msg)
-    print('DEBUG: Received GAME message:', game_des.decode())
+    gameUnpacked = struct.unpack("<B3H", skt.recv(7))
+    game_des = skt.recv(gameUnpacked[3])                    # Read game description, recv only description length
+    print('DEBUG: Received GAME:', gameUnpacked)
+    print('DEBUG: Received GAME Description:', game_des.decode())
     return 0
 
 def sendCharacter(t = 10, name = "Test Dummy: ID 1 - Cannot > 32By", flags = 0, attack = 50, defense = 25, regen = 5, health = 20, gold = 0, room = 0):
@@ -51,9 +51,9 @@ game = recvGame()
 
 if game == 0:
     sendCharacter()
-    print('DEBUG: Sent CHARACTER message')
+    print('DEBUG: Successfully received GAME message, sent CHARACTER message in response!')
 else:
-    print('ERROR: Failed to send GAME message!')
+    print('ERROR: Failed to receive GAME message, not sending CHARACTER message!')
 
 skt.shutdown(2) # Not necessary AFAIK
 skt.close() # Close connection to server
