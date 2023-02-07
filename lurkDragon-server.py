@@ -4,6 +4,7 @@ CS435 LurkDragon: Server
     Email: lhgray@lcmail.lcsc.edu
     NOTES:
         Perhaps a more efficient approach would be using the pickle module to serialize & send dictionaries directly? Not sure...
+        Maybe use a class instead of dictionaries to store VERSION and GAME information?
 '''
 
 # Import socket module, necessary for network communications
@@ -14,78 +15,119 @@ import struct
 import threading
 
 # Description of the game, sent in GAME message to client
-gameDescription = "This is Logan's testing server description! Not very exciting, thus far...."
+gameDescription = "This is Logan's testing server description! Fun stuff."
 
-# VERSION dictionary
-version = {
-        'type': 14,
-        'major': 2,
-        'minor': 3,
-        'extSize': 0
-    }
-
-# GAME dictionary
-game = {
-    'type': 11,
-    'initPoints': 100,
-    'statLimit': 65535,
-    'gameDesLen': len(gameDescription),
-    'gameDes': bytes(gameDescription, 'utf-8')
-}
-
-# Function for sending VERSION message to client
-def sendVersion():
-    """
-    Sent by the server upon initial connection along with GAME.
-    """
-    versionPacked = struct.pack('<3BH', version['type'], version['major'], version['minor'], version['extSize'])
-    #print('DEBUG: Packed version =', versionPacked)
-    
-    #versionUnpacked = struct.unpack('<3BH', versionPacked)
-    #print('DEBUG: Unpacked version =', versionUnpacked)
-    
-    clientSkt.sendall(versionPacked)
-    #print('DEBUG: VERSION sent!')
-    
-    return 0
-
-# Function for sending GAME message to client
-def sendGame():
+class Game:
     """
     Used by the server to describe the game. The initial points is a combination of health, defense, and regen, and cannot be exceeded by the client when defining a new character.
     The stat limit is a hard limit for the combination for any player on the server regardless of experience.
     If unused, it should be set to 65535, the limit of the unsigned 16-bit integer.
     This message will be sent upon connecting to the server, and not re-sent.
     """
-    gamePacked = struct.pack('<B3H%ds' %game['gameDesLen'], game['type'], game['initPoints'], game['statLimit'], game['gameDesLen'], game['gameDes'])
-    #print('DEBUG: Packed game =', gamePacked)
     
-    #gameUnpacked = struct.unpack('<B3H%ds' %game['gameDesLen'], gamePacked)
-    #print('DEBUG: Unpacked game =', gameUnpacked)
+    type = int(11)
+    initPoints = int(100)
+    statLimit = int(65535)
+    gameDes = bytes(str("This is Logan's testing server description! Fun stuff."), 'utf-8')
+    gameDesLen = int(len(gameDes))
     
-    clientSkt.sendall(gamePacked)
-    #print('DEBUG: GAME sent!')
+    # Function for sending GAME message to client
+    def sendGame(self):
+        gamePacked = struct.pack('<B3H%ds' %self.gameDesLen, self.type, self.initPoints, self.statLimit, self.gameDesLen, self.gameDes)
+        #print('DEBUG: Packed game =', gamePacked)
+        
+        #gameUnpacked = struct.unpack('<B3H%ds' %game['gameDesLen'], gamePacked)
+        #print('DEBUG: Unpacked game =', gameUnpacked)
+        
+        clientSkt.sendall(gamePacked)
+        #print('DEBUG: GAME sent!')
+        
+        return 0
     
-    return 0
+class Version:
+    """
+    Sent by the server upon initial connection along with GAME. If no VERSION is received, the server can be assumed to support only LURK 2.0 or 2.1. 
+    """
+    
+    type = int(14)
+    major = int(2)
+    minor = int(3)
+    extSize = int(0)
+    
+    # Function for sending VERSION message to client
+    def sendVersion(self):
+        versionPacked = struct.pack('<3BH', self.type, self.major, self.minor, self.extSize)
+        #print('DEBUG: Packed version =', versionPacked)
+        
+        #versionUnpacked = struct.unpack('<3BH', versionPacked)
+        #print('DEBUG: Unpacked version =', versionUnpacked)
+        
+        clientSkt.sendall(versionPacked)
+        #print('DEBUG: VERSION sent!')
+        
+        return 0
 
-def recvCharacter():
+class Character:
     """
-    NEEDS WORK
+    Sent by both the client and the server. The server will send this message to show the client changes to their player's status, such as in health or gold.
+    The server will also use this message to show other players or monsters in the room the player is in or elsewhere.
+    The client should expect to receive character messages at any time, which may be updates to the player or others.
+    If the player is in a room with another player, and the other player leaves, a CHARACTER message should be sent to indicate this.
+    In many cases, the appropriate room for the outgoing player is the room they have gone to. If the player goes to an unknown room, the room number may be set to a room that the player will not encounter (does not have to be part of the map).
+    This could be accompanied by a narrative message (for example, "Glorfindel vanishes into a puff of smoke"), but this is not required.
+    The client will use this message to set the name, description, attack, defense, regen, and flags when the character is created. It can also be used to reprise an abandoned or deceased character.
     """
-    characterMsg = struct.unpack('<B32sB7H', clientSkt.recv(48))
-    characterDes = clientSkt.recv(characterMsg[9])
-    print('DEBUG: Received CHARACTER message:', characterMsg)
-    print('DEBUG: Received CHARACTER Description:', characterDes.decode())
-    return 0
     
+    type = int(10)
+    
+    def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
+        self.name = name
+        self.flags = flags
+        self.attack = attack
+        self.defense = defense
+        self.regen = regen
+        self.health = health
+        self.gold = gold
+        self.room = room
+        self.charDesLen = charDesLen
+        self.charDes = charDes
+
+    def recvCharacter(self):
+        """
+        NEEDS WORK
+        """
+        buffer = clientSkt.recv(1024)
+        type = buffer[1]
+        print(type)
+        characterUnpacked = struct.unpack('<B32sB7H%ds' %self.charDesLen, clientSkt.recv(48))
+        characterDes = clientSkt.recv(characterUnpacked[9])
+        print('DEBUG: Received CHARACTER message:', characterUnpacked)
+        print('DEBUG: Received CHARACTER Description:', characterDes.decode())
+
+    def sendCharacter(self):
+        pass    
 
 def initConnect():
     """
     Executed when a client connects to the server, sends VERSION & GAME message to client
     """
-    version = sendVersion()
-    game = sendGame()
-    character = recvCharacter()
+    version = Version()
+    version.sendVersion()
+    
+    game = Game()
+    game.sendGame()
+    
+    charBuffer = clientSkt.recv(1024)
+    print(charBuffer)
+    type = charBuffer[0]
+    print('Type:', type)
+    name = charBuffer[1]
+    print('Name:', name)
+    
+    #character = Character(10, clientSkt.recv(), clientSkt.recv(), clientSkt.recv(), clientSkt.recv())
+    #character = character.recvCharacter()
+    #print(character)
+    
     return 0
 
 # Establish IPv4 TCP socket
