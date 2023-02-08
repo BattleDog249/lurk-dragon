@@ -134,7 +134,7 @@ def initConnect():
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Assign port number
-port = 5195
+port = 5010
 
 # Bind server to machine's hostname & assigned port number
 serverSkt.bind((socket.gethostname(), port))

@@ -67,7 +67,7 @@ skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Variables defining host address & port of server to connect to
 host = 'localhost'
-port = 5195
+port = 5010
 
 # Connect to server with assigned host & port
 skt.connect((socket.gethostname(), port))
