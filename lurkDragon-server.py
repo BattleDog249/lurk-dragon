@@ -117,6 +117,7 @@ def initConnect():
     game = Game()
     game.sendGame()
     
+    charUnpacked = struct.unpack('<B32sB7H%ds' %self.charDesLen)
     charBuffer = clientSkt.recv(1024)
     print(charBuffer)
     type = charBuffer[0]
@@ -134,6 +135,7 @@ def initConnect():
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Assign port number
+# Logan's assigned range: 5010 - 5014
 port = 5010
 
 # Bind server to machine's hostname & assigned port number
