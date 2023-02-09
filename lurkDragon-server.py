@@ -108,6 +108,9 @@ class Character:
         NEEDS WORK
         """
         characterBuffer = clientSkt.recv(1024)
+        if (len(characterBuffer[0:48]) != 48):
+            print('ERROR: Invalid CHARACTER message length!')
+            return 1
         print('DEBUG: Received CHARACTER:', characterBuffer)
         type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterBuffer[0:48])
         name = name.decode('utf-8')
