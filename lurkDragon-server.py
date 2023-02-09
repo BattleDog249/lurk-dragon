@@ -14,8 +14,33 @@ import struct
 # Import threading module, required for multithreading & handling multiple clients
 import threading
 
-# Description of the game, sent in GAME message to client
-gameDescription = "This is Logan's testing server description! Fun stuff."
+# Function for sending ACCEPT message to client
+def sendAccept(action):
+    type = int(8)
+    action = int(action)
+    acceptPacked = struct.pack('<2B', type, action)
+    clientSkt.sendall(acceptPacked)
+
+# Function to send an ERROR message to a client
+# code: Integer of error code to send to client
+def sendError(code):
+    errorCodes = {
+        0: 'ERROR: Other!',
+        1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
+        2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
+        3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',
+        4: 'ERROR: Stat error. Caused by setting inappropriate player stats.',
+        5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
+        6: 'ERROR: No target. Sent in response to attempts to loot nonexistent players, fight players in different rooms, etc.',
+        7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',
+        8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
+    }
+    type = int(7)
+    errorCode = int(code)
+    errMesLen = len(errorCodes[code])
+    errMes = errorCodes[code]
+    errorPacked = struct.pack('<2BH%ds' %errMesLen, type, errorCode, errMesLen, errMes)
+    clientSkt.sendall(errorPacked)
 
 class Game:
     """
@@ -28,7 +53,7 @@ class Game:
     type = int(11)
     initPoints = int(100)
     statLimit = int(65535)
-    gameDes = bytes(str("This is Logan's testing server description! Fun stuff."), 'utf-8')
+    gameDes = bytes(str("Logan's Lurk 2.3 server, full of surprises!"), 'utf-8')
     gameDesLen = int(len(gameDes))
     
     # Function for sending GAME message to client
@@ -104,21 +129,13 @@ class Character:
     '''
 
     def recvCharacter(self):
-        """
-        NEEDS WORK
-        """
-        characterBuffer = clientSkt.recv(1024)
-        if (len(characterBuffer[0:48]) != 48):
-            print('ERROR: Invalid CHARACTER message length!')
-            return 1
-        print('DEBUG: Received CHARACTER:', characterBuffer)
-        type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterBuffer[0:48])
-        name = name.decode('utf-8')
-        i = charDesLen + 48
-        charDes = struct.unpack('<%ds' %charDesLen , characterBuffer[48:i])
-        charDes = ''.join(map(str, charDes))    # Converts the character description from a tuple containing bytes to just bytes
+        characterBuffer = clientSkt.recv(48)
+        type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterBuffer)
+        charDes = clientSkt.recv(charDesLen)
+        print('DEBUG: Received CHARACTER message!')
+        print('DEBUG: CHARACTER Bytes:', characterBuffer)
         print('DEBUG: Type:', type)
-        print('DEBUG: Name:', name)
+        print('DEBUG: Name:', name.decode('utf-8'))
         print('DEBUG: Flags:', flags)
         print('DEBUG: Attack', attack)
         print('DEBUG: Defense:', defense)
@@ -127,30 +144,60 @@ class Character:
         print('DEBUG: Gold:', gold)
         print('DEBUG: Room', room)
         print('DEBUG: charDesLen:', charDesLen)
-        print('DEBUG: i:', i)
-        print('DEBUG: charDes:', charDes)
+        print('DEBUG: charDes:', charDes.decode('utf-8'))
         
         if (attack+defense+regen > Game.initPoints):
-            print('Character\'s stats are higher than initPoints!')
-            return 1
+            print('Character\'s stats are higher than initPoints! Assigning valid values')
+            attack = 45
+            defense = 45
+            regen = 5
+        
+        #Character.sendCharacter()
+        sendAccept(10)
         return 0
             
 
     def sendCharacter(self):
-        pass    
+        characterPacked = struct.pack('<B32sB7H%ds' %self.charDesLen, self.type, bytes(self.name, 'utf-8'), self.flags, self.attack, self.defense, self.regen, self.health, self.gold, self.room, len(self.charDes), bytes(self.charDes, 'utf-8'))
+        #print('DEBUG: Packed version =', characterPacked)
+        
+        #characterUnpacked = struct.unpack('<B32sB7H%ds', characterPacked)
+        #print('DEBUG: Unpacked version =', characterUnpacked)
+        
+        clientSkt.sendall(characterPacked)
+        #print('DEBUG: CHARACTER sent!')
+        
+        return 0
 
 def initConnect():
     """
     Executed when a client connects to the server, sends VERSION & GAME message to client, and receives CHARACTER message from client
     """
     version = Version()
-    version.sendVersion()
+    version = version.sendVersion()
+    
+    #Check that sendVersion() ran successfully
+    if (version != 0):
+        print('sendVersion() returned invalid code!')
+        return 2
     
     game = Game()
-    game.sendGame()
+    game = game.sendGame()
+    
+    # Check that sendGame() ran successfully
+    if (game != 0):
+        print('sendGame() returned invalid code!')
+        return 2
     
     character = Character()
-    character.recvCharacter()
+    character = character.recvCharacter()
+    
+    # Check that recvCharacter() ran successfully
+    if (character != 0):
+        print('ERROR: recvCharacter() returned invalid code!')
+        return 2
+    
+    sendError(0)
     
     return 0
 

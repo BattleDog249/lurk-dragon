@@ -9,12 +9,27 @@ import socket
 # Import struct module, required for packing/unpacking structures
 import struct
 
+def recvAccept():
+    acceptBuffer = skt.recv(2)
+    type, message = struct.unpack('<2B', acceptBuffer)
+    print('DEBUG: Received ACCEPT message!')
+    print('DEBUG: ACCEPT Bytes:', acceptBuffer)
+    print('DEBUG: Type:', type)
+    print('DEBUG: Message Type accepted:', message)
+    return 0
+
 # Function for receiving GAME message from server
 def recvGame():
-    gameUnpacked = struct.unpack("<B3H", skt.recv(7))
-    game_des = skt.recv(gameUnpacked[3])                    # Read game description, recv only description length
-    print('DEBUG: Received GAME:', gameUnpacked)
-    print('DEBUG: Received GAME Description:', game_des.decode())
+    gameBuffer = skt.recv(7)
+    type, initPoints, statLimit, gameDesLen = struct.unpack("<B3H", gameBuffer[0:7])
+    game_des = skt.recv(gameDesLen)                    # Read game description, recv only description length
+    print('DEBUG: Received GAME message!')
+    print('DEBUG: GAME Bytes:', gameBuffer)
+    print('DEBUG: Type:', type)
+    print('DEBUG: Initial Points:', initPoints)
+    print('DEBUG: Stat Limit:', statLimit)
+    print('DEBUG: Game Description Length:', gameDesLen)
+    print('DEBUG: GAME Description:', game_des.decode())
     return 0
 
 class Character:
@@ -58,11 +73,13 @@ class Version:
     
     #Function for receiving VERSION message from server
     def recvVersion():
-        type, major, minor, extSize = struct.unpack('<3BH', skt.recv(5))
+        versionBuffer = skt.recv(5)
+        type, major, minor, extSize = struct.unpack('<3BH', versionBuffer)
         print('DEBUG: Received VERSION message!')
+        print('DEBUG: VERSION Bytes:', versionBuffer)
         print('DEBUG: Type: ', type)
         print('DEBUG: Major:', major)
-        print('DEBUG: Minor', minor)
+        print('DEBUG: Minor:', minor)
         print('DEBUG: Ext. Size: ', extSize)
         return 0
     
@@ -95,9 +112,13 @@ game = recvGame()
 
 if game == 0:
     characterDescription = "This is a test dummy description tester!"
-    character = Character("Test Dummy # 512", 0, 50, 25, 5, 20, 0, 0, len(characterDescription), characterDescription)
+    character = Character("Test Dummy # 512", 0, 25, 25, 5, 20, 0, 0, len(characterDescription), characterDescription)
     character.sendCharacter()
-    print('DEBUG: Successfully received GAME message, sent CHARACTER message in response!')
+    print('DEBUG: Successfully received VERSION & GAME message, sent CHARACTER message in response!')
+    accept = recvAccept()
+    if (accept != 0):
+        print('ERROR: recvAccept() returned invalid code!')
+        exit
 else:
     print('ERROR: Failed to receive GAME message, not sending CHARACTER message!')
 
