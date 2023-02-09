@@ -54,6 +54,16 @@ class Version:
     minor = int(3)
     extSize = int(0)
     
+    # Function for receiving VERSION message from client
+    def recvVersion():
+        type, major, minor, extSize = struct.unpack('<3BH', clientSkt.recv(5))
+        print('DEBUG: Received VERSION message!')
+        print('DEBUG: Type: ', type)
+        print('DEBUG: Major:', major)
+        print('DEBUG: Minor', minor)
+        print('DEBUG: Ext. Size: ', extSize)
+        return 0
+    
     # Function for sending VERSION message to client
     def sendVersion(self):
         versionPacked = struct.pack('<3BH', self.type, self.major, self.minor, self.extSize)
@@ -79,7 +89,7 @@ class Character:
     """
     
     type = int(10)
-    
+    '''
     def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
         self.name = name
         self.flags = flags
@@ -91,25 +101,44 @@ class Character:
         self.room = room
         self.charDesLen = charDesLen
         self.charDes = charDes
+    '''
 
     def recvCharacter(self):
         """
         NEEDS WORK
         """
-        buffer = clientSkt.recv(1024)
-        type = buffer[1]
-        print(type)
-        characterUnpacked = struct.unpack('<B32sB7H%ds' %self.charDesLen, clientSkt.recv(48))
-        characterDes = clientSkt.recv(characterUnpacked[9])
-        print('DEBUG: Received CHARACTER message:', characterUnpacked)
-        print('DEBUG: Received CHARACTER Description:', characterDes.decode())
+        characterBuffer = clientSkt.recv(1024)
+        print('DEBUG: Received CHARACTER:', characterBuffer)
+        type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterBuffer[0:48])
+        name = name.decode('utf-8')
+        i = charDesLen + 48
+        charDes = struct.unpack('<%ds' %charDesLen , characterBuffer[48:i])
+        charDes = ''.join(map(str, charDes))    # Converts the character description from a tuple containing bytes to just bytes
+        print('DEBUG: Type:', type)
+        print('DEBUG: Name:', name)
+        print('DEBUG: Flags:', flags)
+        print('DEBUG: Attack', attack)
+        print('DEBUG: Defense:', defense)
+        print('DEBUG: Regen:', regen)
+        print('DEBUG: Health:', health)
+        print('DEBUG: Gold:', gold)
+        print('DEBUG: Room', room)
+        print('DEBUG: charDesLen:', charDesLen)
+        print('DEBUG: i:', i)
+        print('DEBUG: charDes:', charDes)
+        
+        if (attack+defense+regen > Game.initPoints):
+            print('Character\'s stats are higher than initPoints!')
+            return 1
+        return 0
+            
 
     def sendCharacter(self):
         pass    
 
 def initConnect():
     """
-    Executed when a client connects to the server, sends VERSION & GAME message to client
+    Executed when a client connects to the server, sends VERSION & GAME message to client, and receives CHARACTER message from client
     """
     version = Version()
     version.sendVersion()
@@ -117,17 +146,8 @@ def initConnect():
     game = Game()
     game.sendGame()
     
-    charUnpacked = struct.unpack('<B32sB7H%ds' %self.charDesLen)
-    charBuffer = clientSkt.recv(1024)
-    print(charBuffer)
-    type = charBuffer[0]
-    print('Type:', type)
-    name = charBuffer[1]
-    print('Name:', name)
-    
-    #character = Character(10, clientSkt.recv(), clientSkt.recv(), clientSkt.recv(), clientSkt.recv())
-    #character = character.recvCharacter()
-    #print(character)
+    character = Character()
+    character.recvCharacter()
     
     return 0
 

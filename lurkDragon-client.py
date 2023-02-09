@@ -9,12 +9,6 @@ import socket
 # Import struct module, required for packing/unpacking structures
 import struct
 
-# Function for receiving VERSION message from server
-def recvVersion():
-    versionUnpacked = struct.unpack('<3BH', skt.recv(5))
-    print('DEBUG: Received VERSION message:', versionUnpacked)
-    return 0
-
 # Function for receiving GAME message from server
 def recvGame():
     gameUnpacked = struct.unpack("<B3H", skt.recv(7))
@@ -52,15 +46,38 @@ class Character:
         
         return 0
 
-def sendCharacter(t = 10, name = "Test Dummy: ID 1 - Cannot > 32By", flags = 0, attack = 50, defense = 25, regen = 5, health = 20, gold = 0, room = 0):
+class Version:
     """
-    Function to send CHARACTER message to server
+    Sent by the server upon initial connection along with GAME. If no VERSION is received, the server can be assumed to support only LURK 2.0 or 2.1. 
     """
-    charDes = "This is a test dummy, don't feel bad for it. It is not sentient!"
-    characterPacked = struct.pack('<B32sB7H%ds' %charDes, t, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, len(charDes), bytes(charDes, 'utf-8'))
-    #desBytes = bytes(characterDescription, 'utf-8')
-    skt.sendall(characterPacked)
-    return 0
+    
+    type = int(14)
+    major = int(2)
+    minor = int(3)
+    extSize = int(0)
+    
+    #Function for receiving VERSION message from server
+    def recvVersion():
+        type, major, minor, extSize = struct.unpack('<3BH', skt.recv(5))
+        print('DEBUG: Received VERSION message!')
+        print('DEBUG: Type: ', type)
+        print('DEBUG: Major:', major)
+        print('DEBUG: Minor', minor)
+        print('DEBUG: Ext. Size: ', extSize)
+        return 0
+    
+    # Function for sending VERSION message to server
+    def sendVersion(self):
+        versionPacked = struct.pack('<3BH', self.type, self.major, self.minor, self.extSize)
+        #print('DEBUG: Packed version =', versionPacked)
+        
+        #versionUnpacked = struct.unpack('<3BH', versionPacked)
+        #print('DEBUG: Unpacked version =', versionUnpacked)
+        
+        skt.sendall(versionPacked)
+        #print('DEBUG: VERSION sent!')
+        
+        return 0
 
 # Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -73,12 +90,12 @@ port = 5010
 skt.connect((socket.gethostname(), port))
 print('DEBUG: Connecting to server:', host)
 
-version = recvVersion()
+version = Version.recvVersion()
 game = recvGame()
 
 if game == 0:
-    characterDescription = "This is a test dummy, don't feel bad for it. It is not sentient!"
-    character = Character("Test Dummy", 0, 50, 25, 5, 20, 0, 0, len(characterDescription), characterDescription)
+    characterDescription = "This is a test dummy description tester!"
+    character = Character("Test Dummy # 512", 0, 50, 25, 5, 20, 0, 0, len(characterDescription), characterDescription)
     character.sendCharacter()
     print('DEBUG: Successfully received GAME message, sent CHARACTER message in response!')
 else:
