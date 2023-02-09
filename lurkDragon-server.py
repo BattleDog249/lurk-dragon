@@ -15,10 +15,13 @@ import struct
 import threading
 
 # Function for sending ACCEPT message to client
+# action: Integer message type that was accepted
 def sendAccept(action):
     type = int(8)
     action = int(action)
     acceptPacked = struct.pack('<2B', type, action)
+    #print('DEBUG: Sending ACCEPT Message!')
+    #print('DEBUG: ACCEPT Bytes:', acceptPacked)
     clientSkt.sendall(acceptPacked)
 
 # Function to send an ERROR message to a client
@@ -40,6 +43,8 @@ def sendError(code):
     errMesLen = len(errorCodes[code])
     errMes = errorCodes[code]
     errorPacked = struct.pack('<2BH%ds' %errMesLen, type, errorCode, errMesLen, errMes)
+    #print('DEBUG: Sending ERROR Message!')
+    #print('DEBUG: ERROR Bytes:', errorPacked)
     clientSkt.sendall(errorPacked)
 
 class Game:
@@ -196,8 +201,6 @@ def initConnect():
     if (character != 0):
         print('ERROR: recvCharacter() returned invalid code!')
         return 2
-    
-    sendError(0)
     
     return 0
 
