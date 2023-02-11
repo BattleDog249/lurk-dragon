@@ -111,14 +111,16 @@ version = Version.recvVersion()
 game = recvGame()
 
 if game == 0:
-    characterDescription = "This is a test dummy description tester!"
+    characterDescription = "This is a test dummy description tester! Testing, testing!"
     character = Character("Test Dummy # 512", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
     character.sendCharacter()
     print('DEBUG: Successfully received VERSION & GAME message, sent CHARACTER message in response!')
+    '''
     accept = recvAccept()
     if (accept != 0):
         print('ERROR: recvAccept() returned invalid code!')
         exit
+    '''
 else:
     print('ERROR: Failed to receive GAME message, not sending CHARACTER message!')
 

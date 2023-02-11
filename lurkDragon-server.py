@@ -133,12 +133,12 @@ class Character:
         self.charDes = charDes
     '''
 
-    def recvCharacter(self):
-        characterBuffer = clientSkt.recv(48)
-        type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterBuffer)
+    def recvCharacter(self, buffer):
+        #characterBuffer = clientSkt.recv(48)
+        type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', buffer)
         charDes = clientSkt.recv(charDesLen)
         print('DEBUG: Received CHARACTER message!')
-        print('DEBUG: CHARACTER Bytes:', characterBuffer)
+        print('DEBUG: CHARACTER Bytes:', buffer)
         print('DEBUG: Type:', type)
         print('DEBUG: Name:', name.decode('utf-8'))
         print('DEBUG: Flags:', flags)
@@ -174,7 +174,7 @@ class Character:
         
         return 0
 
-def initConnect():
+def handleClient():
     """
     Executed when a client connects to the server, sends VERSION & GAME message to client, and receives CHARACTER message from client
     """
@@ -194,8 +194,15 @@ def initConnect():
         print('sendGame() returned invalid code!')
         return 2
     
-    character = Character()
-    character = character.recvCharacter()
+    while True:
+        buffer = clientSkt.recv(1024)
+        bufferLen = len(buffer)
+        if buffer[0] == 10:
+            print('Recv Type 10: CHARACTER')
+            character = Character()
+            character = character.recvCharacter(buffer)
+        elif buffer[0] == 1:
+            print('Received Type 1: MESSAGE')
     
     # Check that recvCharacter() ran successfully
     if (character != 0):
@@ -218,11 +225,14 @@ serverSkt.bind((socket.gethostname(), port))
 serverSkt.listen(5)
 print('Waiting for connection...')
 
+
+clientSkts = []
 while True:
     # Accepts connection from client & returns client socket (file descriptor) and address
     clientSkt, addr = serverSkt.accept()                    # Accept & assign client connection to clientSkt
     print('DEBUG: Client Socket:', clientSkt)
     print('DEBUG: Client Address:', addr)
-    clientThread = threading.Thread(target = initConnect)   # Create thread for connected client
+    clientThread = threading.Thread(target = handleClient)   # Create thread for connected client
     clientThread.start()                                    # Start thread
+    clientSkts.append(clientSkt)
     print("DEBUG: Client Thread:", clientThread)
