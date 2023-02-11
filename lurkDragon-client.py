@@ -9,11 +9,10 @@ import socket
 # Import struct module, required for packing/unpacking structures
 import struct
 
-def recvAccept():
-    acceptBuffer = skt.recv(2)
-    type, message = struct.unpack('<2B', acceptBuffer)
+def recvAccept(buffer):
+    type, message = struct.unpack('<2B', buffer)
     print('DEBUG: Received ACCEPT message!')
-    print('DEBUG: ACCEPT Bytes:', acceptBuffer)
+    print('DEBUG: ACCEPT Bytes:', buffer)
     print('DEBUG: Type:', type)
     print('DEBUG: Message Type accepted:', message)
     return 0
@@ -32,6 +31,20 @@ def recvGame():
     print('DEBUG: GAME Description:', game_des.decode())
     return 0
 
+# Function to receive an ERROR message from server
+# buffer: Buffer to read from
+def recvError(buffer):
+    errorBuffer = buffer[:4]
+    type, errorCode, errMesLen = struct.unpack('<2BH', errorBuffer)
+    errMesBuffer = buffer[4:4+errMesLen]
+    errMes, = struct.unpack('<%ds' %errMesLen, errMesBuffer)
+    errMes = errMes.decode('utf-8')
+    print('DEBUG: Received ERROR message!')
+    print('DEBUG: ERROR Bytes:', buffer)
+    print('DEBUG: Type:', type)
+    print('DEBUG: ErrorCode:', errorCode)
+    print('DEBUG: ErrMesLen:', errMesLen)
+    print('DEBUG: ErrMes:', errMes)
 class Character:
     def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
         self.type = 10
@@ -111,16 +124,20 @@ version = Version.recvVersion()
 game = recvGame()
 
 if game == 0:
-    characterDescription = "This is a test dummy description tester! Testing, testing!"
-    character = Character("Test Dummy # 512", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+    characterDescription = "This is a test dummy description tester! Testing, testing! Ag"
+    character = Character("Test Dummy # 512", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
     character.sendCharacter()
     print('DEBUG: Successfully received VERSION & GAME message, sent CHARACTER message in response!')
-    '''
-    accept = recvAccept()
-    if (accept != 0):
-        print('ERROR: recvAccept() returned invalid code!')
-        exit
-    '''
+
+    buffer = skt.recv(64)
+    if (buffer[0] == 8):
+        accept = recvAccept(buffer[:2])
+        if (accept != 0):
+            print('WARN: recvAccept() returned unexpected code', accept)
+            exit
+    elif (buffer[0] == 7):
+        error = recvError(buffer)
+
 else:
     print('ERROR: Failed to receive GAME message, not sending CHARACTER message!')
 
