@@ -55,6 +55,17 @@ def sendVersion(skt):
     
     return 0
 
+def sendRoom(skt, roomNum):
+    type = int(9)
+    roomNum = int(roomNum)
+    roomName = str('Test Room')
+    roomDes = str('This is a testing room, like floating in a white void...')
+    
+    roomPacked = struct.pack('<BH32s%ds', type, roomNum, bytes(roomName, 'utf-8'), len(roomDes), roomDes)
+    
+    skt.sendall(roomPacked)
+    return 0
+
 class Game:
     """
     Used by the server to describe the game. The initial points is a combination of health, defense, and regen, and cannot be exceeded by the client when defining a new character.
@@ -180,8 +191,10 @@ def handleClient(cSkt):
             # If stats and CHARACTER message is valid, send ACCEPT
             if (attack+defense+regen <= Game.initPoints):
                 sendAccept(cSkt, 10)
+                buffer = None
             else:
                 sendError(cSkt, 4)
+                buffer = None
                 
             buffer = None
         elif (buffer[0] == 11):
@@ -209,7 +222,8 @@ if (serverSkt == 1):
 
 # Assign port number
 # Logan's assigned range: 5010 - 5014
-port = 5010
+# Testing 5195 for isoptera, connection refused on assigned ports... Debugging
+port = 5195
 
 # Bind server to machine's hostname & assigned port number
 serverSkt.bind((socket.gethostname(), port))
