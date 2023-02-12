@@ -23,7 +23,7 @@ def sendError(skt, code):
         1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
         2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
         3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',
-        4: 'ERROR: Stat error. Caused by setting inappropriate player stats.',
+        4: 'ERROR: Stat error. Caused by setting inappropriate player stats. Try again!',
         5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
         6: 'ERROR: No target. Sent in response to attempts to loot nonexistent players, fight players in different rooms, etc.',
         7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',

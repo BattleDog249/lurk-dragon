@@ -31,19 +31,20 @@ def recvGame():
     print('DEBUG: GAME Description:', game_des.decode())
     return 0
 
+
 # Function to receive an ERROR message from server
 # buffer: Buffer to read from
 def recvError(buffer):
     errorBuffer = buffer[:4]
     type, errorCode, errMesLen = struct.unpack('<2BH', errorBuffer)
-    errMesBuffer = buffer[4:4+errMesLen]
-    errMes, = struct.unpack('<%ds' %errMesLen, errMesBuffer)
-    errMes = errMes.decode('utf-8')
     print('DEBUG: Received ERROR message!')
     print('DEBUG: ERROR Bytes:', buffer)
     print('DEBUG: Type:', type)
     print('DEBUG: ErrorCode:', errorCode)
     print('DEBUG: ErrMesLen:', errMesLen)
+    errMesBuffer = buffer[4:4+errMesLen]
+    errMes, = struct.unpack('<%ds' %errMesLen, errMesBuffer)
+    errMes = errMes.decode('utf-8')
     print('DEBUG: ErrMes:', errMes)
 class Character:
     def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
@@ -129,7 +130,7 @@ if game == 0:
     character.sendCharacter()
     print('DEBUG: Successfully received VERSION & GAME message, sent CHARACTER message in response!')
 
-    buffer = skt.recv(64)
+    buffer = skt.recv(128)
     if (buffer[0] == 8):
         accept = recvAccept(buffer[:2])
         if (accept != 0):
@@ -137,6 +138,9 @@ if game == 0:
             exit
     elif (buffer[0] == 7):
         error = recvError(buffer)
+        character = Character("Test Dummy # 512", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+        character.sendCharacter()
+        
 
 else:
     print('ERROR: Failed to receive GAME message, not sending CHARACTER message!')
