@@ -204,6 +204,7 @@ def handleClient(cSkt):
             # Handle LEAVE
             cSkt.shutdown(2)    # Not necessary AFAIK, testing
             cSkt.close(cSkt)        # Close connection to server
+            buffer = None
         elif (buffer[0] == 13):
             # Handle CONNECTION
             pass
@@ -230,7 +231,7 @@ serverSkt.bind((socket.gethostname(), port))
 
 # Server listens and queue up to 5 connections before refusing more
 serverSkt.listen(5)
-print('Waiting for connection...')
+print('Waiting for connection, listening on port', port)
 
 while True:
     # Accepts connection from client & returns client socket (file descriptor) and address
