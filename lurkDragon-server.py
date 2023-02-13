@@ -66,6 +66,9 @@ def handleClient(cSkt):
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(cSkt, 4)
+                characterBuffer = buffer
+                name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, characterBuffer)
+                accept = Accept.sendAccept(cSkt, 10)
                 buffer = None
                 
             buffer = None
