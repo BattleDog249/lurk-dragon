@@ -20,6 +20,7 @@ class Message:
         """Return MESSAGE message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendMessage(skt):
+        """Return 0 if successfully pack MESSAGE fields into a variable before sending to socket."""
         pass
 
 class ChangeRoom:
@@ -29,6 +30,7 @@ class ChangeRoom:
         """Return CHANGEROOM message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendChangeRoom(skt):
+        """Return 0 if successfully pack CHANGEROOM fields into a variable before sending to socket."""
         pass
 
 class Fight:
@@ -38,6 +40,7 @@ class Fight:
         """Return FIGHT message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendFight(skt):
+        """Return 0 if successfully pack FIGHT fields into a variable before sending to socket."""
         pass
 
 class PVPFight:
@@ -47,6 +50,7 @@ class PVPFight:
         """Return PVPFIGHT message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendPVPFight(skt):
+        """Return 0 if successfully pack PVPFIGHT fields into a variable before sending to socket."""
         pass
 
 class Loot:
@@ -56,6 +60,7 @@ class Loot:
         """Return LOOT message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendLoot(skt):
+        """Return 0 if successfully pack LOOT fields into a variable before sending to socket."""
         pass
 
 class Start:
@@ -65,6 +70,7 @@ class Start:
         """Return START message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendStart(skt):
+        """Return 0 if successfully pack START fields into a variable before sending to socket."""
         pass
 
 class Error:
@@ -97,10 +103,10 @@ class Error:
         print('DEBUG: ErrMes:', errMes)
         return 0
 
-    # Function for sending an ERROR message
     #   skt: Socket to send message to
     #   code: Error code integer to send
     def sendError(skt, code):
+        """Return 0 if successfully pack ERROR fields into a variable before sending to socket."""
         errorCode = int(code)
         errMesLen = len(Error.errorCodes[code])
         errMes = Error.errorCodes[code].encode('utf-8')
@@ -125,10 +131,10 @@ class Accept:
         print('DEBUG: Message Type Accepted:', message)
         return 0
 
-    # Function for sending an ACCEPT message
     #   skt: Socket to send message to
     #   message: Integer of message type that was accepted
     def sendAccept(skt, message):
+        """Return 0 if successfully pack ACCEPT fields into a variable before sending to socket."""
         action = int(message)
         acceptPacked = struct.pack('<2B', Accept.msgType, action)
         #print('DEBUG: Sending ACCEPT Message!')
@@ -165,8 +171,8 @@ class Room:
         #print('DEBUG: Room Description TYPE:', type(roomDes))
         return roomNum, roomName, roomDesLen, roomDes
 
-    # Function for sending a ROOM message
     def sendRoom(skt, roomNum):
+        """Return 0 if successfully pack ROOM fields into a variable before sending to socket."""
         roomNum = int(roomNum)
         print('DEBUG: Room Number:', roomNum)
         roomName = Room.rooms[roomNum][0]
@@ -218,6 +224,7 @@ class Character:
         return name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes
 
     def sendCharacter(self, skt):
+        """Return 0 if successfully pack CHARACTER fields into a variable before sending to socket."""
         characterPacked = struct.pack('<B32sB7H%ds' %self.charDesLen, Character.msgType, bytes(self.name, 'utf-8'), self.flags, self.attack, self.defense, self.regen, self.health, self.gold, self.room, len(self.charDes), bytes(self.charDes, 'utf-8'))
         #print('DEBUG: Packed version =', characterPacked)
         
@@ -252,9 +259,9 @@ class Game:
         print('DEBUG: Game Description Length:', gameDesLen)
         print('DEBUG: GAME Description:', varBuffer.decode())
         return 0
-    
-    # Function for sending a GAME message
+
     def sendGame(skt):
+        """Return 0 if successfully pack GAME fields into a variable before sending to socket."""
         gamePacked = struct.pack('<B3H%ds' %Game.gameDesLen, Game.msgType, Game.initPoints, Game.statLimit, Game.gameDesLen, Game.gameDes)
         #print('DEBUG: Packed game =', gamePacked)
         
@@ -273,6 +280,7 @@ class Leave:
         """Return LEAVE message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendLeave(skt):
+        """Return 0 if successfully pack LEAVE fields into a variable before sending to socket."""
         pass
 
 class Connection:
@@ -282,6 +290,7 @@ class Connection:
         """Return CONNECTION message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendConnection(skt):
+        """Return 0 if successfully pack CONNECTION fields into a variable before sending to socket."""
         pass
 
 class Version:
@@ -307,6 +316,7 @@ class Version:
     # Does not currently support sending list of extensions, so extSize should always = 0
     #   skt: Socket to send data to
     def sendVersion(skt):
+        """Return 0 if successfully pack VERSION fields into a variable before sending to socket."""
         # <:    Little endian
         # 3B:   Type, Major, & Minor as uchar (1 byte)
         # H:    extSize as ushort (2 bytes)
