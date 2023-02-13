@@ -4,6 +4,8 @@ CS435 LurkDragon: Client
     Email: lhgray@lcmail.lcsc.edu
 '''
 
+#!/usr/bin/env python3
+
 # Import socket module, required for network communications
 import socket
 # Import custom lurk module

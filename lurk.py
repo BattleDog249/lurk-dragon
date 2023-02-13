@@ -6,6 +6,8 @@ CS435 LurkDragon: Module
         ROOM: Room Description is appearing as bytes with b'<roomDes>', but Python is saying it's a string? Weird.
 '''
 
+#!/usr/bin/env python3
+
 # Import socket module, necessary for network communications
 import socket
 # Import struct module, required for packing/unpacking structures

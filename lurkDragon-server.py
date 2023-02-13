@@ -8,6 +8,8 @@ CS435 LurkDragon: Server
                 Pretty sure this is an issue with my understanding of bind() and gethostname(), rather than isoptera issue
 '''
 
+#!/usr/bin/env python3
+
 # Import socket module, necessary for network communications
 import socket
 # Import threading module, required for multithreading & handling multiple clients
