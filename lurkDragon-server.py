@@ -2,6 +2,10 @@
 CS435 LurkDragon: Server
     Author: Logan Hunter Gray
     Email: lhgray@lcmail.lcsc.edu
+    KNOWN ISSUES
+        Reevaluate how bind works
+            Currently using localhost, trying to use gethostname() for address causing stuff to fail on isoptera
+                Pretty sure this is an issue with my understanding of bind() and gethostname(), rather than isoptera issue
 '''
 
 # Import socket module, necessary for network communications
