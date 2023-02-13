@@ -61,6 +61,7 @@ def handleClient(cSkt):
             if (attack + defense + regen <= Game.initPoints):
                 print('DEBUG: Detected valid stats, sending ACCEPT!')
                 accept = Accept.sendAccept(cSkt, 10)
+                room = Room.sendRoom(cSkt, 0)
                 buffer = None
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')

@@ -35,6 +35,9 @@ if game == 0:
     validBuffer = skt.recv(1024)
     if (validBuffer[0] == 8):
         accept = Accept.recvAccept(skt, validBuffer)
+        
+        roomBuffer = skt.recv(1024)
+        room = Room.recvRoom(skt, roomBuffer)
         if (accept != 0):
             print('WARN: recvAccept() returned unexpected code', accept)
             exit

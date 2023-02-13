@@ -1,3 +1,11 @@
+'''
+CS435 LurkDragon: Module
+    Author: Logan Hunter Gray
+    Email: lhgray@lcmail.lcsc.edu
+    KNOWN ISSUES
+        ROOM: Room Description is appearing as bytes with b'<roomDes>', but Python is saying it's a string? Weird.
+'''
+
 # Import socket module, necessary for network communications
 import socket
 # Import struct module, required for packing/unpacking structures
@@ -7,7 +15,7 @@ import threading
 
 # Class for handling MESSAGE messages
 class Message:
-    type = int(1)
+    msgType = int(1)
     def recvMessage(skt, buffer):
         pass
     def sendMessage(skt):
@@ -15,7 +23,7 @@ class Message:
 
 # Class for handling CHANGEROOM messages
 class ChangeRoom:
-    type = int(2)
+    msgType = int(2)
     def recvChangeRoom(skt, buffer):
         pass
     def sendChangeRoom(skt):
@@ -23,7 +31,7 @@ class ChangeRoom:
 
 # Class for handling FIGHT messages
 class Fight:
-    type = int(3)
+    msgType = int(3)
     def recvFight(skt, buffer):
         pass
     def sendFight(skt):
@@ -31,7 +39,7 @@ class Fight:
 
 # Class for handling PVPFIGHT messages
 class PVPFight:
-    type = int(4)
+    msgType = int(4)
     def recvPVPFight(skt, buffer):
         pass
     def sendPVPFight(skt):
@@ -39,7 +47,7 @@ class PVPFight:
 
 # Class for handling LOOT messages
 class Loot:
-    type = int(5)
+    msgType = int(5)
     def recvLoot(skt, buffer):
         pass
     def sendLoot(skt):
@@ -47,7 +55,7 @@ class Loot:
 
 # Class for handling START messages
 class Start:
-    type = int(6)
+    msgType = int(6)
     def recvStart(skt, buffer):
         pass
     def sendStart(skt):
@@ -55,7 +63,7 @@ class Start:
 
 # Class for handling ERROR messages
 class Error:
-    type = int(7)
+    msgType = int(7)
     errorCodes = {
         0: 'ERROR: Other!',
         1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
@@ -71,10 +79,10 @@ class Error:
     # Function for receiving an ERROR message
     def recvError(skt, buffer):
         constBuffer = buffer[:4]
-        type, errorCode, errMesLen = struct.unpack('<2BH', constBuffer)
+        msgType, errorCode, errMesLen = struct.unpack('<2BH', constBuffer)
         print('DEBUG: Received ERROR message!')
         print('DEBUG: ERROR Bytes:', buffer)
-        print('DEBUG: Type:', type)
+        print('DEBUG: Type:', msgType)
         print('DEBUG: ErrorCode:', errorCode)
         print('DEBUG: ErrMesLen:', errMesLen)
         varBuffer = buffer[4:4+errMesLen]
@@ -89,7 +97,7 @@ class Error:
         errorCode = int(code)
         errMesLen = len(Error.errorCodes[code])
         errMes = Error.errorCodes[code].encode('utf-8')
-        errorPacked = struct.pack('<2BH%ds' %errMesLen, Error.type, errorCode, errMesLen, errMes)
+        errorPacked = struct.pack('<2BH%ds' %errMesLen, Error.msgType, errorCode, errMesLen, errMes)
         #print('DEBUG: Sending ERROR Message!')
         #print('DEBUG: ERROR Bytes:', errorPacked)
         skt.sendall(errorPacked)
@@ -97,16 +105,16 @@ class Error:
 
 # Class for handling ACCEPT messages
 class Accept:
-    type = int(8)
+    msgType = int(8)
 
     # Function for receiving an ACCEPT message
     #   skt: Socket to receive message from
     #   buffer: Variable storing bytes to unpack from
     def recvAccept(skt, buffer):
-        type, message = struct.unpack('<2B', buffer)
+        msgType, message = struct.unpack('<2B', buffer)
         print('DEBUG: Received ACCEPT message!')
         print('DEBUG: ACCEPT Bytes:', buffer)
-        print('DEBUG: Type:', type)
+        print('DEBUG: Type:', msgType)
         print('DEBUG: Message Type Accepted:', message)
         return 0
 
@@ -115,7 +123,7 @@ class Accept:
     #   message: Integer of message type that was accepted
     def sendAccept(skt, message):
         action = int(message)
-        acceptPacked = struct.pack('<2B', Accept.type, action)
+        acceptPacked = struct.pack('<2B', Accept.msgType, action)
         #print('DEBUG: Sending ACCEPT Message!')
         skt.sendall(acceptPacked)
         #print('DEBUG: ACCEPT Sent:', acceptPacked)
@@ -123,20 +131,44 @@ class Accept:
 
 # Class for handling ROOM messages
 class Room:
-    type = int(9)
+    msgType = int(9)
+    
+    # Dictionary of tuples containing room information
+    rooms = {
+        0: ('Starting Room', 'This is the starting room, not much to see here.'),
+        1: ('Hallway', 'A hallway leading away from the starting room.')
+    }
 
     # Function for receiving a ROOM message
     def recvRoom(skt, buffer):
-        pass
+        constBuffer = buffer[:37]
+        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', constBuffer)
+        varBuffer = buffer[37:37+roomDesLen]
+        roomDes = struct.unpack('<%ds' %roomDesLen, varBuffer)
+        roomDes = ''.join(map(str, roomDes))                    # Convert tuple object to.. bytes? Should convert to string?
+        print('DEBUG: Received ROOM message!')
+        print('DEBUG: Total ROOM Bytes:', buffer)
+        print('DEBUG: Constant ROOM Bytes:', constBuffer)
+        print('DEBUG: Variable ROOM Bytes:', varBuffer)
+        print('DEBUG: Type:', msgType)
+        print('DEBUG: Room Number:', roomNum)
+        print('DEBUG: Room Name:', roomName.decode('utf-8'))
+        print('DEBUG: Room Description Length:', roomDesLen)
+        print('DEBUG: Room Description:', roomDes)
+        #print('DEBUG: Room Description TYPE:', type(roomDes))
+        return roomNum, roomName, roomDesLen, roomDes
 
     # Function for sending a ROOM message
     def sendRoom(skt, roomNum):
-        type = int(9)
         roomNum = int(roomNum)
-        roomName = str('Test Room')
-        roomDes = str('This is a testing room, like floating in a white void...')
+        print('DEBUG: Room Number:', roomNum)
+        roomName = Room.rooms[roomNum][0]
+        print('DEBUG: Room Name:', roomName)
+        roomDes = Room.rooms[roomNum][1]
+        print('DEBUG: Room Description:', roomDes)
+        roomDesLen = len(roomDes)
         
-        roomPacked = struct.pack('<BH32s%ds', type, roomNum, bytes(roomName, 'utf-8'), len(roomDes), roomDes)
+        roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, Room.msgType, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
         
         skt.sendall(roomPacked)
         return 0
@@ -144,7 +176,7 @@ class Room:
 
 # Class for handling CHARACTER messages
 class Character:
-    type = int(10)
+    msgType = int(10)
 
     def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
         self.name = name
@@ -160,10 +192,10 @@ class Character:
 
     def recvCharacter(skt, buffer):
         constBuffer = buffer[:48]
-        type, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', constBuffer)
+        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', constBuffer)
         print('DEBUG: Received CHARACTER message!')
         print('DEBUG: CHARACTER Bytes:', buffer)
-        print('DEBUG: Type:', type)
+        print('DEBUG: Type:', msgType)
         print('DEBUG: Name:', name.decode('utf-8'))
         print('DEBUG: Flags:', flags)
         print('DEBUG: Attack', attack)
@@ -179,7 +211,7 @@ class Character:
         return name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes
 
     def sendCharacter(self, skt):
-        characterPacked = struct.pack('<B32sB7H%ds' %self.charDesLen, Character.type, bytes(self.name, 'utf-8'), self.flags, self.attack, self.defense, self.regen, self.health, self.gold, self.room, len(self.charDes), bytes(self.charDes, 'utf-8'))
+        characterPacked = struct.pack('<B32sB7H%ds' %self.charDesLen, Character.msgType, bytes(self.name, 'utf-8'), self.flags, self.attack, self.defense, self.regen, self.health, self.gold, self.room, len(self.charDes), bytes(self.charDes, 'utf-8'))
         #print('DEBUG: Packed version =', characterPacked)
         
         #characterUnpacked = struct.unpack('<B32sB7H%ds', characterPacked)
@@ -192,22 +224,22 @@ class Character:
 
 # Class for handling GAME messages
 class Game:
-    type = int(11)
+    msgType = int(11)
     initPoints = int(100)
     statLimit = int(65535)
-    gameDes = bytes(str("Logan's Lurk 2.3 server, completely incomplete!123"), 'utf-8')
+    gameDes = bytes(str("Logan's Lurk 2.3 server, completely incomplete!"), 'utf-8')
     gameDesLen = int(len(gameDes))
 
     # Function for receiving a GAME message
     def recvGame(skt, buffer):
         constBuffer = buffer[:7]
-        type, initPoints, statLimit, gameDesLen = struct.unpack("<B3H", constBuffer)
+        msgType, initPoints, statLimit, gameDesLen = struct.unpack("<B3H", constBuffer)
         varBuffer = buffer[7:7+gameDesLen]
         print('DEBUG: Received GAME message!')
         print('DEBUG: Total GAME Bytes:', buffer)
         print('DEBUG: Constant GAME Bytes:', constBuffer)
         print('DEBUG: Variable GAME Bytes:', varBuffer)
-        print('DEBUG: Type:', type)
+        print('DEBUG: Type:', msgType)
         print('DEBUG: Initial Points:', initPoints)
         print('DEBUG: Stat Limit:', statLimit)
         print('DEBUG: Game Description Length:', gameDesLen)
@@ -216,7 +248,7 @@ class Game:
     
     # Function for sending a GAME message
     def sendGame(skt):
-        gamePacked = struct.pack('<B3H%ds' %Game.gameDesLen, Game.type, Game.initPoints, Game.statLimit, Game.gameDesLen, Game.gameDes)
+        gamePacked = struct.pack('<B3H%ds' %Game.gameDesLen, Game.msgType, Game.initPoints, Game.statLimit, Game.gameDesLen, Game.gameDes)
         #print('DEBUG: Packed game =', gamePacked)
         
         #gameUnpacked = struct.unpack('<B3H%ds' %Game.gameDesLen, gamePacked)
@@ -229,7 +261,7 @@ class Game:
 
 # Class for handling LEAVE messages
 class Leave:
-    type = int(12)
+    msgType = int(12)
     def recvLeave(skt, buffer):
         pass
     def sendLeave(skt):
@@ -237,7 +269,7 @@ class Leave:
 
 # Class for handling CONNECTION messages
 class Connection:
-    type = int(13)
+    msgType = int(13)
     def recvConnection(skt, buffer):
         pass
     def sendConnection(skt):
@@ -245,7 +277,7 @@ class Connection:
 
 # Class for handling VERSION messages
 class Version:
-    type = int(14)
+    msgType = int(14)
     major = int(2)
     minor = int(3)
     extSize = int(0)
@@ -254,10 +286,10 @@ class Version:
     # Does not currently support receiving list of extensions, so extSize should always = 0
     #   skt: Socket to receive data from
     def recvVersion(skt, buffer):
-        type, major, minor, extSize = struct.unpack('<3BH', buffer)
+        msgType, major, minor, extSize = struct.unpack('<3BH', buffer)
         print('DEBUG: Received VERSION message!')
         print('DEBUG: VERSION bytes: ', buffer)
-        print('DEBUG: Type: ', type)
+        print('DEBUG: Type: ', msgType)
         print('DEBUG: Major:', major)
         print('DEBUG: Minor', minor)
         print('DEBUG: Ext. Size: ', extSize)
@@ -270,7 +302,7 @@ class Version:
         # <:    Little endian
         # 3B:   Type, Major, & Minor as uchar (1 byte)
         # H:    extSize as ushort (2 bytes)
-        versionPacked = struct.pack('<3BH', Version.type, Version.major, Version.minor, Version.extSize)    # Pack VERSION data into variable
+        versionPacked = struct.pack('<3BH', Version.msgType, Version.major, Version.minor, Version.extSize)    # Pack VERSION data into variable
         #print('DEBUG: Packed version =', versionPacked)
         
         #versionUnpacked = struct.unpack('<3BH', versionPacked)
