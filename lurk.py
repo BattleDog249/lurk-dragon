@@ -1,70 +1,74 @@
-'''
-CS435 LurkDragon: Module
-    Author: Logan Hunter Gray
-    Email: lhgray@lcmail.lcsc.edu
-    KNOWN ISSUES
-        ROOM: Room Description is appearing as bytes with b'<roomDes>', but Python is saying it's a string? Weird.
-'''
+#   CS435 LurkDragon: Module
+#       Author: Logan Hunter Gray
+#       Email: lhgray@lcmail.lcsc.edu
+#       KNOWN ISSUES
+#           ROOM: Room Description is appearing as bytes with b'<roomDes>', but Python is saying it's a string? Weird.
 
 #!/usr/bin/env python3
 
-# Import socket module, necessary for network communications
+# Module required for network communications
 import socket
-# Import struct module, required for packing/unpacking structures
+# Module required for packing/unpacking structures
 import struct
-# Import threading module, required for multithreading & handling multiple clients
+# Module required for multithreading & handling multiple clients
 import threading
 
-# Class for handling MESSAGE messages
 class Message:
+    """Class for handling Lurk MESSAGE messages and related functions."""
     msgType = int(1)
     def recvMessage(skt, buffer):
+        """Return MESSAGE message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendMessage(skt):
         pass
 
-# Class for handling CHANGEROOM messages
 class ChangeRoom:
+    """Class for handling Lurk CHANGEROOM messages and related functions."""
     msgType = int(2)
     def recvChangeRoom(skt, buffer):
+        """Return CHANGEROOM message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendChangeRoom(skt):
         pass
 
-# Class for handling FIGHT messages
 class Fight:
+    """Class for handling LurK FIGHT messages and related functions."""
     msgType = int(3)
     def recvFight(skt, buffer):
+        """Return FIGHT message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendFight(skt):
         pass
 
-# Class for handling PVPFIGHT messages
 class PVPFight:
+    """Class for handling Lurk PVPFIGHT messages and related functions."""
     msgType = int(4)
     def recvPVPFight(skt, buffer):
+        """Return PVPFIGHT message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendPVPFight(skt):
         pass
 
-# Class for handling LOOT messages
 class Loot:
+    """Class for handling Lurk LOOT messages and related functions."""
     msgType = int(5)
     def recvLoot(skt, buffer):
+        """Return LOOT message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendLoot(skt):
         pass
 
-# Class for handling START messages
 class Start:
+    """Class for handling Lurk START messages and related functions."""
     msgType = int(6)
     def recvStart(skt, buffer):
+        """Return START message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendStart(skt):
         pass
 
-# Class for handling ERROR messages
 class Error:
+    """Class for handling Lurk ERROR messages and related functions."""
     msgType = int(7)
     errorCodes = {
         0: 'ERROR: Other!',
@@ -78,8 +82,8 @@ class Error:
         8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
         }
 
-    # Function for receiving an ERROR message
     def recvError(skt, buffer):
+        """Return ERROR message fields (not including TYPE) from socket after unpacking from buffer."""
         constBuffer = buffer[:4]
         msgType, errorCode, errMesLen = struct.unpack('<2BH', constBuffer)
         print('DEBUG: Received ERROR message!')
@@ -91,6 +95,7 @@ class Error:
         errMes, = struct.unpack('<%ds' %errMesLen, varBuffer)
         errMes = errMes.decode('utf-8')
         print('DEBUG: ErrMes:', errMes)
+        return 0
 
     # Function for sending an ERROR message
     #   skt: Socket to send message to
@@ -105,14 +110,14 @@ class Error:
         skt.sendall(errorPacked)
         return 0
 
-# Class for handling ACCEPT messages
 class Accept:
+    """Class for handling Lurk ACCEPT messages and related functions."""
     msgType = int(8)
 
-    # Function for receiving an ACCEPT message
     #   skt: Socket to receive message from
     #   buffer: Variable storing bytes to unpack from
     def recvAccept(skt, buffer):
+        """Return ACCEPT message fields (not including TYPE) from socket after unpacking from buffer."""
         msgType, message = struct.unpack('<2B', buffer)
         print('DEBUG: Received ACCEPT message!')
         print('DEBUG: ACCEPT Bytes:', buffer)
@@ -131,8 +136,8 @@ class Accept:
         #print('DEBUG: ACCEPT Sent:', acceptPacked)
         return 0
 
-# Class for handling ROOM messages
 class Room:
+    """Class for handling Lurk ROOM messages and related functions."""
     msgType = int(9)
     
     # Dictionary of tuples containing room information
@@ -141,8 +146,8 @@ class Room:
         1: ('Hallway', 'A hallway leading away from the starting room.')
     }
 
-    # Function for receiving a ROOM message
     def recvRoom(skt, buffer):
+        """Return ROOM message fields (not including TYPE) from socket after unpacking from buffer."""
         constBuffer = buffer[:37]
         msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', constBuffer)
         varBuffer = buffer[37:37+roomDesLen]
@@ -175,9 +180,8 @@ class Room:
         skt.sendall(roomPacked)
         return 0
 
-
-# Class for handling CHARACTER messages
 class Character:
+    """Class for handling Lurk CHARACTER messages and related functions."""
     msgType = int(10)
 
     def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
@@ -193,6 +197,7 @@ class Character:
         self.charDes = charDes
 
     def recvCharacter(skt, buffer):
+        """Return CHARACTER message fields (not including TYPE) from socket after unpacking from buffer."""
         constBuffer = buffer[:48]
         msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', constBuffer)
         print('DEBUG: Received CHARACTER message!')
@@ -224,16 +229,16 @@ class Character:
         
         return 0
 
-# Class for handling GAME messages
 class Game:
+    """Class for handling Lurk GAME messages and related functions."""
     msgType = int(11)
     initPoints = int(100)
     statLimit = int(65535)
     gameDes = bytes(str("Logan's Lurk 2.3 server, completely incomplete!"), 'utf-8')
     gameDesLen = int(len(gameDes))
 
-    # Function for receiving a GAME message
     def recvGame(skt, buffer):
+        """Return GAME message fields (not including TYPE) from socket after unpacking from buffer."""
         constBuffer = buffer[:7]
         msgType, initPoints, statLimit, gameDesLen = struct.unpack("<B3H", constBuffer)
         varBuffer = buffer[7:7+gameDesLen]
@@ -261,33 +266,35 @@ class Game:
         
         return 0
 
-# Class for handling LEAVE messages
 class Leave:
+    """Class for handling Lurk LEAVE messages and related functions."""
     msgType = int(12)
     def recvLeave(skt, buffer):
+        """Return LEAVE message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendLeave(skt):
         pass
 
-# Class for handling CONNECTION messages
 class Connection:
+    """Class for handling Lurk CONNECTION messages and related functions."""
     msgType = int(13)
     def recvConnection(skt, buffer):
+        """Return CONNECTION message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
     def sendConnection(skt):
         pass
 
-# Class for handling VERSION messages
 class Version:
+    """Class for handling Lurk VERSION messages and related functions."""
     msgType = int(14)
     major = int(2)
     minor = int(3)
     extSize = int(0)
     
-    # Function for receiving a VERSION message
     # Does not currently support receiving list of extensions, so extSize should always = 0
     #   skt: Socket to receive data from
     def recvVersion(skt, buffer):
+        """Return VERSION message fields (not including TYPE) from socket after unpacking from buffer."""
         msgType, major, minor, extSize = struct.unpack('<3BH', buffer)
         print('DEBUG: Received VERSION message!')
         print('DEBUG: VERSION bytes: ', buffer)
@@ -297,7 +304,6 @@ class Version:
         print('DEBUG: Ext. Size: ', extSize)
         return 0
     
-    # Function for sending a VERSION message
     # Does not currently support sending list of extensions, so extSize should always = 0
     #   skt: Socket to send data to
     def sendVersion(skt):
