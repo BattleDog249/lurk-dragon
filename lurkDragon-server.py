@@ -69,6 +69,7 @@ def handleClient(cSkt):
                 characterBuffer = buffer
                 name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, characterBuffer)
                 accept = Accept.sendAccept(cSkt, 10)
+                room = Room.sendRoom(cSkt, 0)
                 buffer = None
                 
             buffer = None
