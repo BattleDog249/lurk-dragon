@@ -154,7 +154,7 @@ class Room:
         print('DEBUG: Room Number:', roomNum)
         print('DEBUG: Room Name:', roomName.decode('utf-8'))
         print('DEBUG: Room Description Length:', roomDesLen)
-        print('DEBUG: Room Description:', roomDes)
+        print('DEBUG: Room Description:', roomDes)              # roomDes is a string, according to type(), but appears to be a bytes object?
         #print('DEBUG: Room Description TYPE:', type(roomDes))
         return roomNum, roomName, roomDesLen, roomDes
 
