@@ -1,0 +1,11 @@
+LurkDragon Lore
+    Characters
+        Fluffles: "A pure white rabbit, with a red collar around it's neck."F
+        Racoon:
+        Undead Ranchers: Located in hidden valley
+    Rooms
+        Pine Forest: Start room
+        Dark Grove: Next room
+        Hidden Valley: "Seems to be remnants of a ranch found here...."
+        Caverns:
+        Deep Caves:
