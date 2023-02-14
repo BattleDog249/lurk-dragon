@@ -68,10 +68,18 @@ class Start:
     msgType = int(6)
     def recvStart(skt, buffer):
         """Return START message fields (not including TYPE) from socket after unpacking from buffer."""
-        pass
+        startBuffer = buffer[:1]
+        msgType = struct.unpack('<B', startBuffer)
+        print('DEBUG: Received START message!')
+        print('DEBUG: START Bytes:', startBuffer)
+        print('DEBUG: Type:', msgType)
+        return 0
     def sendStart(skt):
         """Return 0 if successfully pack START fields into a variable before sending to socket."""
-        pass
+        startPacked = struct.pack('<B', Start.msgType)
+        #print('DEBUG: Sending START message!')
+        #print('DEBUG: START Bytes:', startPacked)
+        return 0
 
 class Error:
     """Class for handling Lurk ERROR messages and related functions."""
@@ -149,8 +157,9 @@ class Room:
     
     # Dictionary of tuples containing room information
     rooms = {
-        0: ('Starting Room', 'This is the starting room, not much to see here.'),
-        1: ('Hallway', 'A hallway leading away from the starting room.')
+        0: ('Pine Forest', 'This is the starting room, not much to see here.'),
+        1: ('Dark Grove', 'A hallway leading away from the starting room.'),
+        3: ('Hidden Valley', 'Seems to be remnants of a ranch here...')
     }
 
     def recvRoom(skt, buffer):

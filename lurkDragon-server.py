@@ -50,14 +50,18 @@ def handleClient(cSkt):
             pass
         elif (buffer != b'' and buffer[0] == 6):
             # Handle START
-            pass
+            startBuffer = buffer
+            msgType = Start.recvStart(cSkt, startBuffer)
+            continue
         elif (buffer != b'' and buffer[0] == 7):
             # Handle ERROR
-            error = Error.recvError(cSkt, buffer)
+            errorBuffer = buffer
+            error = Error.recvError(cSkt, errorBuffer)
             continue
         elif (buffer != b'' and buffer[0] == 8):
             # Handle ACCEPT
-            accept = Accept.recvAccept(cSkt, buffer)
+            acceptBuffer = buffer
+            accept = Accept.recvAccept(cSkt, acceptBuffer)
             continue
         elif (buffer != b'' and buffer[0] == 9):
             # Handle ROOM
@@ -75,7 +79,7 @@ def handleClient(cSkt):
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(cSkt, 4)
-                continue
+            continue
         
         elif (buffer != b'' and buffer[0] == 11):
             # Handle GAME
