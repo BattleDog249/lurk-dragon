@@ -124,7 +124,8 @@ class Accept:
     #   buffer: Variable storing bytes to unpack from
     def recvAccept(skt, buffer):
         """Return ACCEPT message fields (not including TYPE) from socket after unpacking from buffer."""
-        msgType, message = struct.unpack('<2B', buffer)
+        acceptBuffer = buffer[:2]
+        msgType, message = struct.unpack('<2B', acceptBuffer)
         print('DEBUG: Received ACCEPT message!')
         print('DEBUG: ACCEPT Bytes:', buffer)
         print('DEBUG: Type:', msgType)

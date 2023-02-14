@@ -10,6 +10,7 @@ CS435 LurkDragon: Client
 import socket
 # Import custom lurk module
 from lurk import *
+import time
 
 # Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,32 +29,20 @@ version = Version.recvVersion(skt, versionBuffer)
 gameBuffer = skt.recv(1024)
 game = Game.recvGame(skt, gameBuffer)
 
-if game == 0:
-    characterDescription = "This is a test dummy description tester! Testing! 123!"
-    character = Character("Test Dummy Character", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+characterDescription = "This is a collision test dummy, it is not sentient!"
+character = Character("Test Dummy #1", 0x4, 25, 25, 10, 20, 100, 40, len(characterDescription), characterDescription)
+character = Character.sendCharacter(character, skt)
+
+buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
+buffer = skt.recv(4096)
+
+if (buffer != b'' and buffer[0] == 7):
+    error = Error.recvError(skt, buffer)
+    character = Character("Test Dummy #2", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
     character = Character.sendCharacter(character, skt)
-    print('DEBUG: Successfully received VERSION & GAME message, sent CHARACTER message in response!')
-
-    validBuffer = skt.recv(1024)
-    if (validBuffer[0] == 8):
-        accept = Accept.recvAccept(skt, validBuffer)
-        
-        roomBuffer = skt.recv(1024)
-        room = Room.recvRoom(skt, roomBuffer)
-        if (accept != 0):
-            print('WARN: recvAccept() returned unexpected code', accept)
-            exit
-    elif (validBuffer[0] == 7):
-        error = Error.recvError(skt, validBuffer)
-        character = Character("Test Dummy # 512", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
-        character.sendCharacter()
-    else:
-        print('WARN: Perhaps no ACCEPT or ERROR message received?')
-        
-
+elif (buffer != b'' and buffer[0] == 8):
+    accept = Accept.recvAccept(skt, buffer)  
+    roomBuffer = skt.recv(1024)
+    room = Room.recvRoom(skt, roomBuffer)
 else:
-    print('ERROR: Failed to receive GAME message, not sending CHARACTER message!')
-
-#skt.shutdown(2) # Not necessary AFAIK
-#skt.close() # Close connection to server
-#print('DEBUG: Closed connection')
+    print('ERROR: Invalid message received from server!')

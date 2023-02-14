@@ -6,6 +6,7 @@ CS435 LurkDragon: Server
         Reevaluate how bind works
             Currently using localhost, trying to use gethostname() for address causing stuff to fail on isoptera
                 Pretty sure this is an issue with my understanding of bind() and gethostname(), rather than isoptera issue
+        Does not handle client abruptly ending connection
 '''
 
 #!/usr/bin/env python3
@@ -21,44 +22,47 @@ from lurk import *
 # Function for handling individual clients
 #   cSkt: Client socket to handle
 def handleClient(cSkt):
-    version = Version.sendVersion(cSkt)    # Send VERSION to given client
+    version = Version.sendVersion(cSkt)
     if (version != 0):
         print('WARN: sendVersion() returned unexpected code', version, 'for client', cSkt)
         return 2
-    game = Game.sendGame(cSkt)                # Send GAME to given client
+    game = Game.sendGame(cSkt)
     if (game != 0):
         print('WARN: sendGame() returned unexpected code', game, 'for client', cSkt)
         return 2
-    buffer = cSkt.recv(1024)
-    while buffer != None:         # While loop to listen for any potential messages received from client
-        if (buffer[0] == 1):
+    while True:
+        buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
+        buffer = cSkt.recv(4096)
+        if (buffer != b'' and buffer[0] == 1):
             # Handle MESSAGE
             pass
-        elif (buffer[0] == 2):
+        elif (buffer != b'' and buffer[0] == 2):
             # Handle CHANGEROOM
             pass
-        elif (buffer[0] == 3):
+        elif (buffer != b'' and buffer[0] == 3):
             # Handle FIGHT
             pass
-        elif (buffer[0] == 4):
+        elif (buffer != b'' and buffer[0] == 4):
             # Handle PVPFIGHT
             pass
-        elif (buffer[0] == 5):
+        elif (buffer != b'' and buffer[0] == 5):
             # Handle LOOT
             pass
-        elif (buffer[0] == 6):
+        elif (buffer != b'' and buffer[0] == 6):
             # Handle START
             pass
-        elif (buffer[0] == 7):
+        elif (buffer != b'' and buffer[0] == 7):
             # Handle ERROR
-            pass
-        elif (buffer[0] == 8):
+            error = Error.recvError(cSkt, buffer)
+            continue
+        elif (buffer != b'' and buffer[0] == 8):
             # Handle ACCEPT
-            pass
-        elif (buffer[0] == 9):
+            accept = Accept.recvAccept(cSkt, buffer)
+            continue
+        elif (buffer != b'' and buffer[0] == 9):
             # Handle ROOM
             pass
-        elif (buffer[0] == 10):
+        elif (buffer != b'' and buffer[0] == 10):
             # Handle CHARACTER
             characterBuffer = buffer
             name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, characterBuffer)
@@ -68,33 +72,27 @@ def handleClient(cSkt):
                 print('DEBUG: Detected valid stats, sending ACCEPT!')
                 accept = Accept.sendAccept(cSkt, 10)
                 room = Room.sendRoom(cSkt, 0)
-                buffer = None
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(cSkt, 4)
-                characterBuffer = buffer
-                name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, characterBuffer)
-                accept = Accept.sendAccept(cSkt, 10)
-                room = Room.sendRoom(cSkt, 0)
-                buffer = None
-                
-            buffer = None
-        elif (buffer[0] == 11):
+                continue
+        
+        elif (buffer != b'' and buffer[0] == 11):
             # Handle GAME
             pass
-        elif (buffer[0] == 12):
+        elif (buffer != b'' and buffer[0] == 12):
             # Handle LEAVE
             cSkt.shutdown(2)    # Not necessary AFAIK, testing
             cSkt.close(cSkt)        # Close connection to server
-            buffer = None
-        elif (buffer[0] == 13):
+        elif (buffer != b'' and buffer[0] == 13):
             # Handle CONNECTION
             pass
-        elif (buffer[0] == 14):
+        elif (buffer != b'' and buffer[0] == 14):
             # Handle VERSION
             pass
         else:
-            buffer = None
+            continue
+
 
 # Create dictionary to track connected clients
 clients = {}
@@ -105,7 +103,7 @@ serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Assign address & port number
 # Logan's assigned range: 5010 - 5014
 # Testing 5195 for isoptera, connection refused on assigned ports...
-address = 'localhost'
+address = '0.0.0.0'
 port = 5010
 
 # Bind server to machine's assigned address & port number
