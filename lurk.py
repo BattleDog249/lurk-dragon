@@ -12,6 +12,24 @@ import socket
 import struct
 # Module required for multithreading & handling multiple clients
 import threading
+import dataclasses
+
+@dataclasses.dataclass
+class Clients:
+    """Class for tracking, finding, adding, and removing clients"""
+    clients = {}
+    def addClient(self, skt):
+        self.clients[skt] = skt.fileno() # Add file descriptor to dictionary for tracking connections
+        print('DEBUG: Added Client: ', self.clients[skt])
+    def removeClient(self, skt):
+        print('DEBUG: Removing Client: ', self.clients[skt])
+        self.clients.pop(skt)
+        print('DEBUG: Connected Clients:', self.clients)
+    def getClients(self):               # Pull list of all connected clients
+        print('DEBUG: Connected Clients: ', self.clients)
+        return self.clients
+    def getClient(client):                # Pull information on specified client
+        pass
 
 class Message:
     """Class for handling Lurk MESSAGE messages and related functions."""
@@ -286,12 +304,18 @@ class Game:
 class Leave:
     """Class for handling Lurk LEAVE messages and related functions."""
     msgType = int(12)
-    def recvLeave(skt, buffer):
+    def recvLeave(skt):
         """Return LEAVE message fields (not including TYPE) from socket after unpacking from buffer."""
-        pass
+        print('DEBUG: Received LEAVE message!')
+        print('DEBUG: Closing socket:', skt)
+        skt.shutdown(2)
+        skt.close()
+        return 0
     def sendLeave(skt):
         """Return 0 if successfully pack LEAVE fields into a variable before sending to socket."""
-        pass
+        leavePacked = struct.pack('<B', Leave.msgType)
+        skt.sendall(leavePacked)
+        return 0
 
 class Connection:
     """Class for handling Lurk CONNECTION messages and related functions."""

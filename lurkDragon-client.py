@@ -44,5 +44,6 @@ elif (buffer != b'' and buffer[0] == 8):
     accept = Accept.recvAccept(skt, buffer)  
     roomBuffer = skt.recv(1024)
     room = Room.recvRoom(skt, roomBuffer)
+    leave = Leave.sendLeave(skt)
 else:
     print('ERROR: Invalid message received from server!')

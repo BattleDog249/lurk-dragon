@@ -86,8 +86,9 @@ def handleClient(cSkt):
             pass
         elif (buffer != b'' and buffer[0] == 12):
             # Handle LEAVE
-            cSkt.shutdown(2)    # Not necessary AFAIK, testing
-            cSkt.close(cSkt)        # Close connection to server
+            leave = Leave.recvLeave(cSkt)
+            Clients.removeClient(Clients, cSkt)
+            break
         elif (buffer != b'' and buffer[0] == 13):
             # Handle CONNECTION
             pass
@@ -96,10 +97,6 @@ def handleClient(cSkt):
             pass
         else:
             continue
-
-
-# Create dictionary to track connected clients
-clients = {}
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,8 +119,8 @@ while True:
     #print('DEBUG: Client Socket:', clientSkt)
     #print('DEBUG: Client Address:', clientAddr)
 
-    clients[clientSkt] = clientSkt.fileno()                                                         # Add file descriptor to dictionary for tracking connections
-    #print('DEBUG: Connected Clients: ', clients)
+    Clients.addClient(Clients, clientSkt)
+    Clients.getClients(Clients)
 
     clientThread = threading.Thread(target=handleClient, args=(clientSkt,), daemon=True).start()    # Create thread for connected client and starts it
     #print("DEBUG: Client Thread:", clientThread)
