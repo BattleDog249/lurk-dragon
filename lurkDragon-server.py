@@ -32,7 +32,16 @@ def handleClient(cSkt):
         return 2
     while True:
         buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
-        buffer = cSkt.recv(4096)
+        try:
+            buffer = cSkt.recv(4096)
+        except ConnectionError:                                                             # Handle force disconnects
+            print('WARN: Connection from a client has been lost or terminated!')
+            if cSkt in Clients.clients:
+                Clients.removeClient(Clients, cSkt)
+                break
+            else:
+                print('ERROR: Expected to find client in dictionary, but did not!')
+                return 3
         if (buffer != b'' and buffer[0] == 1):
             # Handle MESSAGE
             pass

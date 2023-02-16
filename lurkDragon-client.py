@@ -30,20 +30,21 @@ gameBuffer = skt.recv(1024)
 game = Game.recvGame(skt, gameBuffer)
 
 characterDescription = "This is a collision test dummy, it is not sentient!"
-character = Character("Test Dummy #1", 0x4, 25, 25, 10, 20, 100, 40, len(characterDescription), characterDescription)
+character = Character("Test Dummy #1", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
 character = Character.sendCharacter(character, skt)
 
-buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
-buffer = skt.recv(4096)
+while True:
+    buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
+    buffer = skt.recv(4096)
 
-if (buffer != b'' and buffer[0] == 7):
-    error = Error.recvError(skt, buffer)
-    character = Character("Test Dummy #2", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
-    character = Character.sendCharacter(character, skt)
-elif (buffer != b'' and buffer[0] == 8):
-    accept = Accept.recvAccept(skt, buffer)  
-    roomBuffer = skt.recv(1024)
-    room = Room.recvRoom(skt, roomBuffer)
-    leave = Leave.sendLeave(skt)
-else:
-    print('ERROR: Invalid message received from server!')
+    if (buffer != b'' and buffer[0] == 7):
+        error = Error.recvError(skt, buffer)
+        character = Character("Test Dummy #2", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+        character = Character.sendCharacter(character, skt)
+    elif (buffer != b'' and buffer[0] == 8):
+        accept = Accept.recvAccept(skt, buffer)  
+        roomBuffer = skt.recv(1024)
+        room = Room.recvRoom(skt, roomBuffer)
+        leave = Leave.sendLeave(skt)
+    else:
+        continue

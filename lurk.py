@@ -139,8 +139,15 @@ class Error:
         errorPacked = struct.pack('<2BH%ds' %errMesLen, Error.msgType, errorCode, errMesLen, errMes)
         #print('DEBUG: Sending ERROR Message!')
         #print('DEBUG: ERROR Bytes:', errorPacked)
-        skt.sendall(errorPacked)
-        return 0
+        for skt in Clients.clients:
+            try:  
+                skt.sendall(errorPacked)
+                return 0
+            except ConnectionError:
+                print('WARN: Connection to socket has been lost!')
+                if skt in Clients.clients:
+                    Clients.removeClient(Clients, skt)
+                    return 1
 
 class Accept:
     """Class for handling Lurk ACCEPT messages and related functions."""
@@ -164,10 +171,18 @@ class Accept:
         """Return 0 if successfully pack ACCEPT fields into a variable before sending to socket."""
         action = int(message)
         acceptPacked = struct.pack('<2B', Accept.msgType, action)
-        #print('DEBUG: Sending ACCEPT Message!')
-        skt.sendall(acceptPacked)
-        #print('DEBUG: ACCEPT Sent:', acceptPacked)
-        return 0
+        #print('DEBUG: Sending ACCEPT message!')
+        for skt in Clients.clients:
+            try:  
+                skt.sendall(acceptPacked)
+                #print('DEBUG: Sent ACCEPT message!')
+                return 0
+            except ConnectionError:
+                print('WARN: ACCEPT message failed to send, ConnectionError!')
+                if skt in Clients.clients:
+                    Clients.removeClient(Clients, skt)
+                    print('DEBUG: Removed client from database!')
+                    return 1
 
 class Room:
     """Class for handling Lurk ROOM messages and related functions."""
@@ -211,8 +226,18 @@ class Room:
         
         roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, Room.msgType, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
         
-        skt.sendall(roomPacked)
-        return 0
+        #print('DEBUG: Sending ROOM message!')
+        for skt in Clients.clients:
+            try:  
+                skt.sendall(roomPacked)
+                #print('DEBUG: Sent ROOM message!')
+                return 0
+            except ConnectionError:
+                print('WARN: ROOM message failed to send, ConnectionError!')
+                if skt in Clients.clients:
+                    Clients.removeClient(Clients, skt)
+                    print('DEBUG: Removed client from database!')
+                    return 1
 
 class Character:
     """Class for handling Lurk CHARACTER messages and related functions."""
