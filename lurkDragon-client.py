@@ -23,14 +23,14 @@ port = 5010
 skt.connect((host, port))
 print('DEBUG: Connecting to server:', host)
 
-versionBuffer = skt.recv(1024)
-version = Version.recvVersion(skt, versionBuffer)
+versionBuffer = skt.recv(6)
+major, minor, extSize = Version.recvVersion(skt, versionBuffer)
 
 gameBuffer = skt.recv(1024)
 game = Game.recvGame(skt, gameBuffer)
 
 characterDescription = "This is a collision test dummy, it is not sentient!"
-character = Character("Test Dummy #1", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+character = Character("Test Dummy #1", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
 character = Character.sendCharacter(character, skt)
 
 while True:
@@ -46,9 +46,9 @@ while True:
         character = Character("Test Dummy #2", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
         character = Character.sendCharacter(character, skt)
     elif (buffer != b'' and buffer[0] == 8):
-        accept = Accept.recvAccept(skt, buffer)  
+        accept = Accept.recvAccept(skt, buffer)
         roomBuffer = skt.recv(1024)
         room = Room.recvRoom(skt, roomBuffer)
-        leave = Leave.sendLeave(skt)
+        #leave = Leave.sendLeave(skt)
     else:
         continue

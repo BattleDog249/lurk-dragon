@@ -40,10 +40,10 @@ def handleClient(cSkt):
             else:                                                               # If client is not found for whatever reason
                 print('ERROR: Connection not found for removal?! Weird...')         # Print error message
                 return 2                                                            # Return error code 2
-        
+              
         if (buffer == b''):
             continue
-        if (buffer != b'' and buffer[0] == 1):
+        elif (buffer != b'' and buffer[0] == 1):
             # Handle MESSAGE
             Error.sendError(cSkt, 0)
             continue
@@ -83,8 +83,7 @@ def handleClient(cSkt):
             continue
         elif (buffer != b'' and buffer[0] == 10):
             # Handle CHARACTER
-            characterBuffer = buffer
-            name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, characterBuffer)
+            name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, buffer)
             
             # If stats and CHARACTER message is valid, send ACCEPT
             if (attack + defense + regen <= Game.initPoints):
