@@ -41,6 +41,8 @@ def handleClient(cSkt):
                 print('ERROR: Connection not found for removal?! Weird...')         # Print error message
                 return 2                                                            # Return error code 2
         
+        if (buffer == b''):
+            continue
         if (buffer != b'' and buffer[0] == 1):
             # Handle MESSAGE
             Error.sendError(cSkt, 0)
