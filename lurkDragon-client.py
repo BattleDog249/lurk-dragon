@@ -35,7 +35,11 @@ character = Character.sendCharacter(character, skt)
 
 while True:
     buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
-    buffer = skt.recv(4096)
+    try:
+        buffer = skt.recv(4096)
+    except ConnectionError:                                             # Catch a ConnectionError if socket is closed
+        print('WARN: Connection broken, stopping!')
+        break
 
     if (buffer != b'' and buffer[0] == 7):
         error = Error.recvError(skt, buffer)

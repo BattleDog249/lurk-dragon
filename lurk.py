@@ -15,21 +15,52 @@ import threading
 import dataclasses
 
 @dataclasses.dataclass
-class Clients:
+class Client:
     """Class for tracking, finding, adding, and removing clients"""
     clients = {}
-    def addClient(self, skt):
-        self.clients[skt] = skt.fileno() # Add file descriptor to dictionary for tracking connections
-        print('DEBUG: Added Client: ', self.clients[skt])
-    def removeClient(self, skt):
-        print('DEBUG: Removing Client: ', self.clients[skt])
-        self.clients.pop(skt)
-        print('DEBUG: Connected Clients:', self.clients)
-    def getClients(self):               # Pull list of all connected clients
-        print('DEBUG: Connected Clients: ', self.clients)
-        return self.clients
-    def getClient(client):                # Pull information on specified client
-        pass
+    def addClient(skt):
+        Client.clients[skt] = skt.fileno() # Add file descriptor to dictionary for tracking connections
+        print('DEBUG: Added Client: ', Client.clients[skt])
+    def removeClient(skt):
+        print('DEBUG: Removing Client: ', Client.clients[skt])
+        Client.clients.pop(skt)
+        print('DEBUG: Connected Clients:', Client.clients)
+    def getClients():                   # Pull list of all connected clients
+        return Client.clients
+    def getClient(skt):                 # Pull information on specified client
+        return Client.clients[skt]
+
+def lurkRecv(skt):
+    try:
+        buffer = skt.recv(4096)
+        return buffer
+    except ConnectionError:                                             # Catch a ConnectionError if socket is closed
+        print('WARN: Failed to receive, ConnectionError!')                  # Print warning message
+        if skt in Client.clients:                                           # If client is found in database tracking connected clients
+            Client.removeClient(skt)                                            # Remove client from the list
+            print('LOG: Removed client from dictionary!')                       # Print log message
+            return 1                                                            # Return error code 1
+        else:                                                               # If client is not found for whatever reason
+            print('ERROR: Connection not found for removal?! Weird...')         # Print error message
+            return 2                                                            # Return error code 2
+
+# Function for sending data in whole, unless a connection error presents itself
+def lurkSend(skt, data):
+    #print('DEBUG: Start - lurkSend()')
+    for skt in Client.clients:                                          # For client socket in list of connections
+        try:                                                                # Try to send all data over socket
+            skt.sendall(data)                                                   # Send all data
+            print('LOG: Sent message!')                                         # Print log message
+            return 0                                                            # Return status code 0
+        except ConnectionError:                                             # Catch a ConnectionError if socket is closed
+            print('WARN: Failed to send, ConnectionError!')                     # Print warning message
+            if skt in Client.clients:                                           # If client is found in database tracking connected clients
+                Client.removeClient(skt)                                            # Remove client from the list
+                print('LOG: Removed client from dictionary!')                       # Print log message
+                return 1                                                            # Return error code 1
+            else:                                                               # If client is not found for whatever reason
+                print('ERROR: Connection not found for removal?! Weird...')         # Print error message
+                return 2                                                            # Return error code 2
 
 class Message:
     """Class for handling Lurk MESSAGE messages and related functions."""
@@ -39,7 +70,8 @@ class Message:
         pass
     def sendMessage(skt):
         """Return 0 if successfully pack MESSAGE fields into a variable before sending to socket."""
-        pass
+        messagePacked = 0
+        return lurkSend(skt, messagePacked)
 
 class ChangeRoom:
     """Class for handling Lurk CHANGEROOM messages and related functions."""
@@ -49,7 +81,8 @@ class ChangeRoom:
         pass
     def sendChangeRoom(skt):
         """Return 0 if successfully pack CHANGEROOM fields into a variable before sending to socket."""
-        pass
+        changeRoomPacked = 0
+        return lurkSend(skt, changeRoomPacked)
 
 class Fight:
     """Class for handling LurK FIGHT messages and related functions."""
@@ -59,7 +92,8 @@ class Fight:
         pass
     def sendFight(skt):
         """Return 0 if successfully pack FIGHT fields into a variable before sending to socket."""
-        pass
+        fightPacked = 0
+        return lurkSend(skt, fightPacked)
 
 class PVPFight:
     """Class for handling Lurk PVPFIGHT messages and related functions."""
@@ -69,7 +103,8 @@ class PVPFight:
         pass
     def sendPVPFight(skt):
         """Return 0 if successfully pack PVPFIGHT fields into a variable before sending to socket."""
-        pass
+        PVPFightPacked = 0
+        return lurkSend(skt, PVPFightPacked)
 
 class Loot:
     """Class for handling Lurk LOOT messages and related functions."""
@@ -79,7 +114,8 @@ class Loot:
         pass
     def sendLoot(skt):
         """Return 0 if successfully pack LOOT fields into a variable before sending to socket."""
-        pass
+        lootPacked = 0
+        return lurkSend(skt, lootPacked)
 
 class Start:
     """Class for handling Lurk START messages and related functions."""
@@ -97,13 +133,15 @@ class Start:
         startPacked = struct.pack('<B', Start.msgType)
         #print('DEBUG: Sending START message!')
         #print('DEBUG: START Bytes:', startPacked)
-        return 0
+        
+        #print('DEBUG: Sending START message!')
+        return lurkSend(skt, startPacked)
 
 class Error:
     """Class for handling Lurk ERROR messages and related functions."""
     msgType = int(7)
     errorCodes = {
-        0: 'ERROR: Other!',
+        0: 'ERROR: This message type is not supported!',
         1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
         2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
         3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',
@@ -139,15 +177,9 @@ class Error:
         errorPacked = struct.pack('<2BH%ds' %errMesLen, Error.msgType, errorCode, errMesLen, errMes)
         #print('DEBUG: Sending ERROR Message!')
         #print('DEBUG: ERROR Bytes:', errorPacked)
-        for skt in Clients.clients:
-            try:  
-                skt.sendall(errorPacked)
-                return 0
-            except ConnectionError:
-                print('WARN: Connection to socket has been lost!')
-                if skt in Clients.clients:
-                    Clients.removeClient(Clients, skt)
-                    return 1
+        
+        #print('DEBUG: Sending ERROR message!')
+        return lurkSend(skt, errorPacked)
 
 class Accept:
     """Class for handling Lurk ACCEPT messages and related functions."""
@@ -171,18 +203,9 @@ class Accept:
         """Return 0 if successfully pack ACCEPT fields into a variable before sending to socket."""
         action = int(message)
         acceptPacked = struct.pack('<2B', Accept.msgType, action)
+        
         #print('DEBUG: Sending ACCEPT message!')
-        for skt in Clients.clients:
-            try:  
-                skt.sendall(acceptPacked)
-                #print('DEBUG: Sent ACCEPT message!')
-                return 0
-            except ConnectionError:
-                print('WARN: ACCEPT message failed to send, ConnectionError!')
-                if skt in Clients.clients:
-                    Clients.removeClient(Clients, skt)
-                    print('DEBUG: Removed client from database!')
-                    return 1
+        return lurkSend(skt, acceptPacked)
 
 class Room:
     """Class for handling Lurk ROOM messages and related functions."""
@@ -227,17 +250,7 @@ class Room:
         roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, Room.msgType, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
         
         #print('DEBUG: Sending ROOM message!')
-        for skt in Clients.clients:
-            try:  
-                skt.sendall(roomPacked)
-                #print('DEBUG: Sent ROOM message!')
-                return 0
-            except ConnectionError:
-                print('WARN: ROOM message failed to send, ConnectionError!')
-                if skt in Clients.clients:
-                    Clients.removeClient(Clients, skt)
-                    print('DEBUG: Removed client from database!')
-                    return 1
+        return lurkSend(skt, roomPacked)
 
 class Character:
     """Class for handling Lurk CHARACTER messages and related functions."""
@@ -284,10 +297,8 @@ class Character:
         #characterUnpacked = struct.unpack('<B32sB7H%ds', characterPacked)
         #print('DEBUG: Unpacked version =', characterUnpacked)
         
-        skt.sendall(characterPacked)
-        #print('DEBUG: CHARACTER sent!')
-        
-        return 0
+        #print('DEBUG: Sending CHARACTER message!')
+        return lurkSend(skt, characterPacked)
 
 class Game:
     """Class for handling Lurk GAME messages and related functions."""
@@ -321,14 +332,13 @@ class Game:
         #gameUnpacked = struct.unpack('<B3H%ds' %Game.gameDesLen, gamePacked)
         #print('DEBUG: Unpacked game =', gameUnpacked)
         
-        skt.sendall(gamePacked)
-        #print('DEBUG: GAME sent!')
-        
-        return 0
+        #print('DEBUG: Sending GAME message!')
+        return lurkSend(skt, gamePacked)
 
 class Leave:
     """Class for handling Lurk LEAVE messages and related functions."""
     msgType = int(12)
+    
     def recvLeave(skt):
         """Return LEAVE message fields (not including TYPE) from socket after unpacking from buffer."""
         print('DEBUG: Received LEAVE message!')
@@ -336,11 +346,13 @@ class Leave:
         skt.shutdown(2)
         skt.close()
         return 0
+    
     def sendLeave(skt):
         """Return 0 if successfully pack LEAVE fields into a variable before sending to socket."""
         leavePacked = struct.pack('<B', Leave.msgType)
-        skt.sendall(leavePacked)
-        return 0
+        
+        #print('DEBUG: Sending LEAVE message!')
+        return lurkSend(skt, leavePacked)
 
 class Connection:
     """Class for handling Lurk CONNECTION messages and related functions."""
@@ -350,7 +362,10 @@ class Connection:
         pass
     def sendConnection(skt):
         """Return 0 if successfully pack CONNECTION fields into a variable before sending to socket."""
-        pass
+        connectionPacked = 0
+        
+        #print('DEBUG: Sending CONNECTION message!')
+        return lurkSend(skt, connectionPacked)
 
 class Version:
     """Class for handling Lurk VERSION messages and related functions."""
@@ -376,16 +391,11 @@ class Version:
     #   skt: Socket to send data to
     def sendVersion(skt):
         """Return 0 if successfully pack VERSION fields into a variable before sending to socket."""
-        # <:    Little endian
-        # 3B:   Type, Major, & Minor as uchar (1 byte)
-        # H:    extSize as ushort (2 bytes)
         versionPacked = struct.pack('<3BH', Version.msgType, Version.major, Version.minor, Version.extSize)    # Pack VERSION data into variable
         #print('DEBUG: Packed version =', versionPacked)
         
         #versionUnpacked = struct.unpack('<3BH', versionPacked)
         #print('DEBUG: Unpacked version =', versionUnpacked)
         
-        skt.sendall(versionPacked)                                                              # Send all packed data to assigned socket
-        #print('DEBUG: VERSION sent!')
-        
-        return 0
+        #print('DEBUG: Sending VERSION message!')
+        return lurkSend(skt, versionPacked)

@@ -3,10 +3,7 @@ CS435 LurkDragon: Server
     Author: Logan Hunter Gray
     Email: lhgray@lcmail.lcsc.edu
     KNOWN ISSUES
-        Reevaluate how bind works
-            Currently using localhost, trying to use gethostname() for address causing stuff to fail on isoptera
-                Pretty sure this is an issue with my understanding of bind() and gethostname(), rather than isoptera issue
-        Does not handle client abruptly ending connection
+        ...
 '''
 
 #!/usr/bin/env python3
@@ -34,34 +31,40 @@ def handleClient(cSkt):
         buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
         try:
             buffer = cSkt.recv(4096)
-        except ConnectionError:                                                             # Handle force disconnects
-            print('WARN: Connection from a client has been lost or terminated!')
-            if cSkt in Clients.clients:
-                Clients.removeClient(Clients, cSkt)
-                break
-            else:
-                print('ERROR: Expected to find client in dictionary, but did not!')
-                return 3
+        except ConnectionError:                                             # Catch a ConnectionError if socket is closed
+            print('WARN: Failed to receive, ConnectionError!')                  # Print warning message
+            if cSkt in Client.clients:                                          # If client is found in database tracking connected clients
+                Client.removeClient(cSkt)                                           # Remove client from the list
+                print('LOG: Removed client from dictionary!')                       # Print log message
+                return 1                                                            # Return error code 1
+            else:                                                               # If client is not found for whatever reason
+                print('ERROR: Connection not found for removal?! Weird...')         # Print error message
+                return 2                                                            # Return error code 2
+        
         if (buffer != b'' and buffer[0] == 1):
             # Handle MESSAGE
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 2):
             # Handle CHANGEROOM
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 3):
             # Handle FIGHT
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 4):
             # Handle PVPFIGHT
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 5):
             # Handle LOOT
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 6):
             # Handle START
             startBuffer = buffer
             msgType = Start.recvStart(cSkt, startBuffer)
-            continue
         elif (buffer != b'' and buffer[0] == 7):
             # Handle ERROR
             errorBuffer = buffer
@@ -74,7 +77,8 @@ def handleClient(cSkt):
             continue
         elif (buffer != b'' and buffer[0] == 9):
             # Handle ROOM
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 10):
             # Handle CHARACTER
             characterBuffer = buffer
@@ -92,27 +96,30 @@ def handleClient(cSkt):
         
         elif (buffer != b'' and buffer[0] == 11):
             # Handle GAME
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 12):
             # Handle LEAVE
             leave = Leave.recvLeave(cSkt)
-            Clients.removeClient(Clients, cSkt)
+            Client.removeClient(cSkt)
             break
         elif (buffer != b'' and buffer[0] == 13):
             # Handle CONNECTION
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         elif (buffer != b'' and buffer[0] == 14):
             # Handle VERSION
-            pass
+            Error.sendError(cSkt, 0)
+            continue
         else:
+            print('ERROR: Invalid message detected!')
             continue
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Assign address & port number
-# Logan's assigned range: 5010 - 5014
-# Testing 5195 for isoptera, connection refused on assigned ports...
+# Assigned range: 5010 - 5014
 address = '0.0.0.0'
 port = 5010
 
@@ -128,8 +135,8 @@ while True:
     #print('DEBUG: Client Socket:', clientSkt)
     #print('DEBUG: Client Address:', clientAddr)
 
-    Clients.addClient(Clients, clientSkt)
-    Clients.getClients(Clients)
+    Client.addClient(clientSkt)
+    Client.getClients()
 
     clientThread = threading.Thread(target=handleClient, args=(clientSkt,), daemon=True).start()    # Create thread for connected client and starts it
     #print("DEBUG: Client Thread:", clientThread)
