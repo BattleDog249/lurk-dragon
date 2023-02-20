@@ -8,6 +8,7 @@ CS435 LurkDragon: Server
 
 #!/usr/bin/env python3
 
+import logging
 # Import socket module, necessary for network communications
 import socket
 # Import threading module, required for multithreading & handling multiple clients
@@ -19,6 +20,7 @@ from lurk import *
 # Function for handling individual clients
 #   cSkt: Client socket to handle
 def handleClient(cSkt):
+    '''
     version = Version.sendVersion(cSkt)
     if (version != 0):
         print('WARN: sendVersion() returned unexpected code', version, 'for client', cSkt)
@@ -27,8 +29,10 @@ def handleClient(cSkt):
     if (game != 0):
         print('WARN: sendGame() returned unexpected code', game, 'for client', cSkt)
         return 2
+    '''
+    buffer = data
     while True:
-        buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
+        #buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
         try:
             buffer = cSkt.recv(4096)
         except ConnectionError:                                             # Catch a ConnectionError if socket is closed
@@ -65,17 +69,20 @@ def handleClient(cSkt):
             continue
         elif (buffer != b'' and buffer[0] == 6):
             # Handle START
-            startBuffer = buffer
+            startBuffer = buffer[0]
             msgType = Start.recvStart(cSkt, startBuffer)
+            buffer[0].replace(buffer[0], b'')
+            continue
         elif (buffer != b'' and buffer[0] == 7):
             # Handle ERROR
-            errorBuffer = buffer
-            error = Error.recvError(cSkt, errorBuffer)
+            errorCode, errorMsgLen, errorMsg = Error.recvError(cSkt, buffer)
+            buffer[0:4+errorMsgLen].replace(buffer[0:4+errorMsgLen], b'')
             continue
         elif (buffer != b'' and buffer[0] == 8):
             # Handle ACCEPT
             acceptBuffer = buffer
             accept = Accept.recvAccept(cSkt, acceptBuffer)
+            buffer[0:2].replace(buffer[0:2], b'')
             continue
         elif (buffer != b'' and buffer[0] == 9):
             # Handle ROOM
@@ -93,6 +100,7 @@ def handleClient(cSkt):
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(cSkt, 4)
+            buffer[0:48+charDesLen].replace(buffer[0:48+charDesLen], b'')
             continue
         
         elif (buffer != b'' and buffer[0] == 11):
@@ -115,6 +123,7 @@ def handleClient(cSkt):
         else:
             print('ERROR: Invalid message detected!')
             continue
+    clientThread.stop()
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -132,12 +141,20 @@ serverSkt.listen()
 print('DEBUG: Listening on address:', address, 'port:', port)
 
 while True:
-    clientSkt, clientAddr = serverSkt.accept()                                                      # Accept & assign client socket & address
-    #print('DEBUG: Client Socket:', clientSkt)
-    #print('DEBUG: Client Address:', clientAddr)
-
-    Client.addClient(clientSkt)
-    Client.getClients()
-
-    clientThread = threading.Thread(target=handleClient, args=(clientSkt,), daemon=True).start()    # Create thread for connected client and starts it
+    clientSkt, clientAddr = serverSkt.accept()
+    
+    version = Version.sendVersion(clientSkt)
+    game = Game.sendGame(clientSkt)
+    
+    data = clientSkt.recv(1024)
+    
+    if (version == 0 and game == 0) and data:
+        Client.addClient(clientSkt)
+        Client.getClients()
+        clientThread = threading.Thread(target=handleClient, args=(clientSkt,), daemon=True).start()    # Create thread for connected client and starts it
+    elif not data:
+        print('Broken recv from client')
+        break
+    else:
+        print('Someting else')
     #print("DEBUG: Client Thread:", clientThread)

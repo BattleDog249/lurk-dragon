@@ -164,7 +164,7 @@ class Error:
         errMes, = struct.unpack('<%ds' %errMesLen, varBuffer)
         errMes = errMes.decode('utf-8')
         print('DEBUG: ErrMes:', errMes)
-        return 0
+        return errorCode, errMesLen, errMes
 
     #   skt: Socket to send message to
     #   code: Error code integer to send
