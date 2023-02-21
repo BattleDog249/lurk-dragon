@@ -82,7 +82,7 @@ def handleClient(cSkt):
             elif (data[0] == 8):
                 # Handle ACCEPT
                 acceptData = data[0:1]
-                msgType, accept = Accept.recvAccept(cSkt, data)
+                msgType, accept = Accept.recvAccept(cSkt, acceptData)
                 data = data.replace(acceptData, b'')
                 continue
             elif (data[0] == 9):
