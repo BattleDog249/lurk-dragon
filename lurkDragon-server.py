@@ -66,7 +66,7 @@ def handleClient(cSkt):
                 continue
             elif (data[0] == 6):
                 # Handle START
-                startData = bytes(data[0])
+                startData = bytes(data[0:1])
                 msgType = Start.recvStart(cSkt, startData)
                 data = data.replace(startData, b'')
                 continue
