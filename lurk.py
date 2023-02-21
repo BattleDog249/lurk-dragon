@@ -119,12 +119,11 @@ class Loot:
 class Start:
     """Class for handling Lurk START messages and related functions."""
     msgType = int(6)
-    def recvStart(skt, buffer):
+    def recvStart(skt, data):
         """Return START message fields (not including TYPE) from socket after unpacking from buffer."""
-        startBuffer = buffer[:1]
-        msgType = struct.unpack('<B', startBuffer)
+        msgType = struct.unpack('<B', data)
         print('DEBUG: Received START message!')
-        print('DEBUG: START Bytes:', startBuffer)
+        print('DEBUG: START Bytes:', data)
         print('DEBUG: Type:', msgType)
         return 0
     def sendStart(skt):
@@ -153,14 +152,13 @@ class Error:
 
     def recvErrorConst(skt, data):
         """Return constant ERROR message fields from socket after unpacking from buffer."""
-        buffer = data[:4]
-        msgType, errCode, errMsgLen = struct.unpack('<2BH', buffer)
+        msgType, errCode, errMsgLen = struct.unpack('<2BH', data)
         return msgType, errCode, errMsgLen
     
     def recvErrorVar(skt, data, dataLen):
         """Return variable ERROR message field from socket after unpacking from buffer."""
         buffer = data[4:4+dataLen]
-        errMsg, = struct.unpack('<%ds' %dataLen, buffer)
+        errMsg, = struct.unpack('<%ds' %dataLen, data)
         errMsg = errMsg.decode('utf-8')
         return errMsg
 

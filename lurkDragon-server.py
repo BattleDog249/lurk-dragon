@@ -73,8 +73,9 @@ def handleClient(cSkt):
             elif (data[0] == 7):
                 # Handle ERROR
                 errorDataConst = data[0:4]
-                msgType, errCode, errMsgLen, errMsg = Error.recvError(cSkt, data)
+                msgType, errCode, errMsgLen = Error.recvErrorConst(cSkt, errorDataConst)
                 errorDataVar = data[4:4+errMsgLen]
+                errMsg = Error.recvErrorVar(cSkt, errorDataVar)
                 errorData = errorDataConst + errorDataVar
                 data = data.replace(errorData, b'')
                 continue
