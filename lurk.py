@@ -120,12 +120,12 @@ class Start:
     """Class for handling Lurk START messages and related functions."""
     msgType = int(6)
     def recvStart(skt, data):
-        """Return START message fields (not including TYPE) from socket after unpacking from buffer."""
+        """Return START message field from socket after unpacking from buffer."""
         msgType = struct.unpack('<B', data)
         print('DEBUG: Received START message!')
         print('DEBUG: START Bytes:', data)
         print('DEBUG: Type:', msgType)
-        return 0
+        return msgType
     def sendStart(skt):
         """Return 0 if successfully pack START fields into a variable before sending to socket."""
         startPacked = struct.pack('<B', Start.msgType)
@@ -194,15 +194,14 @@ class Accept:
 
     #   skt: Socket to receive message from
     #   buffer: Variable storing bytes to unpack from
-    def recvAccept(skt, buffer):
+    def recvAccept(skt, data):
         """Return ACCEPT message fields (not including TYPE) from socket after unpacking from buffer."""
-        acceptBuffer = buffer[:2]
-        msgType, message = struct.unpack('<2B', acceptBuffer)
+        msgType, accept = struct.unpack('<2B', data)
         print('DEBUG: Received ACCEPT message!')
-        print('DEBUG: ACCEPT Bytes:', buffer)
+        print('DEBUG: ACCEPT Bytes:', data)
         print('DEBUG: Type:', msgType)
-        print('DEBUG: Message Type Accepted:', message)
-        return 0
+        print('DEBUG: Message Type Accepted:', accept)
+        return msgType, accept
 
     #   skt: Socket to send message to
     #   message: Integer of message type that was accepted

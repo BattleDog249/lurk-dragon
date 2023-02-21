@@ -82,13 +82,13 @@ def handleClient(cSkt):
             elif (data[0] == 8):
                 # Handle ACCEPT
                 acceptData = data[0:1]
-                accept = Accept.recvAccept(cSkt, data)
+                msgType, accept = Accept.recvAccept(cSkt, data)
                 data = data.replace(acceptData, b'')
                 continue
             elif (data[0] == 9):
                 # Handle ROOM
                 Error.sendError(cSkt, 0)
-                data = b''
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 10):
                 # Handle CHARACTER
