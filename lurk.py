@@ -140,7 +140,7 @@ class Error:
     """Class for handling Lurk ERROR messages and related functions."""
     msgType = int(7)
     errorCodes = {
-        0: 'ERROR: This message type is not supported!',
+        0: 'ERROR: This message type is not yet supported!',
         1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
         2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
         3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',

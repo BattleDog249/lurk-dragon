@@ -42,41 +42,52 @@ def handleClient(cSkt):
             if (data[0] == 1):
                 # Handle MESSAGE
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 2):
                 # Handle CHANGEROOM
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 3):
                 # Handle FIGHT
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 4):
                 # Handle PVPFIGHT
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 5):
                 # Handle LOOT
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 6):
                 # Handle START
-                msgType = Start.recvStart(cSkt, data[0])
-                data = data[0].replace(data[0], b'')
+                startData = data[0]
+                msgType = Start.recvStart(cSkt, startData)
+                data = data.replace(startData, b'')
                 continue
             elif (data[0] == 7):
                 # Handle ERROR
+                errorDataConst = data[0:4]
                 msgType, errCode, errMsgLen, errMsg = Error.recvError(cSkt, data)
-                data = data[0:4+errMsg].replace(data[0:4+errMsgLen], b'')
+                errorDataVar = data[4:4+errMsgLen]
+                errorData = errorDataConst + errorDataVar
+                data = data.replace(errorData, b'')
                 continue
             elif (data[0] == 8):
                 # Handle ACCEPT
+                acceptData = data[0:1]
                 accept = Accept.recvAccept(cSkt, data)
-                data = data[0:2].replace(data[0:2], b'')
+                data = data.replace(acceptData, b'')
                 continue
             elif (data[0] == 9):
                 # Handle ROOM
                 Error.sendError(cSkt, 0)
+                data = b''
                 continue
             elif (data[0] == 10):
                 # Handle CHARACTER
@@ -94,31 +105,34 @@ def handleClient(cSkt):
                 else:
                     print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                     error = Error.sendError(cSkt, 4)
-                
-                print('Data before clearing msg:', data)
                 data = data.replace(characterData, b'')        # This works now!!!
-                print('Data after clearing msg:', data)
                 continue                                                                # Continue while loop
             
             elif (data[0] == 11):
                 # Handle GAME
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 12):
                 # Handle LEAVE
+                leaveData = data[0]
                 leave = Leave.recvLeave(cSkt)
                 Client.removeClient(cSkt)
+                data = data.replace(data, b'')
                 break
             elif (data[0] == 13):
                 # Handle CONNECTION
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             elif (data[0] == 14):
                 # Handle VERSION
                 Error.sendError(cSkt, 0)
+                data = data.replace(data, b'')
                 continue
             else:
                 print('ERROR: Invalid message detected!')
+                data = data.replace(data, b'')
                 continue
         else:
             print('ERROR: Something weird happened! Stopping.')
@@ -144,14 +158,14 @@ while True:
     version = Version.sendVersion(clientSkt)
     game = Game.sendGame(clientSkt)
     
-    time.sleep(1)
+    #time.sleep(1)
     
     if clientSkt.fileno() == -1:
         print('Invalid socket, perhaps it was lurkscan?')
     
     if (version == 0 and game == 0):
         Client.addClient(clientSkt)
-        Client.getClients()
+        #Client.getClients()
         clientThread = threading.Thread(target=handleClient, args=(clientSkt,), daemon=True).start()    # Create thread for connected client and starts it
     else:
         print('ERROR: VERSION & GAME message failed somehow!')
