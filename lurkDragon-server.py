@@ -116,10 +116,10 @@ def handleClient(cSkt):
                 continue
             elif (data[0] == 12):
                 # Handle LEAVE
-                leaveData = data[0]
+                leaveData = bytes(data[0:1])
                 leave = Leave.recvLeave(cSkt)
                 Client.removeClient(cSkt)
-                data = data.replace(data, b'')
+                data = data.replace(leaveData, b'')
                 break
             elif (data[0] == 13):
                 # Handle CONNECTION
@@ -132,7 +132,7 @@ def handleClient(cSkt):
                 data = data.replace(data, b'')
                 continue
             else:
-                print('ERROR: Invalid message detected!')
+                print('ERROR: Invalid message type detected!')
                 data = data.replace(data, b'')
                 continue
         else:
