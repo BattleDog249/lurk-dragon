@@ -19,7 +19,7 @@ class Client:
     """Class for tracking, finding, adding, and removing clients"""
     clients = {}
     def addClient(skt):
-        Client.clients[skt] = skt.fileno() # Add file descriptor to dictionary for tracking connections
+        Client.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
         print('DEBUG: Added Client: ', Client.clients[skt])
     def removeClient(skt):
         print('DEBUG: Removing Client: ', Client.clients[skt])
@@ -151,29 +151,39 @@ class Error:
         8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
         }
 
-    def recvError(skt, buffer):
-        """Return ERROR message fields (not including TYPE) from socket after unpacking from buffer."""
-        constBuffer = buffer[:4]
-        msgType, errorCode, errMesLen = struct.unpack('<2BH', constBuffer)
+    def recvErrorConst(skt, data):
+        """Return constant ERROR message fields from socket after unpacking from buffer."""
+        buffer = data[:4]
+        msgType, errCode, errMsgLen = struct.unpack('<2BH', buffer)
+        return msgType, errCode, errMsgLen
+    
+    def recvErrorVar(skt, data, dataLen):
+        """Return variable ERROR message field from socket after unpacking from buffer."""
+        buffer = data[4:4+dataLen]
+        errMsg, = struct.unpack('<%ds' %dataLen, buffer)
+        errMsg = errMsg.decode('utf-8')
+        return errMsg
+
+    def recvError(skt, data):
+        """Return all fields in ERROR message received"""
+        msgType, errCode, errMsgLen = Error.recvErrorConst(skt, data)
+        errMsg = Error.recvErrorVar(skt, data, errMsgLen)
         print('DEBUG: Received ERROR message!')
-        print('DEBUG: ERROR Bytes:', buffer)
+        print('DEBUG: ERROR Bytes:', data)
         print('DEBUG: Type:', msgType)
-        print('DEBUG: ErrorCode:', errorCode)
-        print('DEBUG: ErrMesLen:', errMesLen)
-        varBuffer = buffer[4:4+errMesLen]
-        errMes, = struct.unpack('<%ds' %errMesLen, varBuffer)
-        errMes = errMes.decode('utf-8')
-        print('DEBUG: ErrMes:', errMes)
-        return errorCode, errMesLen, errMes
+        print('DEBUG: ErrorCode:', errCode)
+        print('DEBUG: ErrMesLen:', errMsgLen)
+        print('DEBUG: ErrMsg:', errMsg)
+        return msgType, errCode, errMsgLen, errMsg
 
     #   skt: Socket to send message to
     #   code: Error code integer to send
     def sendError(skt, code):
         """Return 0 if successfully pack ERROR fields into a variable before sending to socket."""
-        errorCode = int(code)
-        errMesLen = len(Error.errorCodes[code])
-        errMes = Error.errorCodes[code].encode('utf-8')
-        errorPacked = struct.pack('<2BH%ds' %errMesLen, Error.msgType, errorCode, errMesLen, errMes)
+        errCode = int(code)
+        errMsgLen = len(Error.errorCodes[code])
+        errMsg = Error.errorCodes[code].encode('utf-8')
+        errorPacked = struct.pack('<2BH%ds' %errMsgLen, Error.msgType, errCode, errMsgLen, errMsg)
         #print('DEBUG: Sending ERROR Message!')
         #print('DEBUG: ERROR Bytes:', errorPacked)
         
@@ -216,23 +226,30 @@ class Room:
         3: ('Hidden Valley', 'Seems to be remnants of a ranch here...')
     }
 
-    def recvRoom(skt, buffer):
-        """Return ROOM message fields (not including TYPE) from socket after unpacking from buffer."""
-        constBuffer = buffer[:37]
-        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', constBuffer)
-        varBuffer = buffer[37:37+roomDesLen]
-        roomDes = struct.unpack('<%ds' %roomDesLen, varBuffer)
+    def recvRoomConst(skt, data):
+        """"""
+        buffer = data[:37]
+        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', buffer)
+        return msgType, roomNum, roomName, roomDesLen
+    
+    def recvRoomVar(skt, data, dataLen):
+        """"""
+        buffer = data[37:37+dataLen]
+        roomDes = struct.unpack('<%ds' %dataLen, buffer)
         roomDes = ''.join(map(str, roomDes))                    # Convert tuple object to.. bytes? Should convert to string?
+        return roomDes
+    
+    def recvRoom(skt, buffer):
+        """Return all ROOM message fields received."""
+        msgType, roomNum, roomName, roomDesLen = Room.recvRoomConst(skt, buffer)
+        roomDes = Room.recvRoomVar(skt, buffer, roomDesLen)
         print('DEBUG: Received ROOM message!')
-        print('DEBUG: Total ROOM Bytes:', buffer)
-        print('DEBUG: Constant ROOM Bytes:', constBuffer)
-        print('DEBUG: Variable ROOM Bytes:', varBuffer)
+        print('DEBUG: ROOM Bytes:', buffer)
         print('DEBUG: Type:', msgType)
         print('DEBUG: Room Number:', roomNum)
         print('DEBUG: Room Name:', roomName.decode('utf-8'))
         print('DEBUG: Room Description Length:', roomDesLen)
         print('DEBUG: Room Description:', roomDes)              # roomDes is a string, according to type(), but appears to be a bytes object?
-        #print('DEBUG: Room Description TYPE:', type(roomDes))
         return roomNum, roomName, roomDesLen, roomDes
 
     def sendRoom(skt, roomNum):
@@ -266,14 +283,25 @@ class Character:
         self.charDesLen = charDesLen
         self.charDes = charDes
 
-    def recvCharacter(skt, buffer):
-        """Return CHARACTER message fields (not including TYPE) from socket after unpacking from buffer."""
-        constBuffer = buffer[:48]
-        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', constBuffer)
+    def recvCharacterConst(skt, data):
+        """Return constant CHARACTER message fields from socket after unpacking from buffer."""
+        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', data)
+        return msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen
+    
+    def recvCharacterVar(skt, data, dataLen):
+        """Return variable CHARACTER message field from socket after unpacking from buffer."""
+        charDes, = struct.unpack('<%ds' %dataLen, data)
+        charDes = charDes.decode('utf-8')
+        return charDes
+    
+    def recvCharacter(skt, data):
+        """Return all fields in CHARACTER message received."""
+        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(skt, data)
+        charDes = Character.recvCharacterVar(skt, data, charDesLen)
         print('DEBUG: Received CHARACTER message!')
-        print('DEBUG: CHARACTER Bytes:', buffer)
+        print('DEBUG: CHARACTER Bytes:', data)
         print('DEBUG: Type:', msgType)
-        print('DEBUG: Name:', name.decode('utf-8'))
+        print('DEBUG: Name:', name)
         print('DEBUG: Flags:', flags)
         print('DEBUG: Attack', attack)
         print('DEBUG: Defense:', defense)
@@ -282,15 +310,13 @@ class Character:
         print('DEBUG: Gold:', gold)
         print('DEBUG: Room', room)
         print('DEBUG: charDesLen:', charDesLen)
-        varBuffer = buffer[48:48+charDesLen]
-        charDes, = struct.unpack('<%ds' %charDesLen, varBuffer)
-        print('DEBUG: charDes:', charDes.decode('utf-8'))
-        return name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes
+        print('DEBUG: charDes:', charDes)
+        return msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes
 
     def sendCharacter(self, skt):
         """Return 0 if successfully pack CHARACTER fields into a variable before sending to socket."""
         characterPacked = struct.pack('<B32sB7H%ds' %self.charDesLen, Character.msgType, bytes(self.name, 'utf-8'), self.flags, self.attack, self.defense, self.regen, self.health, self.gold, self.room, len(self.charDes), bytes(self.charDes, 'utf-8'))
-        
+        print('LOG: Sending CHARACTER message!')
         return lurkSend(skt, characterPacked)
 class Game:
     """Class for handling Lurk GAME messages and related functions."""
@@ -310,22 +336,32 @@ class Game:
                                        |___/              
 """), 'utf-8')
     gameDesLen = int(len(gameDes))
-
-    def recvGame(skt, buffer):
-        """Return GAME message fields (not including TYPE) from socket after unpacking from buffer."""
-        constBuffer = buffer[:7]
-        msgType, initPoints, statLimit, gameDesLen = struct.unpack("<B3H", constBuffer)
-        varBuffer = buffer[7:7+gameDesLen]
+    
+    def recvGameConst(skt, data):
+        """Return constant GAME message fields from socket after unpacking from buffer."""
+        buffer = data[:7]
+        msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', buffer)
+        return msgType, initPoints, statLimit, gameDesLen
+    
+    def recvGameVar(skt, data, dataLen):
+        """Return variable GAME message field from socket after unpacking from buffer."""
+        buffer = data[7:7+dataLen]
+        gameDes, = struct.unpack('<%ds' %dataLen, buffer)
+        gameDes = gameDes.decode('utf-8')
+        return gameDes
+    
+    def recvGame(skt, data):
+        """Return all fields in GAME message received."""
+        msgType, initPoints, statLimit, gameDesLen = Game.recvGameConst(skt, data)
+        gameDes = Game.recvGameVar(skt, data, gameDesLen)
         print('DEBUG: Received GAME message!')
-        print('DEBUG: Total GAME Bytes:', buffer)
-        print('DEBUG: Constant GAME Bytes:', constBuffer)
-        print('DEBUG: Variable GAME Bytes:', varBuffer)
+        print('DEBUG: GAME Bytes:', data)
         print('DEBUG: Type:', msgType)
         print('DEBUG: Initial Points:', initPoints)
         print('DEBUG: Stat Limit:', statLimit)
         print('DEBUG: Game Description Length:', gameDesLen)
-        print('DEBUG: GAME Description:', varBuffer.decode())
-        return 0
+        print('DEBUG: GAME Description:', gameDes)
+        return msgType, initPoints, statLimit, gameDesLen, gameDes
 
     def sendGame(skt):
         """Return 0 if successfully pack GAME fields into a variable before sending to socket."""

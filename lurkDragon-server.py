@@ -13,6 +13,7 @@ import logging
 import socket
 # Import threading module, required for multithreading & handling multiple clients
 import threading
+import time
 
 # Import custom lurk module
 from lurk import *
@@ -20,110 +21,107 @@ from lurk import *
 # Function for handling individual clients
 #   cSkt: Client socket to handle
 def handleClient(cSkt):
-    '''
-    version = Version.sendVersion(cSkt)
-    if (version != 0):
-        print('WARN: sendVersion() returned unexpected code', version, 'for client', cSkt)
-        return 2
-    game = Game.sendGame(cSkt)
-    if (game != 0):
-        print('WARN: sendGame() returned unexpected code', game, 'for client', cSkt)
-        return 2
-    '''
-    buffer = data
+    data = bytearray(b'')
     while True:
-        #buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
-        try:
-            buffer = cSkt.recv(4096)
-        except ConnectionError:                                             # Catch a ConnectionError if socket is closed
-            print('WARN: Failed to receive, ConnectionError!')                  # Print warning message
-            if cSkt in Client.clients:                                          # If client is found in database tracking connected clients
-                Client.removeClient(cSkt)                                           # Remove client from the list
-                print('LOG: Removed client from dictionary!')                       # Print log message
-                return 1                                                            # Return error code 1
-            else:                                                               # If client is not found for whatever reason
-                print('ERROR: Connection not found for removal?! Weird...')         # Print error message
-                return 2                                                            # Return error code 2
-              
-        if (buffer == b''):
-            continue
-        elif (buffer != b'' and buffer[0] == 1):
-            # Handle MESSAGE
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 2):
-            # Handle CHANGEROOM
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 3):
-            # Handle FIGHT
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 4):
-            # Handle PVPFIGHT
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 5):
-            # Handle LOOT
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 6):
-            # Handle START
-            startBuffer = buffer[0]
-            msgType = Start.recvStart(cSkt, startBuffer)
-            buffer[0].replace(buffer[0], b'')
-            continue
-        elif (buffer != b'' and buffer[0] == 7):
-            # Handle ERROR
-            errorCode, errorMsgLen, errorMsg = Error.recvError(cSkt, buffer)
-            buffer[0:4+errorMsgLen].replace(buffer[0:4+errorMsgLen], b'')
-            continue
-        elif (buffer != b'' and buffer[0] == 8):
-            # Handle ACCEPT
-            acceptBuffer = buffer
-            accept = Accept.recvAccept(cSkt, acceptBuffer)
-            buffer[0:2].replace(buffer[0:2], b'')
-            continue
-        elif (buffer != b'' and buffer[0] == 9):
-            # Handle ROOM
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 10):
-            # Handle CHARACTER
-            name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = Character.recvCharacter(cSkt, buffer)
-            
-            # If stats and CHARACTER message is valid, send ACCEPT
-            if (attack + defense + regen <= Game.initPoints):
-                print('DEBUG: Detected valid stats, sending ACCEPT!')
-                accept = Accept.sendAccept(cSkt, 10)
-                room = Room.sendRoom(cSkt, 0)
-            else:
-                print('DEBUG: Detected invalid stats, sending ERROR type 4!')
-                error = Error.sendError(cSkt, 4)
-            buffer[0:48+charDesLen].replace(buffer[0:48+charDesLen], b'')
-            continue
+        # If socket buffer is empty, try receiving data from client
+        if data == b'':
+            try:
+                data = cSkt.recv(4096)
+            except ConnectionError:                                             # Catch a ConnectionError if socket is closed
+                print('WARN: Failed to receive, ConnectionError!')                  # Print warning message
+                if cSkt in Client.clients:                                          # If client is found in database tracking connected clients
+                    Client.removeClient(cSkt)                                           # Remove client from the list
+                    print('LOG: Removed client from dictionary!')                       # Print log message
+                    return 1                                                            # Return error code 1
+                else:                                                               # If client is not found for whatever reason
+                    print('ERROR: Connection not found for removal?! Weird...')         # Print error message
+                    return 2                                                            # Return error code 2
         
-        elif (buffer != b'' and buffer[0] == 11):
-            # Handle GAME
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 12):
-            # Handle LEAVE
-            leave = Leave.recvLeave(cSkt)
-            Client.removeClient(cSkt)
-            break
-        elif (buffer != b'' and buffer[0] == 13):
-            # Handle CONNECTION
-            Error.sendError(cSkt, 0)
-            continue
-        elif (buffer != b'' and buffer[0] == 14):
-            # Handle VERSION
-            Error.sendError(cSkt, 0)
-            continue
+        # If socket buffer contains message(s), take action
+        elif data != b'':
+            if (data[0] == 1):
+                # Handle MESSAGE
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 2):
+                # Handle CHANGEROOM
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 3):
+                # Handle FIGHT
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 4):
+                # Handle PVPFIGHT
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 5):
+                # Handle LOOT
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 6):
+                # Handle START
+                msgType = Start.recvStart(cSkt, data[0])
+                data = data[0].replace(data[0], b'')
+                continue
+            elif (data[0] == 7):
+                # Handle ERROR
+                msgType, errCode, errMsgLen, errMsg = Error.recvError(cSkt, data)
+                data = data[0:4+errMsg].replace(data[0:4+errMsgLen], b'')
+                continue
+            elif (data[0] == 8):
+                # Handle ACCEPT
+                accept = Accept.recvAccept(cSkt, data)
+                data = data[0:2].replace(data[0:2], b'')
+                continue
+            elif (data[0] == 9):
+                # Handle ROOM
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 10):
+                # Handle CHARACTER
+                characterDataConst = data[0:48]
+                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(cSkt, characterDataConst)
+                characterDataVar = data[48:48+charDesLen]
+                charDes = Character.recvCharacterVar(cSkt, characterDataVar, charDesLen)
+                characterData = characterDataConst + characterDataVar
+                
+                # If stats and CHARACTER message is valid, send ACCEPT
+                if (attack + defense + regen <= Game.initPoints):
+                    print('DEBUG: Detected valid stats, sending ACCEPT!')
+                    accept = Accept.sendAccept(cSkt, 10)
+                    room = Room.sendRoom(cSkt, 0)
+                else:
+                    print('DEBUG: Detected invalid stats, sending ERROR type 4!')
+                    error = Error.sendError(cSkt, 4)
+                
+                print('Data before clearing msg:', data)
+                data = data.replace(characterData, b'')        # This works now!!!
+                print('Data after clearing msg:', data)
+                continue                                                                # Continue while loop
+            
+            elif (data[0] == 11):
+                # Handle GAME
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 12):
+                # Handle LEAVE
+                leave = Leave.recvLeave(cSkt)
+                Client.removeClient(cSkt)
+                break
+            elif (data[0] == 13):
+                # Handle CONNECTION
+                Error.sendError(cSkt, 0)
+                continue
+            elif (data[0] == 14):
+                # Handle VERSION
+                Error.sendError(cSkt, 0)
+                continue
+            else:
+                print('ERROR: Invalid message detected!')
+                continue
         else:
-            print('ERROR: Invalid message detected!')
-            continue
-    clientThread.stop()
+            print('ERROR: Something weird happened! Stopping.')
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -146,15 +144,14 @@ while True:
     version = Version.sendVersion(clientSkt)
     game = Game.sendGame(clientSkt)
     
-    data = clientSkt.recv(1024)
+    time.sleep(1)
     
-    if (version == 0 and game == 0) and data:
+    if clientSkt.fileno() == -1:
+        print('Invalid socket, perhaps it was lurkscan?')
+    
+    if (version == 0 and game == 0):
         Client.addClient(clientSkt)
         Client.getClients()
         clientThread = threading.Thread(target=handleClient, args=(clientSkt,), daemon=True).start()    # Create thread for connected client and starts it
-    elif not data:
-        print('Broken recv from client')
-        break
     else:
-        print('Someting else')
-    #print("DEBUG: Client Thread:", clientThread)
+        print('ERROR: VERSION & GAME message failed somehow!')

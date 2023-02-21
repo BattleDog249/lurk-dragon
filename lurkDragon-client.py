@@ -32,6 +32,8 @@ game = Game.recvGame(skt, gameBuffer)
 characterDescription = "This is a collision test dummy, it is not sentient!"
 character = Character("Test Dummy #1", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
 character = Character.sendCharacter(character, skt)
+character = Character("Test Dummy #2", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+character = Character.sendCharacter(character, skt)
 
 while True:
     buffer = b''                                        # I think this method breaks if recv receives more than one message into buffer
@@ -43,8 +45,9 @@ while True:
 
     if (buffer != b'' and buffer[0] == 7):
         error = Error.recvError(skt, buffer)
-        character = Character("Test Dummy #2", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+        character = Character("Test Dummy #3", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
         character = Character.sendCharacter(character, skt)
+        #leave = Leave.sendLeave(skt)
     elif (buffer != b'' and buffer[0] == 8):
         accept = Accept.recvAccept(skt, buffer)
         roomBuffer = skt.recv(1024)
