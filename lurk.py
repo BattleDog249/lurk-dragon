@@ -30,6 +30,21 @@ class Client:
     def getClient(skt):                 # Pull information on specified client
         return Client.clients[skt]
 
+MESSAGE = int(1)
+CHANGEROOM = int(2)
+FIGHT = int(3)
+PVPFIGHT = int(4)
+LOOT = int(5)
+START = int(6)
+ERROR = int(7)
+ACCEPT = int(8)
+ROOM = int(9)
+CHARACTER = int(10)
+GAME = int(11)
+LEAVE = int(12)
+CONNECTION = int(13)
+VERSION = int(14)
+
 def lurkRecv(skt):
     try:
         buffer = skt.recv(4096)
@@ -157,7 +172,6 @@ class Error:
     
     def recvErrorVar(skt, data, dataLen):
         """Return variable ERROR message field from socket after unpacking from buffer."""
-        buffer = data[4:4+dataLen]
         errMsg, = struct.unpack('<%ds' %dataLen, data)
         errMsg = errMsg.decode('utf-8')
         return errMsg
@@ -220,34 +234,25 @@ class Room:
     rooms = {
         0: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
         1: ('Dark Grove', 'A hallway leading away from the starting room.'),
-        3: ('Hidden Valley', 'Seems to be remnants of a ranch here...')
+        2: ('Hidden Valley', 'Seems to be remnants of a ranch here...')
     }
-
+    
     def recvRoomConst(skt, data):
         """"""
-        buffer = data[:37]
-        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', buffer)
-        return msgType, roomNum, roomName, roomDesLen
-    
-    def recvRoomVar(skt, data, dataLen):
-        """"""
-        buffer = data[37:37+dataLen]
-        roomDes = struct.unpack('<%ds' %dataLen, buffer)
-        roomDes = ''.join(map(str, roomDes))                    # Convert tuple object to.. bytes? Should convert to string?
-        return roomDes
-    
-    def recvRoom(skt, buffer):
-        """Return all ROOM message fields received."""
-        msgType, roomNum, roomName, roomDesLen = Room.recvRoomConst(skt, buffer)
-        roomDes = Room.recvRoomVar(skt, buffer, roomDesLen)
+        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', data)
         print('DEBUG: Received ROOM message!')
-        print('DEBUG: ROOM Bytes:', buffer)
         print('DEBUG: Type:', msgType)
         print('DEBUG: Room Number:', roomNum)
         print('DEBUG: Room Name:', roomName.decode('utf-8'))
         print('DEBUG: Room Description Length:', roomDesLen)
-        print('DEBUG: Room Description:', roomDes)              # roomDes is a string, according to type(), but appears to be a bytes object?
-        return roomNum, roomName, roomDesLen, roomDes
+        return msgType, roomNum, roomName, roomDesLen
+    
+    def recvRoomVar(skt, data, dataLen):
+        """"""
+        roomDes = struct.unpack('<%ds' %dataLen, data)
+        roomDes = ''.join(map(str, roomDes))                    # Convert tuple object to.. bytes? Should convert to string?
+        print('DEBUG: Room Description:', roomDes)              # Appears to still be bytes, rather than a string.. but type() says its a string?
+        return roomDes
 
     def sendRoom(skt, roomNum):
         """Return 0 if successfully pack ROOM fields into a variable before sending to socket."""
@@ -290,25 +295,6 @@ class Character:
         charDes, = struct.unpack('<%ds' %dataLen, data)
         charDes = charDes.decode('utf-8')
         return charDes
-    
-    def recvCharacter(skt, data):
-        """Return all fields in CHARACTER message received."""
-        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(skt, data)
-        charDes = Character.recvCharacterVar(skt, data, charDesLen)
-        print('DEBUG: Received CHARACTER message!')
-        print('DEBUG: CHARACTER Bytes:', data)
-        print('DEBUG: Type:', msgType)
-        print('DEBUG: Name:', name)
-        print('DEBUG: Flags:', flags)
-        print('DEBUG: Attack', attack)
-        print('DEBUG: Defense:', defense)
-        print('DEBUG: Regen:', regen)
-        print('DEBUG: Health:', health)
-        print('DEBUG: Gold:', gold)
-        print('DEBUG: Room', room)
-        print('DEBUG: charDesLen:', charDesLen)
-        print('DEBUG: charDes:', charDes)
-        return msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes
 
     def sendCharacter(self, skt):
         """Return 0 if successfully pack CHARACTER fields into a variable before sending to socket."""
@@ -336,30 +322,21 @@ class Game:
     
     def recvGameConst(skt, data):
         """Return constant GAME message fields from socket after unpacking from buffer."""
-        buffer = data[:7]
-        msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', buffer)
-        return msgType, initPoints, statLimit, gameDesLen
-    
-    def recvGameVar(skt, data, dataLen):
-        """Return variable GAME message field from socket after unpacking from buffer."""
-        buffer = data[7:7+dataLen]
-        gameDes, = struct.unpack('<%ds' %dataLen, buffer)
-        gameDes = gameDes.decode('utf-8')
-        return gameDes
-    
-    def recvGame(skt, data):
-        """Return all fields in GAME message received."""
-        msgType, initPoints, statLimit, gameDesLen = Game.recvGameConst(skt, data)
-        gameDes = Game.recvGameVar(skt, data, gameDesLen)
+        msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', data)
         print('DEBUG: Received GAME message!')
-        print('DEBUG: GAME Bytes:', data)
         print('DEBUG: Type:', msgType)
         print('DEBUG: Initial Points:', initPoints)
         print('DEBUG: Stat Limit:', statLimit)
         print('DEBUG: Game Description Length:', gameDesLen)
-        print('DEBUG: GAME Description:', gameDes)
-        return msgType, initPoints, statLimit, gameDesLen, gameDes
-
+        return msgType, initPoints, statLimit, gameDesLen
+    
+    def recvGameVar(skt, data, dataLen):
+        """Return variable GAME message field from socket after unpacking from buffer."""
+        gameDes, = struct.unpack('<%ds' %dataLen, data)
+        gameDes = gameDes.decode('utf-8')
+        print('DEBUG: Game Description:', gameDes)
+        return gameDes
+    
     def sendGame(skt):
         """Return 0 if successfully pack GAME fields into a variable before sending to socket."""
         gamePacked = struct.pack('<B3H%ds' %Game.gameDesLen, Game.msgType, Game.initPoints, Game.statLimit, Game.gameDesLen, Game.gameDes)
@@ -393,15 +370,24 @@ class Leave:
 class Connection:
     """Class for handling Lurk CONNECTION messages and related functions."""
     msgType = int(13)
+    
+    connections = {
+        Room.rooms[0]: (Room.rooms[1], Room.rooms[2]),
+        Room.rooms[1]: (Room.rooms[2]),
+        Room.rooms[2]: (Room.rooms[1])
+    }
+    
     def recvConnection(skt, buffer):
         """Return CONNECTION message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
-    def sendConnection(skt):
+    
+    def sendConnection(skt, roomNum):
         """Return 0 if successfully pack CONNECTION fields into a variable before sending to socket."""
-        connectionPacked = 0
-        
-        print('DEBUG: Sending CONNECTION message!')
-        return lurkSend(skt, connectionPacked)
+        if (roomNum in Connection.connections):
+            #for (roomNum in Connection.connections[])
+            connectionPacked = struct.pack('<BH32sH%ds' %Room.rooms[roomNum][1], Connection.msgType, Room.rooms[roomNum], Room.rooms[roomNum][0], len(Room.rooms[roomNum][1]), Room.rooms[roomNum][1])
+            print('DEBUG: Sending CONNECTION message!')
+            return lurkSend(skt, connectionPacked)
 
 class Version:
     """Class for handling Lurk VERSION messages and related functions."""
@@ -412,16 +398,17 @@ class Version:
     
     # Does not currently support receiving list of extensions, so extSize should always = 0
     #   skt: Socket to receive data from
-    def recvVersion(skt, buffer):
+    def recvVersion(skt, data):
         """Return VERSION message fields (not including TYPE) from socket after unpacking from buffer."""
-        msgType, major, minor, extSize = struct.unpack('<3BH', buffer)
+        versionData = data[0:5]
+        msgType, major, minor, extSize = struct.unpack('<3BH', versionData)
         print('DEBUG: Received VERSION message!')
-        print('DEBUG: VERSION bytes: ', buffer)
+        print('DEBUG: VERSION bytes: ', versionData)
         print('DEBUG: Type: ', msgType)
         print('DEBUG: Major:', major)
         print('DEBUG: Minor', minor)
         print('DEBUG: Ext. Size: ', extSize)
-        return major, minor, extSize
+        return msgType, major, minor, extSize
     
     # Does not currently support sending list of extensions, so extSize should always = 0
     #   skt: Socket to send data to

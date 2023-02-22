@@ -18,6 +18,29 @@ import time
 # Import custom lurk module
 from lurk import *
 
+MESSAGE = int(1)
+CHANGEROOM = int(2)
+FIGHT = int(3)
+PVPFIGHT = int(4)
+LOOT = int(5)
+START = int(6)
+ERROR = int(7)
+ACCEPT = int(8)
+ROOM = int(9)
+CHARACTER = int(10)
+GAME = int(11)
+LEAVE = int(12)
+CONNECTION = int(13)
+VERSION = int(14)
+
+characters = {}
+
+def handleIncoming(cSkt):
+    pass
+
+def handleOutgoing(cSkt):
+    pass
+
 # Function for handling individual clients
 #   cSkt: Client socket to handle
 def handleClient(cSkt):
@@ -39,39 +62,32 @@ def handleClient(cSkt):
         
         # If socket buffer contains message(s), take action
         elif data != b'':
-            if (data[0] == 1):
-                # Handle MESSAGE
+            if (data[0] == MESSAGE):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 2):
-                # Handle CHANGEROOM
+            elif (data[0] == CHANGEROOM):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 3):
-                # Handle FIGHT
+            elif (data[0] == FIGHT):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 4):
-                # Handle PVPFIGHT
+            elif (data[0] == PVPFIGHT):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 5):
-                # Handle LOOT
+            elif (data[0] == LOOT):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 6):
-                # Handle START
+            elif (data[0] == START):
                 startData = bytes(data[0:1])
                 msgType = Start.recvStart(cSkt, startData)
                 data = data.replace(startData, b'')
                 continue
-            elif (data[0] == 7):
-                # Handle ERROR
+            elif (data[0] == ERROR):
                 errorDataConst = data[0:4]
                 msgType, errCode, errMsgLen = Error.recvErrorConst(cSkt, errorDataConst)
                 errorDataVar = data[4:4+errMsgLen]
@@ -79,55 +95,65 @@ def handleClient(cSkt):
                 errorData = errorDataConst + errorDataVar
                 data = data.replace(errorData, b'')
                 continue
-            elif (data[0] == 8):
-                # Handle ACCEPT
+            elif (data[0] == ACCEPT):
                 acceptData = data[0:1]
                 msgType, accept = Accept.recvAccept(cSkt, acceptData)
                 data = data.replace(acceptData, b'')
                 continue
-            elif (data[0] == 9):
-                # Handle ROOM
+            elif (data[0] == ROOM):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 10):
-                # Handle CHARACTER
+            elif (data[0] == CHARACTER):
                 characterDataConst = data[0:48]
                 msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(cSkt, characterDataConst)
+                #name = str(name)
                 characterDataVar = data[48:48+charDesLen]
                 charDes = Character.recvCharacterVar(cSkt, characterDataVar, charDesLen)
                 characterData = characterDataConst + characterDataVar
                 
-                # If stats and CHARACTER message is valid, send ACCEPT
-                if (attack + defense + regen <= Game.initPoints):
-                    print('DEBUG: Detected valid stats, sending ACCEPT!')
-                    accept = Accept.sendAccept(cSkt, 10)
-                    room = Room.sendRoom(cSkt, 0)
+                # If received character is new to the server
+                if (name not in characters):
+                    print('DEBUG: Character not found in database, adding!')
+                    # If stats and CHARACTER message is valid, send ACCEPT
+                    if (attack + defense + regen <= Game.initPoints):
+                        print('DEBUG: Detected valid stats, sending ACCEPT!')
+                        characters.update({name: [flags, attack, defense, regen, 100, 0, 0]})   # Health = 100, Gold = 0, Room = 0
+                        print(characters)
+                        accept = Accept.sendAccept(cSkt, 10)
+                        room = Room.sendRoom(cSkt, 0)
+                    else:
+                        print('DEBUG: Detected invalid stats, sending ERROR type 4!')
+                        error = Error.sendError(cSkt, 4)
                 else:
-                    print('DEBUG: Detected invalid stats, sending ERROR type 4!')
-                    error = Error.sendError(cSkt, 4)
+                    print('DEBUG: Character found in database!')
+                    if (attack + defense + regen <= Game.initPoints):
+                        print('DEBUG: Detected valid stats, sending ACCEPT!')
+                        characters.update({name: [flags, attack, defense, regen, 100, 0, 0]})   # Health = 100, Gold = 0, Room = 0
+                        print(characters)
+                        accept = Accept.sendAccept(cSkt, 10)
+                        room = Room.sendRoom(cSkt, 0)
+                    else:
+                        print('DEBUG: Detected invalid stats, sending ERROR type 4!')
+                        error = Error.sendError(cSkt, 4)
                 data = data.replace(characterData, b'')        # This works now!!!
                 continue                                                                # Continue while loop
             
-            elif (data[0] == 11):
-                # Handle GAME
+            elif (data[0] == GAME):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 12):
-                # Handle LEAVE
+            elif (data[0] == LEAVE):
                 leaveData = bytes(data[0:1])
                 leave = Leave.recvLeave(cSkt)
                 Client.removeClient(cSkt)
                 data = data.replace(leaveData, b'')
                 break
-            elif (data[0] == 13):
-                # Handle CONNECTION
+            elif (data[0] == CONNECTION):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
-            elif (data[0] == 14):
-                # Handle VERSION
+            elif (data[0] == VERSION):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 continue
