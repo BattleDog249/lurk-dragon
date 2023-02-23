@@ -60,20 +60,24 @@ def handleClient(cSkt):
                 data = data.replace(data, b'')
                 
             elif (data[0] == CHANGEROOM):
+                changeRoomData = data[0:3]
                 Error.sendError(cSkt, 0)
-                data = data.replace(data, b'')
+                data = data.replace(changeRoomData, b'')
                 
             elif (data[0] == FIGHT):
+                fightData = bytes(data[0:1])
                 Error.sendError(cSkt, 0)
-                data = data.replace(data, b'')
+                data = data.replace(fightData, b'')
                 
             elif (data[0] == PVPFIGHT):
-                Error.sendError(cSkt, 0)
-                data = data.replace(data, b'')
+                pvpFightData = data[0:32]       # Untested
+                Error.sendError(cSkt, 8)
+                data = data.replace(pvpFightData, b'')
                 
             elif (data[0] == LOOT):
+                lootData = data[0:32]           # Untested
                 Error.sendError(cSkt, 0)
-                data = data.replace(data, b'')
+                data = data.replace(lootData, b'')
                 
             elif (data[0] == START):
                 startData = bytes(data[0:1])

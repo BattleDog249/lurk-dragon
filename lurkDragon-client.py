@@ -106,32 +106,25 @@ while True:
             print('WARN: Connection broken, stopping!')
             break
     elif data != b'':
-        if (data[0] == 1):
-            # Handle MESSAGE
+        if (data[0] == MESSAGE):
             pass
         
-        elif (data[0] == 2):
-            # Handle CHANGEROOM
+        elif (data[0] == CHANGEROOM):
             pass
         
-        elif (data[0] == 3):
-            # Handle FIGHT
+        elif (data[0] == FIGHT):
             pass
         
-        elif (data[0] == 4):
-            # Handle PVPFIGHT
+        elif (data[0] == PVPFIGHT):
             pass
         
-        elif (data[0] == 5):
-            # Handle LOOT
+        elif (data[0] == LOOT):
             pass
         
-        elif (data[0] == 6):
-            # Handle START
+        elif (data[0] == START):
             pass
         
-        elif (data[0] == 7):
-            # Handle ERROR
+        elif (data[0] == ERROR):
             errorDataConst = data[0:4]
             msgType, errCode, errMsgLen = Error.recvErrorConst(skt, errorDataConst)
             errorDataVar = data[4:4+errMsgLen]
@@ -145,15 +138,13 @@ while True:
             #leave = Leave.sendLeave(skt)
             continue
             
-        elif (data[0] == 8):
-            # Handle ACCEPT
+        elif (data[0] == ACCEPT):
             acceptData = data[0:2]
             msgType, accept = Accept.recvAccept(skt, acceptData)
             data = data.replace(acceptData, b'')
             continue
         
-        elif (data[0] == 9):
-            # Handle ROOM
+        elif (data[0] == ROOM):
             roomDataConst = data[0:37]
             msgType, roomNum, roomName, roomDesLen = Room.recvRoomConst(skt, roomDataConst)
             roomDataVar = data[37:37+roomDesLen]
@@ -162,32 +153,27 @@ while True:
             data = data.replace(roomData, b'')
             continue
         
-        elif (data[0] == 10):
-            # Handle CHARACTER
+        elif (data[0] == CHARACTER):
             pass
         
-        elif (data[0] == 11):
-            # Handle GAME
+        elif (data[0] == GAME):
             gameDataConst = data[0:7]
-            msgType, initPoints, statLimit, gameDesLen = Game.recvGameConst(skt, gameDataConst)
+            msgType, initPoints, statLimit, gameDesLen = Game.recvGameConst(gameDataConst)
             gameDataVar = data[7:7+gameDesLen]
-            gameDes = Game.recvGameVar(skt, gameDataVar, gameDesLen)
+            gameDes = Game.recvGameVar(gameDataVar, gameDesLen)
             gameData = gameDataConst + gameDataVar
             data = data.replace(gameData, b'')
             continue
         
-        elif (data[0] == 12):
-            # Handle LEAVE
+        elif (data[0] == LEAVE):
             pass
         
-        elif (data[0] == 13):
-            # Handle CONNECTION
+        elif (data[0] == CONNECTION):
             pass
         
-        elif (data[0] == 14):
-            # Handle VERSION
+        elif (data[0] == VERSION):
             versionData = data[0:5]
-            msgType, major, minor, extSize = Version.recvVersion(skt, versionData)
+            msgType, major, minor, extSize = Version.recvVersion(versionData)
             data = data.replace(versionData, b'')
             continue
         

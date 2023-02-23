@@ -65,10 +65,27 @@ def lurkSend(skt, data):
 class Message:
     """Class for handling Lurk MESSAGE messages and related functions."""
     msgType = int(1)
-    def recvMessage(skt, buffer):
-        """Return MESSAGE message fields (not including TYPE) from socket after unpacking from buffer."""
-        pass
-    def sendMessage(skt):
+    
+    def recvMessageConst(data):
+        """"""
+        messageDataConst = data[0:66]   # Probably needs adjusted, untested
+        msgType, msgLen, recvName, sendName, narration = struct.unpack('<BH32s30sH', messageDataConst)
+        print('DEBUG: Received MESSAGE message!')
+        print('DEBUG: Type:', msgType)
+        print('DEBUG: Message Length:', msgLen)
+        print('DEBUG: Recipient Name:', recvName)
+        print('DEBUG: Sender Name:', sendName)
+        print('DEBUG: End of sender Name or narration marker:', narration)
+        return msgType, msgLen, recvName, sendName, narration
+    
+    def recvMessageVar(data, dataLen):
+        """"""
+        messageDataVar = data[66:66+dataLen]    # 66 might be wrong, untested
+        message = struct.unpack('<%ds' %dataLen, messageDataVar)
+        print('DEBUG: Message:', message)
+        return message
+    
+    def sendMessage(skt, sender, receiver, message):
         """Return 0 if successfully pack MESSAGE fields into a variable before sending to socket."""
         messagePacked = 0
         return lurkSend(skt, messagePacked)
@@ -76,23 +93,40 @@ class Message:
 class ChangeRoom:
     """Class for handling Lurk CHANGEROOM messages and related functions."""
     msgType = int(2)
-    def recvChangeRoom(skt, buffer):
-        """Return CHANGEROOM message fields (not including TYPE) from socket after unpacking from buffer."""
-        pass
-    def sendChangeRoom(skt):
+    
+    def recvChangeRoom(data):
+        """Return CHANGEROOM message fields from socket after unpacking from buffer."""
+        changeRoomData = data[0:3]
+        msgType, roomNum = struct.unpack('<BH', changeRoomData)
+        print('DEBUG: Received CHANGEROOM message!')
+        print('DEBUG: CHANGEROOM bytes: ', changeRoomData)
+        print('DEBUG: Type:', msgType)
+        print('DEBUG: Requested Room:', roomNum)
+        return msgType, roomNum
+    
+    def sendChangeRoom(skt, roomNum):
         """Return 0 if successfully pack CHANGEROOM fields into a variable before sending to socket."""
-        changeRoomPacked = 0
+        changeRoomPacked = struct.pack('<BH', ChangeRoom.msgType, roomNum)
+        print('DEBUG: Sending CHANGEROOM message!')
         return lurkSend(skt, changeRoomPacked)
 
 class Fight:
     """Class for handling LurK FIGHT messages and related functions."""
     msgType = int(3)
-    def recvFight(skt, buffer):
+    
+    def recvFight(data):
         """Return FIGHT message fields (not including TYPE) from socket after unpacking from buffer."""
-        pass
+        fightData = data[0:1]   # Untested
+        msgType = struct.unpack('<B', fightData)
+        print('DEBUG: Received FIGHT message!')
+        print('DEBUG: FIGHT bytes:', fightData)
+        print('DEBUG: Type:', msgType)
+        return msgType
+    
     def sendFight(skt):
         """Return 0 if successfully pack FIGHT fields into a variable before sending to socket."""
-        fightPacked = 0
+        fightPacked = struct.pack('<B', Fight.msgType)
+        print('DEBUG: Sending FIGHT message!')
         return lurkSend(skt, fightPacked)
 
 class PVPFight:
@@ -122,6 +156,7 @@ class Start:
     msgType = int(6)
     def recvStart(skt, data):
         """Return START message field from socket after unpacking from buffer."""
+        startData = data[0:1]
         msgType = struct.unpack('<B', data)
         print('DEBUG: Received START message!')
         print('DEBUG: START Bytes:', data)
@@ -306,8 +341,15 @@ class Game:
 """), 'utf-8')
     gameDesLen = int(len(gameDes))
     
-    def recvGameConst(skt, data):
-        """Return constant GAME message fields from socket after unpacking from buffer."""
+    def recvGameConst(data):
+        """Return constant GAME message fields from socket after unpacking from buffer.
+
+        Args:
+            data (7 bytes): Bytes data buffer to unpack
+
+        Returns:
+            _type_: GAME constant fields
+        """
         msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', data)
         print('DEBUG: Received GAME message!')
         print('DEBUG: Type:', msgType)
@@ -316,7 +358,7 @@ class Game:
         print('DEBUG: Game Description Length:', gameDesLen)
         return msgType, initPoints, statLimit, gameDesLen
     
-    def recvGameVar(skt, data, dataLen):
+    def recvGameVar(data, dataLen):
         """Return variable GAME message field from socket after unpacking from buffer."""
         gameDes, = struct.unpack('<%ds' %dataLen, data)
         gameDes = gameDes.decode('utf-8')
@@ -384,9 +426,9 @@ class Version:
     
     # Does not currently support receiving list of extensions, so extSize should always = 0
     #   skt: Socket to receive data from
-    def recvVersion(skt, data):
+    def recvVersion(data):
         """Return VERSION message fields (not including TYPE) from socket after unpacking from buffer."""
-        versionData = data[0:5]
+        versionData = data[0:5]                                                 # Ensure data is correct size
         msgType, major, minor, extSize = struct.unpack('<3BH', versionData)
         print('DEBUG: Received VERSION message!')
         print('DEBUG: VERSION bytes: ', versionData)
