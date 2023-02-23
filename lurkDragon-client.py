@@ -109,8 +109,11 @@ while True:
         if (data[0] == MESSAGE):
             pass
         
+        # Client should not receive CHANGEROOM messages!
         elif (data[0] == CHANGEROOM):
-            pass
+            changeRoomData = data[0:3]
+            Error.sendError(skt, 0)
+            data = data.replace(changeRoomData, b'')
         
         elif (data[0] == FIGHT):
             pass
@@ -154,7 +157,12 @@ while True:
             continue
         
         elif (data[0] == CHARACTER):
-            pass
+            characterDataConst = data[0:48]
+            msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(characterDataConst)
+            characterDataVar = data[48:48+charDesLen]
+            charDes = Character.recvCharacterVar(characterDataVar, charDesLen)
+            characterData = characterDataConst + characterDataVar
+            data = data.replace(characterData, b'')
         
         elif (data[0] == GAME):
             gameDataConst = data[0:7]

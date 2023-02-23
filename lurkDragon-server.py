@@ -31,8 +31,6 @@ LEAVE = int(12)
 CONNECTION = int(13)
 VERSION = int(14)
 
-characters = {}
-
 # Function for handling individual clients
 #   cSkt: Client socket to handle
 def handleClient(cSkt):
@@ -61,7 +59,22 @@ def handleClient(cSkt):
                 
             elif (data[0] == CHANGEROOM):
                 changeRoomData = data[0:3]
-                Error.sendError(cSkt, 0)
+                msgType, roomNum = ChangeRoom.recvChangeRoom(changeRoomData)    # Unpack CHANGEROOM message
+                if (roomNum not in Character.getRoom('Get room of current character')):                        # If room in not valid to change to
+                    Error.sendError(cSkt, 1)                                        # Send error code 1: bad room
+                    data = data.replace(changeRoomData, b'')                        # Remove message from buffer
+                    continue                                                        # Continue loop
+                #if character flag ready is not set:
+                    Error.sendError(cSkt, 5)                                        # Send error code 5: Not ready
+                    data = data.replace(changeRoomData, b'')                        # Remove message from buffer
+                    continue                                                        # Continue loop
+                Room.sendRoom(cSkt, roomNum)                                    # Send ROOM message corresponding to room player just changed to
+                #Character.sendCharacter()                                      # Send updated CHARACTER with new room number
+                #for all characters in new room:                                #
+                                                                                    # Send CHARACTER messages for all characters in new room
+                #for all connections in new room:                               #
+                    #Connection.getConnections(roomNum)                             # Send CONNECTION messages to player with all connections in new room
+                    
                 data = data.replace(changeRoomData, b'')
                 
             elif (data[0] == FIGHT):
@@ -92,31 +105,33 @@ def handleClient(cSkt):
                 errorData = errorDataConst + errorDataVar
                 data = data.replace(errorData, b'')
                 
+            # Server should not receive ACCEPT messages!
             elif (data[0] == ACCEPT):
-                acceptData = data[0:1]
-                msgType, accept = Accept.recvAccept(cSkt, acceptData)
+                acceptData = data[0:2]
+                Error.sendError(cSkt, 0)
                 data = data.replace(acceptData, b'')
                 
+            # Server should not receive ROOM messages!
             elif (data[0] == ROOM):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 
             elif (data[0] == CHARACTER):
                 characterDataConst = data[0:48]
-                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(cSkt, characterDataConst)
+                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(characterDataConst)
                 #name = str(name)
                 characterDataVar = data[48:48+charDesLen]
-                charDes = Character.recvCharacterVar(cSkt, characterDataVar, charDesLen)
+                charDes = Character.recvCharacterVar(characterDataVar, charDesLen)
                 characterData = characterDataConst + characterDataVar
                 
                 # If received character is new to the server
-                if (name not in characters):
+                if (name not in Character.characters):
                     print('DEBUG: Character not found in database, adding!')
                     # If stats and CHARACTER message is valid, send ACCEPT
                     if (attack + defense + regen <= Game.initPoints):
                         print('DEBUG: Detected valid stats, sending ACCEPT!')
-                        characters.update({name: [flags, attack, defense, regen, 100, 0, 0]})   # Health = 100, Gold = 0, Room = 0
-                        print(characters)
+                        Character.characters.update({name: [flags, attack, defense, regen, 100, 0, 0]})   # Health = 100, Gold = 0, Room = 0
+                        print('DEBUG: List of characters:', Character.characters)
                         accept = Accept.sendAccept(cSkt, 10)
                         room = Room.sendRoom(cSkt, 0)
                     else:
@@ -126,8 +141,9 @@ def handleClient(cSkt):
                     print('DEBUG: Character found in database!')
                     if (attack + defense + regen <= Game.initPoints):
                         print('DEBUG: Detected valid stats, sending ACCEPT!')
-                        characters.update({name: [flags, attack, defense, regen, 100, 0, 0]})   # Health = 100, Gold = 0, Room = 0
-                        print(characters)
+                        Character.characters.update({name: [flags, attack, defense, regen, 100, 0, 0]})   # Health = 100, Gold = 0, Room = 0
+                        print('DEBUG: List of characters:', Character.characters)
+                        Character.getRoom(name)
                         accept = Accept.sendAccept(cSkt, 10)
                         room = Room.sendRoom(cSkt, 0)
                     else:
@@ -135,6 +151,7 @@ def handleClient(cSkt):
                         error = Error.sendError(cSkt, 4)
                 data = data.replace(characterData, b'')        # This works now!!!
                 
+            # Server should not receive GAME messages!
             elif (data[0] == GAME):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
@@ -146,20 +163,23 @@ def handleClient(cSkt):
                 data = data.replace(leaveData, b'')
                 break
             
+            # Server should not receive CONNECTION messages!
             elif (data[0] == CONNECTION):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
                 
+            # Server should not receive VERSION messages!
             elif (data[0] == VERSION):
+                versionData = data[0:5]
                 Error.sendError(cSkt, 0)
-                data = data.replace(data, b'')
+                data = data.replace(versionData, b'')
                 
             else:
                 print('ERROR: Invalid message type detected!')
                 data = data.replace(data, b'')
                 
         else:
-            print('ERROR: Something weird happened! Stopping.')
+            print('ERROR: Buffer is not empty yet contains no data! Weird.')
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

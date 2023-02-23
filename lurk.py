@@ -99,7 +99,7 @@ class ChangeRoom:
         changeRoomData = data[0:3]
         msgType, roomNum = struct.unpack('<BH', changeRoomData)
         print('DEBUG: Received CHANGEROOM message!')
-        print('DEBUG: CHANGEROOM bytes: ', changeRoomData)
+        print('DEBUG: CHANGEROOM bytes:', changeRoomData)
         print('DEBUG: Type:', msgType)
         print('DEBUG: Requested Room:', roomNum)
         return msgType, roomNum
@@ -167,8 +167,7 @@ class Start:
         startPacked = struct.pack('<B', Start.msgType)
         #print('DEBUG: Sending START message!')
         #print('DEBUG: START Bytes:', startPacked)
-        
-        #print('DEBUG: Sending START message!')
+        print('DEBUG: Sending START message!')
         return lurkSend(skt, startPacked)
 
 class Error:
@@ -189,26 +188,19 @@ class Error:
     def recvErrorConst(skt, data):
         """Return constant ERROR message fields from socket after unpacking from buffer."""
         msgType, errCode, errMsgLen = struct.unpack('<2BH', data)
+        print('DEBUG: Received ERROR message!')
+        print('DEBUG: Type:', msgType)
+        print('DEBUG: Error Code:', errCode)
+        print('DEBUG: Error Message Length:', errMsgLen)
         return msgType, errCode, errMsgLen
     
     def recvErrorVar(skt, data, dataLen):
         """Return variable ERROR message field from socket after unpacking from buffer."""
         errMsg, = struct.unpack('<%ds' %dataLen, data)
         errMsg = errMsg.decode('utf-8')
+        print('DEBUG: Error Message:', errMsg)
         return errMsg
-
-    def recvError(skt, data):
-        """Return all fields in ERROR message received"""
-        msgType, errCode, errMsgLen = Error.recvErrorConst(skt, data)
-        errMsg = Error.recvErrorVar(skt, data, errMsgLen)
-        print('DEBUG: Received ERROR message!')
-        print('DEBUG: ERROR Bytes:', data)
-        print('DEBUG: Type:', msgType)
-        print('DEBUG: ErrorCode:', errCode)
-        print('DEBUG: ErrMesLen:', errMsgLen)
-        print('DEBUG: ErrMsg:', errMsg)
-        return msgType, errCode, errMsgLen, errMsg
-
+    
     #   skt: Socket to send message to
     #   code: Error code integer to send
     def sendError(skt, code):
@@ -217,10 +209,8 @@ class Error:
         errMsgLen = len(Error.errorCodes[code])
         errMsg = Error.errorCodes[code].encode('utf-8')
         errorPacked = struct.pack('<2BH%ds' %errMsgLen, Error.msgType, errCode, errMsgLen, errMsg)
-        #print('DEBUG: Sending ERROR Message!')
         #print('DEBUG: ERROR Bytes:', errorPacked)
-        
-        #print('DEBUG: Sending ERROR message!')
+        print('DEBUG: Sending ERROR message!')
         return lurkSend(skt, errorPacked)
 
 class Accept:
@@ -244,7 +234,7 @@ class Accept:
         """Return 0 if successfully pack ACCEPT fields into a variable before sending to socket."""
         action = int(message)
         acceptPacked = struct.pack('<2B', Accept.msgType, action)
-        
+        print('DEBUG: Sending ACCEPT message!')
         return lurkSend(skt, acceptPacked)
 
 class Room:
@@ -287,12 +277,14 @@ class Room:
         
         roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, Room.msgType, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
         
-        #print('DEBUG: Sending ROOM message!')
+        print('DEBUG: Sending ROOM message!')
         return lurkSend(skt, roomPacked)
 
 class Character:
     """Class for handling Lurk CHARACTER messages and related functions."""
     msgType = int(10)
+    
+    characters = {}
 
     def __init__(self, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes):
         self.name = name
@@ -305,13 +297,27 @@ class Character:
         self.room = room
         self.charDesLen = charDesLen
         self.charDes = charDes
+        
+    def getCharacterName():
+        pass
+    
+    # I think this works! Could use some error handling
+    def getRoom(name):
+        """Return room number character name resides in"""
+        name = Character.characters.get(name)
+        for name in Character.characters:
+            try:
+                print('DEBUG: Character is in room:', Character.characters[name][7])
+                return Character.characters[name][7]
+            except:
+                pass
 
-    def recvCharacterConst(skt, data):
+    def recvCharacterConst(data):
         """Return constant CHARACTER message fields from socket after unpacking from buffer."""
         msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', data)
         return msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen
     
-    def recvCharacterVar(skt, data, dataLen):
+    def recvCharacterVar(data, dataLen):
         """Return variable CHARACTER message field from socket after unpacking from buffer."""
         charDes, = struct.unpack('<%ds' %dataLen, data)
         charDes = charDes.decode('utf-8')
@@ -405,6 +411,11 @@ class Connection:
         Room.rooms[2]: (Room.rooms[1])
     }
     
+    def getConnections(roomNum):
+        """Return available connections for room"""
+        
+        pass
+    
     def recvConnection(skt, buffer):
         """Return CONNECTION message fields (not including TYPE) from socket after unpacking from buffer."""
         pass
@@ -425,7 +436,7 @@ class Version:
     extSize = int(0)
     
     # Does not currently support receiving list of extensions, so extSize should always = 0
-    #   skt: Socket to receive data from
+    #   data: Buffer of data to unpack
     def recvVersion(data):
         """Return VERSION message fields (not including TYPE) from socket after unpacking from buffer."""
         versionData = data[0:5]                                                 # Ensure data is correct size
