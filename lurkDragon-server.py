@@ -2,8 +2,6 @@
 CS435 LurkDragon: Server
     Author: Logan Hunter Gray
     Email: lhgray@lcmail.lcsc.edu
-    KNOWN ISSUES
-        ...
 '''
 
 #!/usr/bin/env python3
@@ -35,12 +33,6 @@ VERSION = int(14)
 
 characters = {}
 
-def handleIncoming(cSkt):
-    pass
-
-def handleOutgoing(cSkt):
-    pass
-
 # Function for handling individual clients
 #   cSkt: Client socket to handle
 def handleClient(cSkt):
@@ -60,33 +52,34 @@ def handleClient(cSkt):
                     print('ERROR: Connection not found for removal?! Weird...')         # Print error message
                     return 2                                                            # Return error code 2
         
-        # If socket buffer contains message(s), take action
+        # If socket buffer contains message(s); do something with message, delete message from buffer, continue acting on other messages until buffer is empty, then continue listening
         elif data != b'':
+            
             if (data[0] == MESSAGE):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == CHANGEROOM):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == FIGHT):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == PVPFIGHT):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == LOOT):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == START):
                 startData = bytes(data[0:1])
                 msgType = Start.recvStart(cSkt, startData)
                 data = data.replace(startData, b'')
-                continue
+                
             elif (data[0] == ERROR):
                 errorDataConst = data[0:4]
                 msgType, errCode, errMsgLen = Error.recvErrorConst(cSkt, errorDataConst)
@@ -94,16 +87,16 @@ def handleClient(cSkt):
                 errMsg = Error.recvErrorVar(cSkt, errorDataVar)
                 errorData = errorDataConst + errorDataVar
                 data = data.replace(errorData, b'')
-                continue
+                
             elif (data[0] == ACCEPT):
                 acceptData = data[0:1]
                 msgType, accept = Accept.recvAccept(cSkt, acceptData)
                 data = data.replace(acceptData, b'')
-                continue
+                
             elif (data[0] == ROOM):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == CHARACTER):
                 characterDataConst = data[0:48]
                 msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(cSkt, characterDataConst)
@@ -137,30 +130,30 @@ def handleClient(cSkt):
                         print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                         error = Error.sendError(cSkt, 4)
                 data = data.replace(characterData, b'')        # This works now!!!
-                continue                                                                # Continue while loop
-            
+                
             elif (data[0] == GAME):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == LEAVE):
                 leaveData = bytes(data[0:1])
                 leave = Leave.recvLeave(cSkt)
                 Client.removeClient(cSkt)
                 data = data.replace(leaveData, b'')
                 break
+            
             elif (data[0] == CONNECTION):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             elif (data[0] == VERSION):
                 Error.sendError(cSkt, 0)
                 data = data.replace(data, b'')
-                continue
+                
             else:
                 print('ERROR: Invalid message type detected!')
                 data = data.replace(data, b'')
-                continue
+                
         else:
             print('ERROR: Something weird happened! Stopping.')
 

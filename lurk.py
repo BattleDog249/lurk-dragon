@@ -14,22 +14,6 @@ import struct
 import threading
 import dataclasses
 
-@dataclasses.dataclass
-class Client:
-    """Class for tracking, finding, adding, and removing clients"""
-    clients = {}
-    def addClient(skt):
-        Client.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
-        print('DEBUG: Added Client: ', Client.clients[skt])
-    def removeClient(skt):
-        print('DEBUG: Removing Client: ', Client.clients[skt])
-        Client.clients.pop(skt)
-        print('DEBUG: Connected Clients:', Client.clients)
-    def getClients():                   # Pull list of all connected clients
-        return Client.clients
-    def getClient(skt):                 # Pull information on specified client
-        return Client.clients[skt]
-
 MESSAGE = int(1)
 CHANGEROOM = int(2)
 FIGHT = int(3)
@@ -45,19 +29,21 @@ LEAVE = int(12)
 CONNECTION = int(13)
 VERSION = int(14)
 
-def lurkRecv(skt):
-    try:
-        buffer = skt.recv(4096)
-        return buffer
-    except ConnectionError:                                             # Catch a ConnectionError if socket is closed
-        print('WARN: Failed to receive, ConnectionError!')                  # Print warning message
-        if skt in Client.clients:                                           # If client is found in database tracking connected clients
-            Client.removeClient(skt)                                            # Remove client from the list
-            print('LOG: Removed client from dictionary!')                       # Print log message
-            return 1                                                            # Return error code 1
-        else:                                                               # If client is not found for whatever reason
-            print('ERROR: Connection not found for removal?! Weird...')         # Print error message
-            return 2                                                            # Return error code 2
+@dataclasses.dataclass
+class Client:
+    """Class for tracking, finding, adding, and removing clients"""
+    clients = {}
+    def addClient(skt):
+        Client.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
+        print('DEBUG: Added Client: ', Client.clients[skt])
+    def removeClient(skt):
+        print('DEBUG: Removing Client: ', Client.clients[skt])
+        Client.clients.pop(skt)
+        print('DEBUG: Connected Clients:', Client.clients)
+    def getClients():                   # Pull list of all connected clients
+        return Client.clients
+    def getClient(skt):                 # Pull information on specified client
+        return Client.clients[skt]
 
 # Function for sending data in whole, unless a connection error presents itself
 def lurkSend(skt, data):
