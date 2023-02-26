@@ -108,7 +108,7 @@ class Character:
             return False
         character = Character.characters.get(name)
         print('DEBUG: getRoom() found {} in dictionary!'.format(name))
-        room = character[7]
+        room = character[6]
         print('DEBUG: getRoom() returning room number {}'.format(room))
         return room
     
@@ -252,15 +252,13 @@ def lurkServ(skt, message):
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(skt, 4)
         else:
-            print('DEBUG: Character found in database!')
-            if (attack + defense + regen <= Game.initPoints):
-                print('DEBUG: Detected valid stats, sending ACCEPT!')
-                Character.getRoom(name)
-                accept = Accept.sendAccept(skt, 10)
-                room = Room.sendRoom(skt, 0)
-            else:
-                print('DEBUG: Detected invalid stats, sending ERROR type 4!')
-                error = Error.sendError(skt, 4)
+            print('DEBUG: Character found in database, reprising!')
+            accept = Accept.sendAccept(skt, 10)
+            character = Character.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
+            character = Character.sendCharacter(skt, name)
+            room = Character.getRoom(name)
+            room = Room.sendRoom(skt, room)
+            # Send series of CHARACTER messages for all other creatures/players in same room
         return True
     elif (message[0] == GAME):
         print('WARN: Server handling GAME message, going against protocol! Is someone stability testing?')
