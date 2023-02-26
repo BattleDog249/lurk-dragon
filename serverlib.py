@@ -254,7 +254,7 @@ def lurkServ(skt, message):
         else:
             print('DEBUG: Character found in database, reprising!')
             accept = Accept.sendAccept(skt, 10)
-            character = Character.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
+            #character = Character.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
             character = Character.sendCharacter(skt, name)
             room = Character.getRoom(name)
             room = Room.sendRoom(skt, room)
