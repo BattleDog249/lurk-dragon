@@ -1,15 +1,9 @@
-'''
-CS435 LurkDragon: Client
-    Author: Logan Hunter Gray
-    Email: lhgray@lcmail.lcsc.edu
-'''
-
 #!/usr/bin/env python3
 
 # Import socket module, required for network communications
 import socket
 # Import custom lurk module
-from lurk import *
+from clientlib import *
 
 MESSAGE = int(1)
 CHANGEROOM = int(2)
@@ -154,6 +148,7 @@ while True:
             roomDes = Room.recvRoomVar(skt, roomDataVar, roomDesLen)
             roomData = roomDataConst + roomDataVar
             data = data.replace(roomData, b'')
+            #ChangeRoom.sendChangeRoom(skt, 1)
             continue
         
         elif (data[0] == CHARACTER):
