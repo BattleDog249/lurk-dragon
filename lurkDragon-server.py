@@ -16,6 +16,8 @@ def handleClient(skt):
             continue
         print('DEBUG: Passing to lurkServ():', message)
         result = lurkServ(skt, message)
+        if (result == -1):  # If we handled LEAVE, stop loop
+            break
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

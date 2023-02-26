@@ -44,8 +44,8 @@ def lurkRecv(skt):
             if (data == b''):
                 try:
                     data = skt.recv(1024)
-                except ConnectionError:
-                    print('WARN: ConnectionError, lurkRecv() returning None!')
+                except ConnectionError or OSError:
+                    print('WARN: ConnectionError or OSError, lurkRecv() returning None!')
                     return None
             elif (data != b''):
                 print('DEBUG: lurkRecv() received data!')

@@ -11,9 +11,9 @@ class Client:
         Client.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
         print('DEBUG: Added Client: ', Client.clients[skt])
     def removeClient(skt):
-        print('DEBUG: Removing Client: ', Client.clients[skt])
         Client.clients.pop(skt)
-        print('DEBUG: Connected Clients:', Client.clients)
+        print('DEBUG: Removed Client: ', Client.clients[skt])
+        #print('DEBUG: Connected Clients:', Client.clients)
     def getClients():                   # Pull list of all connected clients
         return Client.clients
     def getClient(skt):                 # Pull information on specified client
@@ -222,17 +222,17 @@ def lurkServ(skt, message):
         print('WARN: Server handling ERROR message, going against protocol! Is someone stability testing?')
         msgType, errCode, errMsgLen, errMsg = message
         error = Error.sendError(skt, 0)
-        return False
+        return None
     elif (message[0] == ACCEPT):
         print('WARN: Server handling ACCEPT message, going against protocol! Is someone stability testing?')
         msgType, actionAccepted = message
         error = Error.sendError(skt, 0)
-        return False
+        return None
     elif (message[0] == ROOM):
         print('WARN: Server handling ROOM message, going against protocol! Is someone stability testing?')
         msgType, roomNum, roomName, roomDesLen, roomDes = message
         error = Error.sendError(skt, 0)
-        return False
+        return None
     elif (message[0] == CHARACTER):
         print('DEBUG: Server handling CHARACTER message!')
         msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
@@ -266,23 +266,24 @@ def lurkServ(skt, message):
         print('WARN: Server handling GAME message, going against protocol! Is someone stability testing?')
         msgType, initPoints, statLimit, gameDesLen, gameDes = message
         error = Error.sendError(skt, 0)
-        return False
+        return None
     elif (message[0] == LEAVE):
         print('DEBUG: Server handling LEAVE message!')
         msgType = message
+        Client.removeClient(skt)
         skt.shutdown(2)
         skt.close()
-        return True
+        return -1
     elif (message[0] == CONNECTION):
         print('WARN: Server handling CONNECTION message, going against protocol! Is someone stability testing?')
         msgType, roomNum, roomName, roomDesLen, roomDes = message
         error = Error.sendError(skt, 0)
-        return False
+        return None
     elif (message[0] == VERSION):
         print('WARN: Server handling VERSION message, going against protocol! Is someone stability testing?')
         msgType, major, minor, extSize = message
         error = Error.sendError(skt, 0)
-        return False
+        return None
     else:
         print('WARN: Invalid message type passed to lurkServ()')
-        return False
+        return None
