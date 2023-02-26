@@ -37,60 +37,6 @@ character1 = Character.sendCharacter(character1, skt)
 #character2 = Character("Test Dummy #2", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
 #character2 = Character.sendCharacter(character2, skt)
 
-def userInput(skt):
-    while True:
-        inputType = input('Type: ')
-        if (inputType == MESSAGE):
-            msgType = inputType
-            msgLen = input('Message Length: ')
-            recipientName = input('Recipient Name: ')
-            senderName = input('Sender Name: ')
-            
-        elif (inputType == CHANGEROOM):
-            msgType = inputType
-            roomNum = input('Room Number to enter: ')
-            
-        elif (inputType == FIGHT):
-            msgType = inputType
-            
-        elif (inputType == PVPFIGHT):
-            msgType = inputType
-            targetPlayer = input('Enter Name of player to fight: ')
-            
-        elif (inputType == LOOT):
-            msgType = inputType
-            pass
-        elif (inputType == START):
-            msgType = inputType
-            pass
-        elif (inputType == ERROR):
-            msgType = inputType
-            pass
-        elif (inputType == ACCEPT):
-            msgType = inputType
-            pass
-        elif (inputType == ROOM):
-            msgType = inputType
-            pass
-        elif (inputType == CHARACTER):
-            msgType = inputType
-            pass
-        elif (inputType == GAME):
-            msgType = inputType
-            pass
-        elif (inputType == LEAVE):
-            msgType = inputType
-            pass
-        elif (inputType == CONNECTION):
-            msgType = inputType
-            pass
-        elif (inputType == VERSION):
-            msgType = inputType
-            pass
-        else:
-            # Handle client sending invalid types
-            print('ERROR: Message type {} is not supported!'.format(inputType))
-
 data = bytearray(b'')
 while True:
     if data == b'':

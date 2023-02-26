@@ -8,10 +8,12 @@ from serverlib import *
 def handleClient(skt):
     while True:
         data = lurkRecv(skt)
-        if (data == False):
+        if (data == None):
             # Remove client from tracking database
             break
         message = lurkRead(data)
+        if (message == None):
+            continue
         print('DEBUG: Passing to lurkServ():', message)
         result = lurkServ(skt, message)
 

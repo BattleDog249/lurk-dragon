@@ -1,5 +1,8 @@
-from lurklib import *
+#!/usr/bin/env python3
+
 import struct
+
+from lurklib import *
 
 class Client:
     """Class for tracking, finding, adding, and removing clients"""
@@ -47,7 +50,7 @@ class Error:
     msgType = int(7)
     
     errorCodes = {
-        0: 'ERROR: This message type is not yet supported!',
+        0: 'ERROR: This message type is not supported!',
         1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
         2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
         3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',
@@ -193,31 +196,43 @@ class Version:
 def lurkServ(skt, message):
     if (message[0] == MESSAGE):
         print('DEBUG: Server handling MESSAGE message!')
-        pass
+        msgType, msgLen, recvName, sendName, narration, message = message
+        return True
     elif (message[0] == CHANGEROOM):
         print('DEBUG: Server handling CHANGEROOM message!')
-        pass
+        msgType, roomNum = message
+        return True
     elif (message[0] == FIGHT):
         print('DEBUG: Server handling FIGHT message!')
-        pass
+        msgType = message
+        return True
     elif (message[0] == PVPFIGHT):
         print('DEBUG: Server handling PVPFIGHT message!')
-        pass
+        msgType, targetName = message
+        return True
     elif (message[0] == LOOT):
         print('DEBUG: Server handling LOOT message!')
-        pass
+        msgType, targetName = message
+        return True
     elif (message[0] == START):
         print('DEBUG: Server handling START message!')
-        pass
+        msgType = message
+        return True
     elif (message[0] == ERROR):
-        print('DEBUG: Server handling ERROR message!')
-        pass
+        print('WARN: Server handling ERROR message, going against protocol! Is someone stability testing?')
+        msgType, errCode, errMsgLen, errMsg = message
+        error = Error.sendError(skt, 0)
+        return False
     elif (message[0] == ACCEPT):
-        print('DEBUG: Server handling ACCEPT message!')
-        pass
+        print('WARN: Server handling ACCEPT message, going against protocol! Is someone stability testing?')
+        msgType, actionAccepted = message
+        error = Error.sendError(skt, 0)
+        return False
     elif (message[0] == ROOM):
-        print('DEBUG: Server handling ROOM message!')
-        pass
+        print('WARN: Server handling ROOM message, going against protocol! Is someone stability testing?')
+        msgType, roomNum, roomName, roomDesLen, roomDes = message
+        error = Error.sendError(skt, 0)
+        return False
     elif (message[0] == CHARACTER):
         print('DEBUG: Server handling CHARACTER message!')
         msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
@@ -246,19 +261,28 @@ def lurkServ(skt, message):
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(skt, 4)
+        return True
     elif (message[0] == GAME):
-        print('DEBUG: Server handling GAME message!')
-        pass
+        print('WARN: Server handling GAME message, going against protocol! Is someone stability testing?')
+        msgType, initPoints, statLimit, gameDesLen, gameDes = message
+        error = Error.sendError(skt, 0)
+        return False
     elif (message[0] == LEAVE):
         print('DEBUG: Server handling LEAVE message!')
-        pass
+        msgType = message
+        skt.shutdown(2)
+        skt.close()
+        return True
     elif (message[0] == CONNECTION):
-        print('DEBUG: Server handling CONNECTION message!')
-        pass
+        print('WARN: Server handling CONNECTION message, going against protocol! Is someone stability testing?')
+        msgType, roomNum, roomName, roomDesLen, roomDes = message
+        error = Error.sendError(skt, 0)
+        return False
     elif (message[0] == VERSION):
-        print('DEBUG: Server handling VERSION message!')
-        pass
+        print('WARN: Server handling VERSION message, going against protocol! Is someone stability testing?')
+        msgType, major, minor, extSize = message
+        error = Error.sendError(skt, 0)
+        return False
     else:
-        print('DEBUG: Invalid message type passed to lurkServ()')
-        pass
-    
+        print('WARN: Invalid message type passed to lurkServ()')
+        return False

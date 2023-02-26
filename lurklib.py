@@ -2,6 +2,8 @@
 # In messages 1 byte big, like START, may have to use startData = bytes(data[0:1]) vs. startData = data[0:1]
     # May not need to unpack because its only 1 integer?
 
+#!/usr/bin/env python3
+
 import struct
 
 MESSAGE = int(1)
@@ -29,20 +31,35 @@ def lurkSend(skt, data):
         return False
 
 def lurkRecv(skt):
+    """Waits to receive binary data from socket, and handles potential ConnectionErrors.
+
+    Args:
+        skt (Socket): Socket file descriptor to receive from.
+
+    Returns:
+        Binary: Data read from socket.
+    """
     data = bytearray(b'')
     while True:
             if (data == b''):
                 try:
-                    data = skt.recv(4096)
+                    data = skt.recv(1024)
                 except ConnectionError:
-                    print('WARN: ConnectionError, lurkRecv() returning False!')
-                    return False
+                    print('WARN: ConnectionError, lurkRecv() returning None!')
+                    return None
             elif (data != b''):
                 print('DEBUG: lurkRecv() received data!')
                 return data
         
 def lurkRead(data):
-    """Returns whole lurk message entered as parameter"""
+    """Returns unpacked lurk messages
+
+    Args:
+        data (bytes): Binary data following the LURK protocol
+
+    Returns:
+        Any: All values of unpacked LURK message as integers, strings, etc.
+    """
     print('DEBUG: Data passed to lurkRead():', data)
     if (data[0] == MESSAGE):
         print('DEBUG: Reading MESSAGE message!')
