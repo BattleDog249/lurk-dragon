@@ -201,6 +201,7 @@ def lurkServ(skt, message):
     elif (message[0] == CHANGEROOM):
         print('DEBUG: Server handling CHANGEROOM message!')
         msgType, roomNum = message
+        
         return True
     elif (message[0] == FIGHT):
         print('DEBUG: Server handling FIGHT message!')
@@ -217,6 +218,11 @@ def lurkServ(skt, message):
     elif (message[0] == START):
         print('DEBUG: Server handling START message!')
         msgType = message
+        character = Character.characters.update({name:[flags, attack, defense, regen, 100, 0, 1, charDesLen, charDes]})
+        room = Character.getRoom(name)
+        room = Room.sendRoom(skt, room)
+        character = Character.sendCharacter(name)
+        # Send CHARACTER messages for all characters with same room number
         return True
     elif (message[0] == ERROR):
         print('WARN: Server handling ERROR message, going against protocol! Is someone stability testing?')
@@ -246,18 +252,18 @@ def lurkServ(skt, message):
             if (attack + defense + regen <= Game.initPoints):
                 print('DEBUG: Stats valid, sending ACCEPT!')
                 accept = Accept.sendAccept(skt, 10)
-                room = Room.sendRoom(skt, 0)
                 character = Character.sendCharacter(skt, name)
+                # Should now wait for a START message before sending ROOM and CHARACTER messages, I think
+                #room = Room.sendRoom(skt, 0)
             else:
                 print('DEBUG: Detected invalid stats, sending ERROR type 4!')
                 error = Error.sendError(skt, 4)
         else:
             print('DEBUG: Character found in database, reprising!')
             accept = Accept.sendAccept(skt, 10)
-            #character = Character.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
             character = Character.sendCharacter(skt, name)
-            room = Character.getRoom(name)
-            room = Room.sendRoom(skt, room)
+            #room = Character.getRoom(name)
+            #room = Room.sendRoom(skt, room)
             # Send series of CHARACTER messages for all other creatures/players in same room
         return True
     elif (message[0] == GAME):
