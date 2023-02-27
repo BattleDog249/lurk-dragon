@@ -201,6 +201,9 @@ def lurkServ(skt, message):
     elif (message[0] == CHANGEROOM):
         print('DEBUG: Server handling CHANGEROOM message!')
         msgType, roomNum = message
+        character = Character.getRoom(name)                 # UNDER CONSTRUCTION
+        if roomNum in Connection.connections:
+            pass
         
         return True
     elif (message[0] == FIGHT):
