@@ -22,6 +22,10 @@ def handleClient(skt):
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+if serverSkt == -1:
+    print('ERROR: Server socket error!')
+    exit
+
 # Assigned range: 5010 - 5014
 address = '0.0.0.0'
 port = 5010

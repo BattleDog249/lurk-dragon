@@ -59,114 +59,192 @@ def lurkRead(data):
 
     Returns:
         Any: All values of unpacked LURK message as integers, strings, etc.
+        None: If passed an unsupported message type, or if nessage type is of unexpected size
     """
     print('DEBUG: Data passed to lurkRead():', data)
     if (data[0] == MESSAGE):
         print('DEBUG: Reading MESSAGE message!')
         messageDataConst = data[0:67]
-        msgType, msgLen, recvName, sendName, narration = struct.unpack('<BH32s30sH', messageDataConst)
+        try:
+            msgType, msgLen, recvName, sendName, narration = struct.unpack('<BH32s30sH', messageDataConst)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack constant MESSAGE data!')
+            return None
         print('DEBUG: Type:', msgType)
         print('DEBUG: Message Length:', msgLen)
         print('DEBUG: Recipient Name:', recvName)
         print('DEBUG: Sender Name:', sendName)
         print('DEBUG: End of sender Name or narration marker:', narration)
         messageDataVar = data[67:67+msgLen]
-        message = struct.unpack('<%ds' %msgLen, messageDataVar)
+        try:
+            message = struct.unpack('<%ds' %msgLen, messageDataVar)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack variable MESSAGE data!')
+            return None
         print('DEBUG: Message:', message)
         return msgType, msgLen, recvName, sendName, narration, message
     
     elif (data[0] == CHANGEROOM):
         print('DEBUG: Reading CHANGEROOM message!')
         changeRoomData = data[0:3]
-        msgType, desiredRoomNum = struct.unpack('<BH', changeRoomData)
-        print('DEBUG: Type:', msgType)
-        print('DEBUG: Requested Room:', desiredRoomNum)
+        try:
+            msgType, desiredRoomNum = struct.unpack('<BH', changeRoomData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack CHANGEROOM data!')
+            return None
         return msgType, desiredRoomNum
     
     elif (data[0] == FIGHT):
         print('DEBUG: Reading FIGHT message!')
         fightData = data[0:1]
-        msgType = struct.unpack('<B', fightData)
-        print('DEBUG: Type:', msgType)
+        try:
+            msgType = struct.unpack('<B', fightData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack FIGHT data!')
+            return None
         return msgType
     
     elif (data[0] == PVPFIGHT):
         print('DEBUG: Reading PVPFIGHT message!')
         pvpFightData = data[0:33]
-        msgType, targetName = struct.unpack('<B32s', pvpFightData)
+        try:
+            msgType, targetName = struct.unpack('<B32s', pvpFightData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack PVPFIGHT data!')
+            return None
         return msgType, targetName
     
     elif (data[0] == LOOT):
         print('DEBUG: Reading LOOT message!')
         lootData = data[0:33]
-        msgType, targetName = struct.unpack('<B32s', lootData)
+        try:
+            msgType, targetName = struct.unpack('<B32s', lootData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack LOOT data!')
+            return None
         return msgType, targetName
     
     elif (data[0] == START):
         print('DEBUG: Reading START message!')
         startData = data[0:1]
-        msgType = struct.unpack('<B', startData)
+        try:
+            msgType = struct.unpack('<B', startData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack START data!')
+            return None
         return msgType
     
     elif (data[0] == ERROR):
         print('DEBUG: Reading ERROR message!')
         errorDataConst = data[0:4]
-        msgType, errCode, errMsgLen = struct.unpack('<2BH', errorDataConst)
+        try:
+            msgType, errCode, errMsgLen = struct.unpack('<2BH', errorDataConst)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack constant ERROR data!')
+            return None
         errorDataVar = data[4:4+errMsgLen]
-        errMsg = struct.unpack('<%ds' %errMsgLen, errorDataVar)
+        try:
+            errMsg = struct.unpack('<%ds' %errMsgLen, errorDataVar)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack variable ERROR data!')
+            return None
         return msgType, errCode, errMsgLen, errMsg
     
     elif (data[0] == ACCEPT):
         print('DEBUG: Reading ACCEPT message!')
         acceptData = data[0:2]
-        msgType, acceptedMsg = struct.unpack('<2B', acceptData)
+        try:
+            msgType, acceptedMsg = struct.unpack('<2B', acceptData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack ACCEPT data!')
+            return None
         return msgType, acceptedMsg
     
     elif (data[0] == ROOM):
         print('DEBUG: Reading ROOM message!')
         roomDataConst = data[0:37]
-        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', roomDataConst)
+        try:
+            msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', roomDataConst)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack constant ROOM data!')
+            return None
         roomDataVar = data[37:37+roomDesLen]
-        roomDes = struct.unpack('<%ds' %roomDesLen, roomDataVar)
+        try:
+            roomDes = struct.unpack('<%ds' %roomDesLen, roomDataVar)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack variable ROOM data!')
+            return None
         return msgType, roomNum, roomName, roomDesLen, roomDes
     
     elif (data[0] == CHARACTER):
         print('DEBUG: Reading CHARACTER message!')
         characterDataConst = data[0:48]
-        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterDataConst)
+        try:
+            msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterDataConst)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack constant CHARACTER data!')
+            return None
         characterDataVar = data[48:48+charDesLen]
-        charDes, = struct.unpack('<%ds' %charDesLen, characterDataVar)
+        try:
+            charDes, = struct.unpack('<%ds' %charDesLen, characterDataVar)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack variable CHARACTER data!')
+            return None
         charDes = charDes.decode('utf-8')
         return msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes
     
     elif (data[0] == GAME):
         print('DEBUG: Reading GAME message!')
         gameDataConst = data[0:7]
-        msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', gameDataConst)
+        try:
+            msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', gameDataConst)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack constant GAME data!')
+            return None
         gameDataVar = data[7:7+gameDesLen]
-        gameDes = struct.unpack('<%ds' %gameDesLen, gameDataVar)
+        try:
+            gameDes = struct.unpack('<%ds' %gameDesLen, gameDataVar)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack variable GAME data!')
+            return None
         return msgType, initPoints, statLimit, gameDesLen, gameDes
     
     elif (data[0] == LEAVE):
         print('DEBUG: Reading LEAVE message!')
         leaveData = data[0:1]
-        msgType = struct.unpack('<B', leaveData)
+        try:
+            msgType = struct.unpack('<B', leaveData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack LEAVE data!')
+            return None
         return msgType
     
     elif (data[0] == CONNECTION):
         print('DEBUG: Reading CONNECTION message!')
         connectionDataConst = data[0:37]
-        msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', connectionDataConst)
+        try:
+            msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', connectionDataConst)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack constant CONNECTION data!')
+            return None
         connectionDataVar = data[37:37+roomDesLen]
-        roomDes = struct.unpack('<%ds' %roomDesLen, connectionDataVar)
+        try:
+            roomDes = struct.unpack('<%ds' %roomDesLen, connectionDataVar)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack variable CONNECTION data!')
+            return None
         return msgType, roomNum, roomName, roomDesLen, roomDes
     
     elif (data[0] == VERSION):
         print('DEBUG: Reading VERSION message!')
         versionData = data[0:5]
-        msgType, major, minor, extSize = struct.unpack('<3BH', versionData)
+        try:
+            msgType, major, minor, extSize = struct.unpack('<3BH', versionData)
+        except struct.error:
+            print('ERROR: lurkRead() failed to unpack VERSION data!')
+            return None
         return msgType, major, minor, extSize
     
     else:
-        print('ERROR: Invalid message type passed to lurkRead(), returning None!')
+        print('ERROR: lurkRead() was passed an invalid message type, returning None!')
         return None
