@@ -13,6 +13,25 @@ port = 5010
 skt.connect((host, port))
 print('DEBUG: Connecting to server:', host)
 
+while True:
+    data = lurkRecv(skt)
+    if (data == None):
+        print('DEBUG: lurkRecv() passed None, corresponding to a connection or OS error.')
+        break
+    message = lurkRead(data)
+    if (message == None):
+        continue
+    print('DEBUG: Passing to lurkClient():', message)
+    result = lurkClient(skt, message)
+    if (result == 1):
+        print('WARN: Client does not support receiving this message!')
+        print('INFO: This could also occur if lurkClient() was passed completely invalid data, but the first byte in the message happens to be a valid lurk message type.')
+        continue
+    elif (result == 2):
+        print('WARN: lurkClient() received a message type not supported by the LURK protocol!')
+        continue
+
+"""
 characterDescription = "This is a collision test dummy, it is not sentient!"
 character1 = Character("Test Dummy #1", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
 character1 = Character.sendCharacter(character1, skt)
@@ -112,3 +131,4 @@ while True:
             print('ERROR: Invalid message type detected, erasing buffer!')
             data = data.replace(data, b'')
             continue
+"""
