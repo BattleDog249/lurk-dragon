@@ -112,6 +112,10 @@ class Character:
     msgType = int(10)
     
     characters = {}
+    connected = {}
+    
+    def getCharacter(name):                                 # think this works, untested
+        return Character.characters[name]
     
     def getRoom(name):
         """Function for getting current room of provided character name"""
@@ -264,28 +268,21 @@ def lurkServ(skt, message):
         print('DEBUG: Server handling CHARACTER message!')
         msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
         name = name.decode('utf-8')
-        # If received character is new to the server
-        if (name not in Character.characters):
-            print('DEBUG: Character not found in database, adding!')
-            character = Character.characters.update({name: [flags, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})   # Health = 100, Gold = 0, Room = 0
-            print('DEBUG: Dictionary of characters:', Character.characters)
-            # If stats and CHARACTER message is valid, send ACCEPT
-            if (attack + defense + regen <= Game.initPoints):
-                print('DEBUG: Stats valid, sending ACCEPT!')
-                accept = Accept.sendAccept(skt, 10)
-                character = Character.sendCharacter(skt, name)
-                # Should now wait for a START message before sending ROOM and CHARACTER messages, I think
-                #room = Room.sendRoom(skt, 0)
-            else:
-                print('DEBUG: Detected invalid stats, sending ERROR type 4!')
-                error = Error.sendError(skt, 4)
-        else:
-            print('DEBUG: Character found in database, reprising!')
-            accept = Accept.sendAccept(skt, 10)
-            character = Character.sendCharacter(skt, name)
-            #room = Character.getRoom(name)
-            #room = Room.sendRoom(skt, room)
-            # Send series of CHARACTER messages for all other creatures/players in same room
+        if (attack + defense + regen > Game.initPoints):
+            print('DEBUG: Detected invalid stats, sending ERROR type 4!')
+            error = Error.sendError(skt, 4)
+            return 3
+        accept = Accept.sendAccept(skt, 10)                 # Send ACCEPT to client
+        if (name in Character.characters):                      # If a character exists with this name in the dictionary
+            print('DEBUG: Old character found, reprising!')
+            character = Character.getCharacter(name)            # Get all character information from last use
+            character = Character.sendCharacter(skt, name)      # Send reprised CHARACTER message to the client
+            # Send MESSAGE to client from narrator that the character has joined the game here!
+            return 0
+        print('DEBUG: New character detected, adding to dictionary!')
+        character = Character.characters.update({name: [0x58, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})     # Add new character to dictionary
+        character = Character.sendCharacter(skt, name)                                                                      # Send CHARACTER message with updated flags, health, gold, and room number back to client
+        # Send MESSAGE to client from narrator that the character has joined the game here!
         return 0
     elif (message[0] == GAME):
         print('WARN: Server handling GAME message, going against protocol! Is someone stability testing?')
