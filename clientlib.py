@@ -2,30 +2,7 @@
 
 #!/usr/bin/env python3
 
-# Module required for network communications
-import socket
-# Module required for packing/unpacking structures
-import struct
-# Module required for multithreading & handling multiple clients
-import threading
-import dataclasses
-
 from lurklib import *
-
-MESSAGE = int(1)
-CHANGEROOM = int(2)
-FIGHT = int(3)
-PVPFIGHT = int(4)
-LOOT = int(5)
-START = int(6)
-ERROR = int(7)
-ACCEPT = int(8)
-ROOM = int(9)
-CHARACTER = int(10)
-GAME = int(11)
-LEAVE = int(12)
-CONNECTION = int(13)
-VERSION = int(14)
 
 def userInput(skt):
     while True:
@@ -81,7 +58,6 @@ def userInput(skt):
             # Handle client sending invalid types
             print('ERROR: Message type {} is not supported!'.format(inputType))
 
-@dataclasses.dataclass
 class Client:
     """Class for tracking, finding, adding, and removing clients"""
     clients = {}

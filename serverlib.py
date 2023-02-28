@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import struct
+import threading
 
 from lurklib import *
 
@@ -24,7 +24,10 @@ class Message:
     
     def sendMessage(skt, sender, receiver, message):
         messagePacked = 0
-        return lurkSend(skt, messagePacked)
+        status = lurkSend(skt, messagePacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
 
 class ChangeRoom:
     """Server should not send CHANGEROOM messages"""
@@ -67,7 +70,10 @@ class Error:
         errMsg = Error.errorCodes[code].encode('utf-8')
         errorPacked = struct.pack('<2BH%ds' %errMsgLen, Error.msgType, errCode, errMsgLen, errMsg)
         print('DEBUG: Sending ERROR message!')
-        return lurkSend(skt, errorPacked)
+        status = lurkSend(skt, errorPacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
 
 class Accept:
     msgType = int(8)
@@ -76,7 +82,10 @@ class Accept:
         action = int(message)
         acceptPacked = struct.pack('<2B', Accept.msgType, action)
         print('DEBUG: Sending ACCEPT message!')
-        return lurkSend(skt, acceptPacked)
+        status = lurkSend(skt, acceptPacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
     
 class Room:
     msgType = int(9)
@@ -94,7 +103,10 @@ class Room:
         roomDesLen = len(roomDes)
         roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, Room.msgType, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
         print('DEBUG: Sending ROOM message!')
-        return lurkSend(skt, roomPacked)
+        status = lurkSend(skt, roomPacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
 
 class Character:
     msgType = int(10)
@@ -128,7 +140,10 @@ class Character:
         charDes = Character.characters[name][8]
         characterPacked = struct.pack('<B32sB7H%ds' %charDesLen, Character.msgType, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, roomNum, charDesLen, bytes(charDes, 'utf-8'))
         print('DEBUG: Sending CHARACTER message!')
-        return lurkSend(skt, characterPacked)
+        status = lurkSend(skt, characterPacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
 
 class Game:
     msgType = int(11)
@@ -151,7 +166,10 @@ class Game:
     def sendGame(skt):
         gamePacked = struct.pack('<B3H%ds' %Game.gameDesLen, Game.msgType, Game.initPoints, Game.statLimit, Game.gameDesLen, Game.gameDes)
         print('DEBUG: Sending GAME message!')
-        return lurkSend(skt, gamePacked)
+        status = lurkSend(skt, gamePacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
 
 class Leave:
     """Server should not send LEAVE messages"""
@@ -179,7 +197,10 @@ class Connection:
             #for (roomNum in Connection.connections[])
             connectionPacked = struct.pack('<BH32sH%ds' %Room.rooms[roomNum][1], Connection.msgType, Room.rooms[roomNum], Room.rooms[roomNum][0], len(Room.rooms[roomNum][1]), Room.rooms[roomNum][1])
             print('DEBUG: Sending CONNECTION message!')
-            return lurkSend(skt, connectionPacked)
+            status = lurkSend(skt, connectionPacked)
+            if (status == 1):
+                Client.removeClient(skt)
+            return status
 
 class Version:
     msgType = int(14)
@@ -190,14 +211,17 @@ class Version:
     def sendVersion(skt):
         versionPacked = struct.pack('<3BH', Version.msgType, Version.major, Version.minor, Version.extSize)
         print('DEBUG: Sending VERSION message!')
-        return lurkSend(skt, versionPacked)
+        status = lurkSend(skt, versionPacked)
+        if (status == 1):
+            Client.removeClient(skt)
+        return status
 
 # Function to takes action based on incoming message from client
 def lurkServ(skt, message):
     if (message[0] == MESSAGE):
         print('DEBUG: Server handling MESSAGE message!')
         msgType, msgLen, recvName, sendName, narration, message = message
-        return True
+        return 0
     elif (message[0] == CHANGEROOM):
         print('DEBUG: Server handling CHANGEROOM message!')
         msgType, roomNum = message
@@ -205,19 +229,19 @@ def lurkServ(skt, message):
         if roomNum in Connection.connections:
             pass
         
-        return True
+        return 0
     elif (message[0] == FIGHT):
         print('DEBUG: Server handling FIGHT message!')
         msgType = message
-        return True
+        return 0
     elif (message[0] == PVPFIGHT):
         print('DEBUG: Server handling PVPFIGHT message!')
         msgType, targetName = message
-        return True
+        return 0
     elif (message[0] == LOOT):
         print('DEBUG: Server handling LOOT message!')
         msgType, targetName = message
-        return True
+        return 0
     elif (message[0] == START):
         print('DEBUG: Server handling START message!')
         msgType = message
@@ -226,22 +250,16 @@ def lurkServ(skt, message):
         room = Room.sendRoom(skt, room)
         character = Character.sendCharacter(name)
         # Send CHARACTER messages for all characters with same room number
-        return True
+        return 0
     elif (message[0] == ERROR):
         print('WARN: Server handling ERROR message, going against protocol! Is someone stability testing?')
-        msgType, errCode, errMsgLen, errMsg = message
-        error = Error.sendError(skt, 0)
-        return None
+        return 1
     elif (message[0] == ACCEPT):
         print('WARN: Server handling ACCEPT message, going against protocol! Is someone stability testing?')
-        msgType, actionAccepted = message
-        error = Error.sendError(skt, 0)
-        return None
+        return 1
     elif (message[0] == ROOM):
         print('WARN: Server handling ROOM message, going against protocol! Is someone stability testing?')
-        msgType, roomNum, roomName, roomDesLen, roomDes = message
-        error = Error.sendError(skt, 0)
-        return None
+        return 1
     elif (message[0] == CHARACTER):
         print('DEBUG: Server handling CHARACTER message!')
         msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
@@ -268,12 +286,10 @@ def lurkServ(skt, message):
             #room = Character.getRoom(name)
             #room = Room.sendRoom(skt, room)
             # Send series of CHARACTER messages for all other creatures/players in same room
-        return True
+        return 0
     elif (message[0] == GAME):
         print('WARN: Server handling GAME message, going against protocol! Is someone stability testing?')
-        msgType, initPoints, statLimit, gameDesLen, gameDes = message
-        error = Error.sendError(skt, 0)
-        return None
+        return 1
     elif (message[0] == LEAVE):
         print('DEBUG: Server handling LEAVE message!')
         msgType = message
@@ -283,14 +299,10 @@ def lurkServ(skt, message):
         return -1
     elif (message[0] == CONNECTION):
         print('WARN: Server handling CONNECTION message, going against protocol! Is someone stability testing?')
-        msgType, roomNum, roomName, roomDesLen, roomDes = message
-        error = Error.sendError(skt, 0)
-        return None
+        return 1
     elif (message[0] == VERSION):
         print('WARN: Server handling VERSION message, going against protocol! Is someone stability testing?')
-        msgType, major, minor, extSize = message
-        error = Error.sendError(skt, 0)
-        return None
+        return 1
     else:
         print('WARN: Invalid message type passed to lurkServ()')
-        return None
+        return 2

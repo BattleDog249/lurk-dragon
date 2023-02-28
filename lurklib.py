@@ -4,6 +4,7 @@
 
 #!/usr/bin/env python3
 
+import socket
 import struct
 
 MESSAGE = int(1)
@@ -28,7 +29,7 @@ def lurkSend(skt, data):
         return 0
     except ConnectionError:
         print('WARN: ConnectionError, lurkSend() returning False!')
-        return False
+        return 1
 
 def lurkRecv(skt):
     """Waits to receive binary data from socket, and handles potential ConnectionErrors.

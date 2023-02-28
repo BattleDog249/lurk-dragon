@@ -1,24 +1,6 @@
 #!/usr/bin/env python3
 
-# Import socket module, required for network communications
-import socket
-# Import custom lurk module
 from clientlib import *
-
-MESSAGE = int(1)
-CHANGEROOM = int(2)
-FIGHT = int(3)
-PVPFIGHT = int(4)
-LOOT = int(5)
-START = int(6)
-ERROR = int(7)
-ACCEPT = int(8)
-ROOM = int(9)
-CHARACTER = int(10)
-GAME = int(11)
-LEAVE = int(12)
-CONNECTION = int(13)
-VERSION = int(14)
 
 # Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

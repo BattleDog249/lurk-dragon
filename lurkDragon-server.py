@@ -1,27 +1,35 @@
 #!/usr/bin/env python3
 
-import socket
-import threading
-
 from serverlib import *
 
 def handleClient(skt):
     while True:
         data = lurkRecv(skt)
         if (data == None):
-            # Remove client from tracking database
+            print('DEBUG: lurkRecv() passed None, corresponding to a connection or OS error. Removing client.')
+            # Maybe also remove client connection with "active" (in use) character here as well
+            Client.removeClient(skt)
             break
         message = lurkRead(data)
         if (message == None):
             continue
         print('DEBUG: Passing to lurkServ():', message)
         result = lurkServ(skt, message)
-        if (result == -1):  # If we handled LEAVE, stop loop
+        if (result == 1):
+            print('WARN: Server does not support receiving this message, sending error 0!')
+            print('INFO: This could also occur if lurkServ() was passed completely invalid data, but the first byte in the message happens to be a valid lurk message type.')
+            error = Error.sendError(skt, 0)
+            continue
+        elif (result == 2):
+            print('WARN: lurkServ() received a message type not supported by the LURK protocol, sending error 0!')
+            error = Error.sendError(skt, 0)
+            continue
+        elif (result == -1):
+            print('INFO: Client sent LEAVE, ending thread for {}'.format(skt))
             break
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 if serverSkt == -1:
     print('ERROR: Server socket error!')
     exit
