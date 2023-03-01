@@ -6,9 +6,10 @@ def handleClient(skt):
     while True:
         data = lurkRecv(skt)
         if (data == None):
-            print('DEBUG: lurkRecv() passed None, corresponding to a connection or OS error. Removing client.')
+            print('DEBUG: lurkRecv() passed None. Removing client from tracker and ending thread.')
             # Maybe also remove client connection with "active" (in use) character here as well
             Client.removeClient(skt)
+            print('DEBUG: Connected Clients:', Client.getClients())
             break
         message = lurkRead(data)
         if (message == None):
