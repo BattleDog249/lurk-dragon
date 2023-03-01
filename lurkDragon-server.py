@@ -49,8 +49,6 @@ while True:
     version = Version.sendVersion(clientSkt)
     game = Game.sendGame(clientSkt)
     
-    # Handle incoming client messages until a START is received, then spin off in new thread? Trying to fix a thread spinning up for each lurkscan
-    
     if (version == 0 and game == 0):
         Client.addClient(clientSkt)
         #Client.getClients()
