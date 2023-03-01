@@ -45,18 +45,15 @@ def lurkRecv(skt):
             if (data == b''):
                 try:
                     data = skt.recv(1024)
-                    if data == None or data == "" or data == b'':
+                    if data == b'':     # If recv returns null, client disconnected. This fixes LurkScan!
                         return None
                 except socket.error or ConnectionError or OSError:
-                    print('WARN: ConnectionError or OSError, lurkRecv() returning None!')
+                    print('WARN: socket.error or ConnectionError or OSError, lurkRecv() returning None!')
                     return None
-            elif (data == None):
-                print('DEBUG: Client disconnected, or just a lurkscan message.')
-                return None
             elif (data != b''):
                 print('DEBUG: lurkRecv() received data!')
                 return data
-        
+
 def lurkRead(data):
     """Returns unpacked lurk messages
 
