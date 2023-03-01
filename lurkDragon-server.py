@@ -15,17 +15,19 @@ def handleClient(skt):
         if (message == None):
             continue
         print('DEBUG: Passing to lurkServ():', message)
-        result = lurkServ(skt, message)
-        if (result == 1):
+        status = lurkServ(skt, message)
+        if (status == 0):
+            pass
+        if (status == 1):
             print('WARN: Server does not support receiving this message, sending error 0!')
             print('INFO: This could also occur if lurkServ() was passed completely invalid data, but the first byte in the message happens to be a valid lurk message type.')
             error = Error.sendError(skt, 0)
             continue
-        elif (result == 2):
+        elif (status == 2):
             print('WARN: lurkServ() received a message type not supported by the LURK protocol, sending error 0!')
             error = Error.sendError(skt, 0)
             continue
-        elif (result == -1):
+        elif (status == -1):
             print('INFO: Client sent LEAVE, ending thread for {}'.format(skt))
             break
 

@@ -2,7 +2,7 @@
 
 import threading
 
-from lurklib import *
+from lurklibtest import *
 
 class Client:
     """Class for tracking, finding, adding, and removing clients"""
