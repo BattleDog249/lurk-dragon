@@ -45,7 +45,9 @@ def lurkRecv(skt):
             if (data == b''):
                 try:
                     data = skt.recv(1024)
-                except ConnectionError or OSError:
+                    if data == None or data == "" or data == b'':
+                        return None
+                except socket.error or ConnectionError or OSError:
                     print('WARN: ConnectionError or OSError, lurkRecv() returning None!')
                     return None
             elif (data == None):
