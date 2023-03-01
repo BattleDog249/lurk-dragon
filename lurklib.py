@@ -45,6 +45,9 @@ def lurkRecv(skt):
             if (data == b''):
                 try:
                     data = skt.recv(1024)
+                    if data == None:
+                        print('DEBUG: Client disconnected, or just a lurkscan message.')
+                        return None
                 except ConnectionError or OSError:
                     print('WARN: ConnectionError or OSError, lurkRecv() returning None!')
                     return None
