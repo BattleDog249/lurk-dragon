@@ -4,21 +4,6 @@ import threading
 
 from lurklibtest import *
 
-class Client:
-    """Class for tracking, finding, adding, and removing clients"""
-    clients = {}
-    def addClient(skt):
-        Client.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
-        print('DEBUG: Added Client: ', Client.clients[skt])
-    def removeClient(skt):
-        print('DEBUG: Removing Client: ', Client.clients[skt])
-        Client.clients.pop(skt)
-        #print('DEBUG: Connected Clients:', Client.clients)
-    def getClients():                   # Pull list of all connected clients
-        return Client.clients
-    def getClient(skt):                 # Pull information on specified client
-        return Client.clients[skt]
-
 class Message:
     msgType = int(1)
     

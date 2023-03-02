@@ -47,7 +47,7 @@ def lurkRecv(skt):
         print('DEBUG: i:', i)
         lurkMsgType = data[i]
         print('DEBUG: lurkMsgType:', lurkMsgType)
-
+        
         if (lurkMsgType < 1 or lurkMsgType > 14):
                 print('ERROR: Message not a valid lurk type')
                 i += 1
@@ -70,9 +70,7 @@ def lurkRecv(skt):
                 print('ERROR: Failed to unpack variable MESSAGE data!')
                 continue
             print('DEBUG: Message:', message)
-            # Pack values in a dictioanry with Key = Msg type, value = msg data as tuple
-            # Now check if there is more data to unpack; if not, return dictionary containing single received message
-            # If there is, add message to dictionary, and continue at end of message looking for another valid lurk msg type until at end of data buffer
+            # Pack values into a tuple, and append to the list of messages to send to interpreter
             messages.append((msgType, msgLen, recvName, sendName, narration, message))
             i += messageHeaderLen + msgLen
             continue
@@ -193,7 +191,6 @@ def lurkRecv(skt):
             i += roomHeaderLen + roomDesLen
             continue
         
-        # This works PERFECTLY! Use as a guide to finish other types.
         elif (lurkMsgType == CHARACTER):
             print('DEBUG: Is it a CHARACTER message?')
             characterHeaderLen = i + 48
@@ -209,6 +206,7 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack variable CHARACTER data!')
                 continue
+            name = name.decode('utf-8')
             charDes = charDes.decode('utf-8')
             messages.append((msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes))
             i += characterHeaderLen + charDesLen
