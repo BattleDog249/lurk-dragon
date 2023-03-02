@@ -44,6 +44,8 @@ def lurkRecv(skt):
     print('DEBUG: Received binary data:', data)
     for i in data:                                                                               # This part is broken I believe
         print('DEBUG: i:', i)
+        lurkMsgType = i
+        '''
         try:                                                                                        # Check if byte could be a valid message type
             lurkMsgType = int.from_bytes(data[i], 'little')
             print('DEBUG: lurkMsgType:', lurkMsgType)
@@ -52,7 +54,12 @@ def lurkRecv(skt):
                 continue
         except:
             # Value fails to convert into an integer, keep looking for potential lurk message types
+            print('Value fails to convert into an integer, keep looking for potential lurk message types')
             continue
+        '''
+        if (lurkMsgType < 1 or lurkMsgType > 14):
+                print('ERROR: Message not a valid lurk type')
+                continue
         
         if (lurkMsgType == MESSAGE):
             print('DEBUG: Is it a MESSAGE message?')
@@ -241,13 +248,16 @@ def lurkRecv(skt):
         elif (lurkMsgType == CHARACTER):
             print('DEBUG: Is it a CHARACTER message?')
             characterHeaderLen = i + 48
+            print('DEBUG: characterHeaderLen:', characterHeaderLen)
             characterHeader = data[i:characterHeaderLen]
+            print('DEBUG: characterHeader:', characterHeader)
             try:
                 msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterHeader)
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack constant CHARACTER data!')
                 continue
             characterData = data[characterHeaderLen:characterHeaderLen+charDesLen]
+            print('DEBUG: characterData:', characterData)
             try:
                 charDes, = struct.unpack('<%ds' %charDesLen, characterData)
             except struct.error:
