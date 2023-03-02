@@ -99,7 +99,7 @@ class Character:
     characters = {}
     connected = {}
     
-    def getCharacter(name):                                 # think this works, untested
+    def getCharacter(name):
         return Character.characters[name]
     
     def getRoom(name):
