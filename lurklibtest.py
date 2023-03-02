@@ -42,9 +42,11 @@ def lurkRecv(skt):
         return None
     
     print('DEBUG: Received binary data:', data)
-    for i in data:                                                                               # This part is broken I believe
+    i = 0
+    while i <= len(data):                                                                               # This part is broken I believe
         print('DEBUG: i:', i)
-        lurkMsgType = i
+        lurkMsgType = data[i]
+        print('DEBUG: lurkMsgType:', lurkMsgType)
         '''
         try:                                                                                        # Check if byte could be a valid message type
             lurkMsgType = int.from_bytes(data[i], 'little')
@@ -59,6 +61,7 @@ def lurkRecv(skt):
         '''
         if (lurkMsgType < 1 or lurkMsgType > 14):
                 print('ERROR: Message not a valid lurk type')
+                i += 1
                 continue
         
         if (lurkMsgType == MESSAGE):
@@ -245,32 +248,26 @@ def lurkRecv(skt):
             
             return messages
         
+        # This works PERFECTLY! Use as a guide to finish other types.
         elif (lurkMsgType == CHARACTER):
             print('DEBUG: Is it a CHARACTER message?')
             characterHeaderLen = i + 48
-            print('DEBUG: characterHeaderLen:', characterHeaderLen)
             characterHeader = data[i:characterHeaderLen]
-            print('DEBUG: characterHeader:', characterHeader)
             try:
                 msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterHeader)
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack constant CHARACTER data!')
                 continue
             characterData = data[characterHeaderLen:characterHeaderLen+charDesLen]
-            print('DEBUG: characterData:', characterData)
             try:
                 charDes, = struct.unpack('<%ds' %charDesLen, characterData)
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack variable CHARACTER data!')
                 continue
             charDes = charDes.decode('utf-8')
-            
             messages.append((msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes))
-            
-            if (len(data[characterHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += characterHeaderLen + charDesLen
+            continue
         
         elif (lurkMsgType == GAME):
             print('DEBUG: Is it a GAME message?')
@@ -349,3 +346,4 @@ def lurkRecv(skt):
         else:
             print('ERROR: lurkRecv() was passed an invalid message type somehow, returning None!')
             return None
+    return messages
