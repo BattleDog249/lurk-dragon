@@ -43,22 +43,11 @@ def lurkRecv(skt):
     
     print('DEBUG: Received binary data:', data)
     i = 0
-    while i <= len(data):                                                                               # This part is broken I believe
+    while i <= len(data):
         print('DEBUG: i:', i)
         lurkMsgType = data[i]
         print('DEBUG: lurkMsgType:', lurkMsgType)
-        '''
-        try:                                                                                        # Check if byte could be a valid message type
-            lurkMsgType = int.from_bytes(data[i], 'little')
-            print('DEBUG: lurkMsgType:', lurkMsgType)
-            if (lurkMsgType < 1 or lurkMsgType > 14):
-                print('ERROR: data: {}({})'.format(type(data), data))
-                continue
-        except:
-            # Value fails to convert into an integer, keep looking for potential lurk message types
-            print('Value fails to convert into an integer, keep looking for potential lurk message types')
-            continue
-        '''
+
         if (lurkMsgType < 1 or lurkMsgType > 14):
                 print('ERROR: Message not a valid lurk type')
                 i += 1
@@ -74,11 +63,6 @@ def lurkRecv(skt):
                 # If lurkMsgType is a valid int, but not a valid lurk message in its entirety, continue looking for next lurk msg type
                 print('ERROR: Failed to unpack constant MESSAGE data!')
                 continue
-            print('DEBUG: Type:', msgType)
-            print('DEBUG: Message Length:', msgLen)
-            print('DEBUG: Recipient Name:', recvName)
-            print('DEBUG: Sender Name:', sendName)
-            print('DEBUG: End of sender Name or narration marker:', narration)
             messageData = data[messageHeaderLen:messageHeaderLen+msgLen]
             try:
                 message = struct.unpack('<%ds' %msgLen, messageData)
@@ -86,17 +70,12 @@ def lurkRecv(skt):
                 print('ERROR: Failed to unpack variable MESSAGE data!')
                 continue
             print('DEBUG: Message:', message)
-            
             # Pack values in a dictioanry with Key = Msg type, value = msg data as tuple
             # Now check if there is more data to unpack; if not, return dictionary containing single received message
             # If there is, add message to dictionary, and continue at end of message looking for another valid lurk msg type until at end of data buffer
-            
             messages.append((msgType, msgLen, recvName, sendName, narration, message))
-            
-            if (len(data[messageHeaderLen+msgLen:]) != 0):           # If we are not at the end of the data buffer received, more potential messages to interpret, continue
-                continue
-            
-            return messages
+            i += messageHeaderLen + msgLen
+            continue
         
         elif (lurkMsgType == CHANGEROOM):
             print('DEBUG: Is it a CHANGEROOM message?')
@@ -107,15 +86,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: Failed to unpack CHANGEROOM data!')
                 continue
-            print('DEBUG: Type:', msgType)
-            print('DEBUG: desiredRoomNum:', desiredRoomNum)
-            
             messages.append((msgType, desiredRoomNum))
-            
-            if (len(data[changeroomHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += changeroomHeaderLen
+            continue
         
         elif (lurkMsgType == FIGHT):
             print('DEBUG: Is it a FIGHT message?')
@@ -126,13 +99,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: Failed to unpack FIGHT data!')
                 continue
-            
             messages.append((msgType,))
-            
-            if (len(data[fightHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += fightHeaderLen
+            continue
         
         elif (lurkMsgType == PVPFIGHT):
             print('DEBUG: Is it a PVPFIGHT message?')
@@ -143,13 +112,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: Failed to unpack PVPFIGHT data!')
                 continue
-            
             messages.append((msgType, targetName))
-            
-            if (len(data[pvpfightHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += pvpfightHeaderLen
+            continue
         
         elif (lurkMsgType == LOOT):
             print('DEBUG: Is it a LOOT message?')
@@ -160,13 +125,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: Failed to unpack LOOT data!')
                 continue
-            
             messages.append((msgType, targetName))
-            
-            if (len(data[lootHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += lootHeaderLen
+            continue
         
         elif (lurkMsgType == START):
             print('DEBUG: Is it a START message?')
@@ -177,13 +138,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: Failed to unpack START data!')
                 continue
-            
             messages.append((msgType,))
-            
-            if (len(data[startHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += startHeaderLen
+            continue
         
         elif (lurkMsgType == ERROR):
             print('DEBUG: Is it an ERROR message?')
@@ -200,13 +157,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack variable ERROR data!')
                 continue
-            
             messages.append((msgType, errCode, errMsgLen))
-            
-            if (len(data[errorHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += errorHeaderLen + errMsgLen
+            continue
         
         elif (lurkMsgType == ACCEPT):
             print('DEBUG: Is it an ACCEPT message?')
@@ -217,13 +170,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack ACCEPT data!')
                 continue
-            
             messages.append((msgType, acceptedMsg))
-            
-            if (len(data[acceptHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += acceptHeaderLen
+            continue
         
         elif (lurkMsgType == ROOM):
             print('DEBUG: Is it a ROOM message?')
@@ -240,13 +189,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack variable ROOM data!')
                 continue
-            
             messages.append((msgType, roomNum, roomName, roomDesLen, roomDes))
-            
-            if (len(data[roomHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += roomHeaderLen + roomDesLen
+            continue
         
         # This works PERFECTLY! Use as a guide to finish other types.
         elif (lurkMsgType == CHARACTER):
@@ -284,13 +229,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack variable GAME data!')
                 continue
-            
             messages.append((msgType, initPoints, statLimit, gameDesLen, gameDes))
-            
-            if (len(data[gameHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += gameHeaderLen + gameDesLen
+            continue
         
         elif (lurkMsgType == LEAVE):
             print('DEBUG: Is it a LEAVE message?')
@@ -301,10 +242,9 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack LEAVE data!')
                 continue
-            
             messages.append((msgType,))
-
-            return messages
+            i += leaveHeaderLen
+            continue
         
         elif (data[0] == CONNECTION):
             print('DEBUG: Is it a CONNECTION message?')
@@ -315,19 +255,15 @@ def lurkRecv(skt):
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack constant CONNECTION data!')
                 continue
-            connectionDataVar = data[37:37+roomDesLen]
+            connectionData = data[37:37+roomDesLen]
             try:
-                roomDes = struct.unpack('<%ds' %roomDesLen, connectionDataVar)
+                roomDes = struct.unpack('<%ds' %roomDesLen, connectionData)
             except struct.error:
                 print('ERROR: lurkRead() failed to unpack variable CONNECTION data!')
                 continue
-            
             messages.append((msgType, roomNum, roomName, roomDesLen, roomDes))
-            
-            if (len(data[connectionHeaderLen:]) != 0):
-                continue
-            
-            return messages
+            i += connectionHeaderLen +  roomDesLen
+            continue
         
         elif (data[0] == VERSION):
             print('DEBUG: Is it a VERSION message?')
@@ -339,9 +275,8 @@ def lurkRecv(skt):
                 print('ERROR: lurkRead() failed to unpack VERSION data!')
                 continue
             messages.append((msgType, major, minor, extSize))
-            if (len(data[versionHeaderLen:]) != 0):
-                continue
-            return messages
+            i += versionHeaderLen
+            continue
         
         else:
             print('ERROR: lurkRecv() was passed an invalid message type somehow, returning None!')
