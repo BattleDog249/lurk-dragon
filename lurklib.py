@@ -230,7 +230,7 @@ class Lurk:
                     print('ERROR: lurkRead() failed to unpack variable CHARACTER data!')
                     i += charDesLen
                     continue
-                messages.append((msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8')))
+                messages.append((msgType, name.decode('utf-8'), hex(flags), attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8')))
                 i += characterHeaderLen + charDesLen
                 continue
             

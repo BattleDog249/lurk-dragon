@@ -97,6 +97,23 @@ class Server:
         2: ('Hidden Valley', 'Seems to be remnants of a ranch here...')
     }
     
+    def sendRoom(skt, room):
+        roomNum = int(room)
+        roomName = Server.rooms[roomNum][0]
+        roomDesLen = len(Server.rooms[roomNum][1])
+        roomDes = Server.rooms[roomNum][1]
+        try:
+            roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, ROOM, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
+            print('DEBUG: Sending ROOM message!')
+            Lurk.lurkSend(skt, roomPacked)
+        except struct.error:
+            print('ERROR: Failed to pack ROOM structure!')
+            raise struct.error
+        except Lurk.lurkSend.error:
+            print('ERROR: lurkSend() failed!')
+            raise Lurk.lurkSend.Error
+        return 0
+    
     connections = {
         rooms[0]: (rooms[1], rooms[2]),
         rooms[1]: (rooms[2]),
@@ -154,7 +171,7 @@ def handleClient(skt):
             elif (message[0] == START):
                 activeCharacter = Server.activeCharacters.update({skt: name})
                 print('DEBUG: activeCharacters:', activeCharacter)
-                Server.characters.update({name:[flags, attack, defense, regen, 100, 0, 1, charDesLen, charDes]})
+                Server.characters.update({name:[0x98, attack, defense, regen, 100, 0, 1, charDesLen, charDes]})
                 room = Server.getRoom(name)
                 room = Server.sendRoom(skt, room)
                 character = Lurk.sendCharacter(name)
@@ -222,7 +239,7 @@ def handleClient(skt):
                     continue
                 
                 print('INFO: Adding new character to world!')
-                Server.characters.update({name: [0x58, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
+                Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
                 character = Server.getCharacter(name)
                 print('DEBUG: Passing to Lurk.sendCharacter():', character)
                 status = Lurk.sendCharacter(skt, character)
