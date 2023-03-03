@@ -168,12 +168,14 @@ def handleClient(skt):
                 character = Server.getCharacter(Server.activeCharacters[skt])
                 msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
                 #roomNum = Server.getRoom(name)
-                if (desiredRoomNum not in Server.connections):
+                if (desiredRoomNum not in Server.connections[room]):
                     print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
                     status = Server.sendError(skt, 1)
                     continue
-                Server.characters.update({name: [flags, attack, defense, regen, health, gold, desiredRoomNum, charDesLen, charDes]})
+                room = desiredRoomNum
+                Server.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
                 print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
+                Server.sendRoom(skt, room)
                 Server.sendCharacter(skt, name)
                 continue
             
