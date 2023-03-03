@@ -69,8 +69,8 @@ class Server:
             print('ERROR: getRoom() cannot find character in dictionary of character!')
             return None
         character = Server.characters.get(name)
-        print('DEBUG: getRoom() found {} in dictionary!'.format(name))
-        room = character[6]
+        print('DEBUG: getRoom() found {} in characters!'.format(name))
+        room = character[8]
         print('DEBUG: getRoom() returning room number {}'.format(room))
         return room
     
@@ -190,10 +190,10 @@ def handleClient(skt):
                 # 2. Update character with new flag
                 # 3. Send updated character back to client, along with room, connections, and other characters in same room
                 # Holy shit this works?! Testing....
-                character = Server.getCharacter(Server.activeCharacters[skt])
-                print('DEBUG: Got character from socket:', character)
-                Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]})
-                room = Server.getRoom(name)
+                character = Server.getCharacter(Server.activeCharacters[skt])   # Working...
+                print('DEBUG: Got character from socket:', character)           # Okay...
+                Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]}) # Potential issue location?
+                room = Server.getRoom(name) #Issue here...
                 room = Server.sendRoom(skt, room)
                 character = Server.sendCharacter(skt, name)
                 # Send CHARACTER messages for all characters with same room number
