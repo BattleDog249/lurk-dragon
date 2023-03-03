@@ -368,8 +368,21 @@ class Lurk:
             raise Lurk.lurkSend.Error
         return 0
     def sendError(skt, error):
+        """_summary_
+
+        Args:
+            skt (socket): Receiving socket
+            error (tuple): (msgType, errorCode, errorMsgLen, errorMsg)
+
+        Raises:
+            struct.error: _description_
+            Lurk.lurkSend.Error: _description_
+
+        Returns:
+            _type_: _description_
+        """
         try:
-            errorPacked = struct.pack('<2BH%ds' %error[2], error[0], error[1], error[2], error[3])
+            errorPacked = struct.pack('<2BH%ds' %error[2], error[0], error[1], error[2], bytes(error[3], 'utf-8'))
             print('DEBUG: Sending ERROR message!')
             Lurk.lurkSend(skt, errorPacked)
         except struct.error:
@@ -393,7 +406,7 @@ class Lurk:
         return 0
     def sendRoom(skt, room):
         try:
-            roomPacked = struct.pack('<BH32sH%ds' %room[3], room[0], room[1], room[2], room[3], room[4])
+            roomPacked = struct.pack('<BH32sH%ds' %room[3], room[0], room[1], room[2], room[3], bytes(room[4], 'utf-8'))
             print('DEBUG: Sending ROOM message!')
             Lurk.lurkSend(skt, roomPacked)
         except struct.error:
@@ -418,7 +431,7 @@ class Lurk:
             _type_: _description_
         """
         try:
-            characterPacked = struct.pack('<B32sB7H%ds' %character[8], character[0], character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9])
+            characterPacked = struct.pack('<B32sB7H%ds' %character[9], character[0], bytes(character[1], 'utf-8'), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], bytes(character[10], 'utf-8'))
             print('DEBUG: Sending CHARACTER message!')
             Lurk.lurkSend(skt, characterPacked)
         except struct.error:
@@ -443,7 +456,7 @@ class Lurk:
             _type_: _description_
         """
         try:
-            gamePacked = struct.pack('<B3H%ds' %game[3], game[0], game[1], game[2], game[3], game[4])
+            gamePacked = struct.pack('<B3H%ds' %game[3], game[0], game[1], game[2], game[3], bytes(game[4], 'utf-8'))
             print('DEBUG: Sending GAME message!')
             Lurk.lurkSend(skt, gamePacked)
         except struct.error:

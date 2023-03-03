@@ -14,10 +14,12 @@ skt.connect((host, port))
 print('DEBUG: Connecting to server:', host)
 
 characterDescription = "This is a collision test dummy, it is not sentient!"
-character1 = Character("Test Dummy #1", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+character1 = Character("Big Stupid Guy", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
 character1 = Character.sendCharacter(character1, skt)
-character2 = Character("Test Dummy #2", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+character2 = Character("Legan", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
 character2 = Character.sendCharacter(character2, skt)
+#character3 = Character("Test Dummy #3", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+#character3 = Character.sendCharacter(character2, skt)
 
 while True:
     data = lurkRecv(skt)
