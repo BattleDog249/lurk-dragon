@@ -77,7 +77,13 @@ class Server:
         print('DEBUG: getRoom() returning room number {}'.format(room))
         return room
     
+    # {characterName: skt}
     activeCharacters = {}
+    
+    def getActiveCharacter(name):
+        name = str(name)
+        skt = Server.activeCharacters[name]
+        return skt
     
     monsters = {}
     
@@ -159,6 +165,11 @@ def handleClient(skt):
                 print('DEBUG: Sender Name:', sendName)
                 print('DEBUG: End of sender Name or narration marker:', narration)
                 print('DEBUG: Message:', message)
+                
+                message = (msgType, msgLen, sendName, recvName, narration, message)         # Flipped send/recv
+                # Find socket to send to that corresponds with the desired recipient, then send message to that socket
+                skt = Server.getActiveCharacter()
+                status = Lurk.sendMessage(skt, message)
                 continue
             
             elif (message[0] == CHANGEROOM):
@@ -273,8 +284,8 @@ def handleClient(skt):
                 
                 if (name in Server.characters):
                     print('INFO: Existing character found, reprising!')
-                    activeCharacter = Server.activeCharacters.update({skt: name})
-                    print('DEBUG: activeCharacters:', activeCharacter)
+                    Server.activeCharacters.update({name: skt})
+                    print('DEBUG: activeCharacters:', Server.activeCharacters)
                     character = Server.getCharacter(name)
                     status = Lurk.sendCharacter(skt, character)
                     # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
@@ -282,8 +293,8 @@ def handleClient(skt):
                 
                 Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
                 print('INFO: Adding new character to world!')
-                activeCharacter = Server.activeCharacters.update({skt: name})
-                print('DEBUG: activeCharacters:', activeCharacter)
+                Server.activeCharacters.update({name: skt})
+                print('DEBUG: activeCharacters:', Server.activeCharacters)
                 character = Server.getCharacter(name)
                 print('DEBUG: Passing to Lurk.sendCharacter():', character)
                 status = Lurk.sendCharacter(skt, character)
