@@ -169,6 +169,7 @@ def handleClient(skt):
                 continue
             
             elif (message[0] == START):
+                print('DEBUG: Handling START!')
                 activeCharacter = Server.activeCharacters.update({skt: name})
                 print('DEBUG: activeCharacters:', activeCharacter)
                 Server.characters.update({name:[0x98, attack, defense, regen, 100, 0, 1, charDesLen, charDes]})
@@ -286,6 +287,10 @@ def handleClient(skt):
                 
                 print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
                 status = Server.sendError(skt, 0)
+                continue
+            
+            else:
+                print('DEBUG: message[0] not a valid LURK type?')
                 continue
     # Cleanup disconencted client routine goes here
     print('Client disconnected, removing:', skt)
