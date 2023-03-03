@@ -133,9 +133,9 @@ class Server:
         return 0
     
     connections = {
-        rooms[0]: (rooms[1], rooms[2]),
-        rooms[1]: (rooms[2]),
-        rooms[2]: (rooms[1])
+        0: (rooms[1]),
+        1: (rooms[0], rooms[2]),
+        2: (rooms[1])
     }
 
 def handleClient(skt):
@@ -162,9 +162,9 @@ def handleClient(skt):
                 continue
             
             elif (message[0] == CHANGEROOM):
-                msgType, desiredRoom = message
+                msgType, desiredRoomNum = message
                 print('DEBUG: Type:', msgType)
-                print('DEBUG: desiredRoom:', desiredRoom)
+                print('DEBUG: desiredRoom:', desiredRoomNum)
                 character = Server.getCharacter(Server.activeCharacters[skt])
                 msgType, name, flags, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes = character
                 #roomNum = Server.getRoom(name)
@@ -172,16 +172,14 @@ def handleClient(skt):
                     print('ERROR: Character not started, sending ERROR code 5!')
                     status = Server.sendError(skt, 5)
                     continue
-                print('DEBUG: desiredRoom:', desiredRoom)
+                print('DEBUG: desiredRoom:', desiredRoomNum)
                 print('DEBUG: Server.connections:', Server.connections)
                 #print('DEBUG: Server.connections:', Server.connections)
-                '''
-                if (desiredRoom not in Server.connections[room[currentRoom]]):            # This is giving me issues, needs work
+                if (desiredRoomNum not in Server.connections[currentRoom]):            # This is giving me issues, needs work
                     print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
                     status = Server.sendError(skt, 1)
                     continue
-                '''
-                room = desiredRoom
+                room = desiredRoomNum
                 Server.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
                 print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
                 Server.sendRoom(skt, room)
