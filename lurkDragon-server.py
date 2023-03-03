@@ -44,6 +44,7 @@ class Server:
     
     def getCharacter(name):
         if name not in Server.characters:
+            print('ERROR: getCharacter() cannot find character in characters!')
             return None
         character = (CHARACTER, name, Server.characters[name][0], Server.characters[name][1], Server.characters[name][2], Server.characters[name][3], Server.characters[name][4], Server.characters[name][5], Server.characters[name][6], Server.characters[name][7], Server.characters[name][8])
         return character
@@ -66,10 +67,10 @@ class Server:
     def getRoom(name):
         """Function for getting current room of provided character name"""
         if name not in Server.characters:
-            print('ERROR: getRoom() cannot find character in dictionary of character!')
+            print('ERROR: getRoom() cannot find character in characters!')
             return None
-        character = Server.characters.get(name)
-        print('DEBUG: getRoom() found {} in characters!'.format(name))
+        character = Server.getCharacter(name)
+        print('DEBUG: getRoom() found {} in characters!'.format(character[1]))
         room = character[6]
         print('DEBUG: getRoom() returning room number {}'.format(room))
         return room
