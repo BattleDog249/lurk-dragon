@@ -168,7 +168,7 @@ def handleClient(skt):
                 print('DEBUG: targetName:', targetName)
                 continue
             
-            elif (message[0] == START):
+            elif (message == START):
                 print('DEBUG: Handling START!')
                 activeCharacter = Server.activeCharacters.update({skt: name})
                 print('DEBUG: activeCharacters:', activeCharacter)
@@ -305,8 +305,15 @@ if serverSkt == -1:
 # Assigned range: 5010 - 5014
 address = '0.0.0.0'
 port = 5010
+availablePorts = 5
 
-serverSkt.bind((address, port))
+for port in availablePorts:
+    try:
+        serverSkt.bind((address, port))
+        break
+    except OSError:
+        print('ERROR: OSError, trying port:', port+1)
+        port += 1
 
 serverSkt.listen()
 print('DEBUG: Listening on address:', address, 'port:', port)
