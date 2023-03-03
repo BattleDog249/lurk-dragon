@@ -173,8 +173,8 @@ def handleClient(skt):
                     status = Server.sendError(skt, 5)
                     continue
                 print('DEBUG: desiredRoom:', desiredRoom)
-                print('DEBUG: Server.connections[currentRoom]:', Server.connections[currentRoom])
-                if (desiredRoom not in Server.connections[currentRoom]):            # This is giving me issues, needs work
+                print('DEBUG: Server.connections[currentRoom]:', Server.connections[room[currentRoom]])
+                if (desiredRoom not in Server.connections[room[currentRoom]]):            # This is giving me issues, needs work
                     print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
                     status = Server.sendError(skt, 1)
                     continue
