@@ -153,7 +153,9 @@ class Lurk:
                     print('ERROR: Failed to unpack START data!')
                     i += startHeaderLen
                     continue
+                print('DEBUG: Appending START:', msgType)
                 messages.append((msgType,))
+                print('DEBUG: List of messages before continuing:', messages)
                 i += startHeaderLen
                 continue
             
