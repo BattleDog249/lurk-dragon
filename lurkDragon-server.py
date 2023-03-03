@@ -47,6 +47,7 @@ class Server:
             print('ERROR: getCharacter() cannot find character in characters!')
             return None
         character = (CHARACTER, name, Server.characters[name][0], Server.characters[name][1], Server.characters[name][2], Server.characters[name][3], Server.characters[name][4], Server.characters[name][5], Server.characters[name][6], Server.characters[name][7], Server.characters[name][8])
+        print('DEBUG: Server.getCharacter returning:', character)
         return character
     
     def sendCharacter(skt, name):
@@ -192,6 +193,7 @@ def handleClient(skt):
                 # 3. Send updated character back to client, along with room, connections, and other characters in same room
                 # Holy shit this works?! Testing....
                 character = Server.getCharacter(Server.activeCharacters[skt])   # Working...
+                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
                 print('DEBUG: Got character from socket:', character)           # Okay...
                 Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]}) # Potential issue location?
                 room = Server.getRoom(name) #Issue here...
