@@ -173,11 +173,14 @@ def handleClient(skt):
                     status = Server.sendError(skt, 5)
                     continue
                 print('DEBUG: desiredRoom:', desiredRoom)
-                print('DEBUG: Server.connections[currentRoom]:', Server.connections[room[currentRoom]])
+                print('DEBUG: Server.connections:', Server.connections)
+                #print('DEBUG: Server.connections:', Server.connections)
+                '''
                 if (desiredRoom not in Server.connections[room[currentRoom]]):            # This is giving me issues, needs work
                     print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
                     status = Server.sendError(skt, 1)
                     continue
+                '''
                 room = desiredRoom
                 Server.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
                 print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
