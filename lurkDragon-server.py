@@ -189,9 +189,10 @@ def handleClient(skt):
                     # a. Probably best done through activeCharacter dictionary?
                 # 2. Update character with new flag
                 # 3. Send updated character back to client, along with room, connections, and other characters in same room
+                # Holy shit this works?! Testing....
                 character = Server.getCharacter(Server.activeCharacters[skt])
                 print('DEBUG: Got character from socket:', character)
-                Server.characters.update({name:[0x98, attack, defense, regen, 100, 0, 1, charDesLen, charDes]})
+                Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]})
                 room = Server.getRoom(name)
                 room = Server.sendRoom(skt, room)
                 character = Server.sendCharacter(skt, name)
