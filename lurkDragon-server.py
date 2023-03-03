@@ -133,9 +133,9 @@ class Server:
         return 0
     
     connections = {
-        0: (rooms[1]),
-        1: (rooms[0], rooms[2]),
-        2: (rooms[1])
+        0: (1),
+        1: (0, 2),
+        2: (1)
     }
 
 def handleClient(skt):
