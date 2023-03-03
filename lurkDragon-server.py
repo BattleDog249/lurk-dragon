@@ -47,14 +47,15 @@ class Server:
             print('ERROR: getCharacter() cannot find character in characters!')
             return None
         character = (CHARACTER, name, Server.characters[name][0], Server.characters[name][1], Server.characters[name][2], Server.characters[name][3], Server.characters[name][4], Server.characters[name][5], Server.characters[name][6], Server.characters[name][7], Server.characters[name][8])
-        print('DEBUG: Server.getCharacter returning:', character)
         return character
     
     def sendCharacter(skt, name):
+        "Function for sending a character that is already found on the server"
         name = str(name)
         character = Server.getCharacter(name)
+        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
         try:
-            characterPacked = struct.pack('<B32sB7H%ds' %character[9], character[0], bytes(character[1], 'utf-8'), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], bytes(character[10], 'utf-8'))
+            characterPacked = struct.pack('<B32sB7H%ds' %charDesLen, msgType, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, bytes(charDes, 'utf-8'))
             print('DEBUG: Sending CHARACTER message!')
             Lurk.lurkSend(skt, characterPacked)
         except struct.error:
@@ -71,8 +72,8 @@ class Server:
             print('ERROR: getRoom() cannot find character in characters!')
             return None
         character = Server.getCharacter(name)
-        print('DEBUG: getRoom() found {} in characters!'.format(character[1]))
-        room = character[8]
+        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
+        print('DEBUG: getRoom() found {} in characters!'.format(name))
         print('DEBUG: getRoom() returning room number {}'.format(room))
         return room
     
@@ -164,10 +165,16 @@ def handleClient(skt):
                 msgType, desiredRoomNum = message
                 print('DEBUG: Type:', msgType)
                 print('DEBUG: desiredRoomNum:', desiredRoomNum)
-                
-                character = Server.getRoom(name)                 # UNDER CONSTRUCTION
-                if roomNum in Server.connections:
-                    pass
+                character = Server.getCharacter(Server.activeCharacters[skt])
+                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
+                #roomNum = Server.getRoom(name)
+                if (desiredRoomNum not in Server.connections):
+                    print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
+                    status = Server.sendError(skt, 1)
+                    continue
+                Server.characters.update({name: [flags, attack, defense, regen, health, gold, desiredRoomNum, charDesLen, charDes]})
+                print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
+                Server.sendCharacter(skt, name)
                 continue
             
             elif (message[0] == FIGHT):

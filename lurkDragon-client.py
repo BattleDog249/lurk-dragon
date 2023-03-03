@@ -14,9 +14,9 @@ skt.connect((host, port))
 print('DEBUG: Connecting to server:', host)
 
 characterDescription = "This is a collision test dummy, it is not sentient!"
-character1 = (10, "Big Stupid Guy", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
-status = Lurk.sendCharacter(skt, character1)
-character2 = (10, "Legan", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+#character1 = (10, "Big Stupid Guy", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+#status = Lurk.sendCharacter(skt, character1)
+character2 = (10, "Legan", 0x4, 25, 25, 50, 1, 2, 3, len(characterDescription), characterDescription)
 status = Lurk.sendCharacter(skt, character2)
 #character3 = Character(10, "Test Dummy #3", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
 #status = Lurk.sendCharacter(skt, character3)
@@ -107,6 +107,7 @@ while True:
             print('DEBUG: Room:', room)
             print('DEBUG: charDesLen:', charDesLen)
             print('DEBUG: charDes:', charDes)
+            
             continue
         
         elif (message[0] == GAME):
@@ -139,3 +140,5 @@ while True:
             print('DEBUG: minor:', minor)
             print('DEBUG: extSize:', extSize)
             continue
+        
+Lurk.sendStart(skt, 6)

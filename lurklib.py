@@ -204,7 +204,7 @@ class Lurk:
                     continue
                 roomData = data[roomHeaderLen:roomHeaderLen+roomDesLen]
                 try:
-                    roomDes = struct.unpack('<%ds' %roomDesLen, roomData)
+                    roomDes, = struct.unpack('<%ds' %roomDesLen, roomData)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack variable ROOM data!')
                     i += roomDesLen
