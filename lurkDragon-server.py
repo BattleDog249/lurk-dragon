@@ -261,10 +261,10 @@ def handleClient(skt):
                     # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                     continue
                 
-                print('INFO: Adding new character to world!')
-                activeCharacter = Server.activeCharacters.update({skt: name})
                 print('DEBUG: activeCharacters:', activeCharacter)
                 Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
+                print('INFO: Adding new character to world!')
+                activeCharacter = Server.activeCharacters.update({skt: name})
                 character = Server.getCharacter(name)
                 print('DEBUG: Passing to Lurk.sendCharacter():', character)
                 status = Lurk.sendCharacter(skt, character)
