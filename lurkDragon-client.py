@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from lurklibtest import *
+from lurklib import *
 
 # Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
