@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from clientlib import *
+from lurklibtest import *
 
 # Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -14,126 +14,128 @@ skt.connect((host, port))
 print('DEBUG: Connecting to server:', host)
 
 characterDescription = "This is a collision test dummy, it is not sentient!"
-character1 = Character("Big Stupid Guy", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
-character1 = Character.sendCharacter(character1, skt)
-character2 = Character("Legan", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
-character2 = Character.sendCharacter(character2, skt)
-#character3 = Character("Test Dummy #3", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
-#character3 = Character.sendCharacter(character2, skt)
+character1 = (10, "Big Stupid Guy", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+status = Lurk.sendCharacter(skt, character1)
+character2 = (10, "Legan", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
+status = Lurk.sendCharacter(skt, character2)
+#character3 = Character(10, "Test Dummy #3", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
+#status = Lurk.sendCharacter(skt, character3)
 
 while True:
-    data = lurkRecv(skt)
-    if (data == None):
-        print('DEBUG: lurkRecv() passed None, corresponding to a connection or OS error.')
-        break
-    message = lurkRead(data)
-    if (message == None):
-        continue
-    print('DEBUG: Passing to lurkClient():', message)
-    result = lurkClient(skt, message)
-    if (result == 1):
-        print('WARN: Client does not support receiving this message!')
-        print('INFO: This could also occur if lurkClient() was passed completely invalid data, but the first byte in the message happens to be a valid lurk message type.')
-        continue
-    elif (result == 2):
-        print('WARN: lurkClient() received a message type not supported by the LURK protocol!')
-        continue
-
-"""
-#character2 = Character("Test Dummy #2", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
-#character2 = Character.sendCharacter(character2, skt)
-
-data = bytearray(b'')
-while True:
-    if data == b'':
-        try:
-            data = skt.recv(4096)
-        except ConnectionError:
-            print('WARN: Connection broken, stopping!')
+    try:
+        messages = Lurk.lurkRecv(skt)
+        if (messages == None):
+            print('WARN: Server must have disconnected!')
             break
-    elif data != b'':
-        if (data[0] == MESSAGE):
-            pass
+    except ConnectionError:
+        print('WARN: Lurk.lurkRecv() ConnectionError, breaking!')
+        break
+    print('DEBUG: List of Messages:', messages)
+    for message in messages:
         
-        # Client should not receive CHANGEROOM messages!
-        elif (data[0] == CHANGEROOM):
-            changeRoomData = data[0:3]
-            Error.sendError(skt, 0)
-            data = data.replace(changeRoomData, b'')
-        
-        elif (data[0] == FIGHT):
-            pass
-        
-        elif (data[0] == PVPFIGHT):
-            pass
-        
-        elif (data[0] == LOOT):
-            pass
-        
-        elif (data[0] == START):
-            pass
-        
-        elif (data[0] == ERROR):
-            errorDataConst = data[0:4]
-            msgType, errCode, errMsgLen = Error.recvErrorConst(skt, errorDataConst)
-            errorDataVar = data[4:4+errMsgLen]
-            errMsg = Error.recvErrorVar(skt, errorDataVar)
-            
-            # If received ERROR is about invaid character stats
-            if (errCode == 4):
-                #character = Character("Test Dummy #3", 0x4, 25, 25, 50, 20, 100, 40, len(characterDescription), characterDescription)
-                #character = Character.sendCharacter(character, skt)
-                pass
-            #leave = Leave.sendLeave(skt)
-            continue
-            
-        elif (data[0] == ACCEPT):
-            acceptData = data[0:2]
-            msgType, accept = Accept.recvAccept(skt, acceptData)
-            data = data.replace(acceptData, b'')
+        if (message[0] == MESSAGE):
+            msgType, msgLen, recvName, sendName, narration, message = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: Message Length:', msgLen)
+            print('DEBUG: Recipient Name:', recvName)
+            print('DEBUG: Sender Name:', sendName)
+            print('DEBUG: End of sender Name or narration marker:', narration)
+            print('DEBUG: Message:', message)
             continue
         
-        elif (data[0] == ROOM):
-            roomDataConst = data[0:37]
-            msgType, roomNum, roomName, roomDesLen = Room.recvRoomConst(skt, roomDataConst)
-            roomDataVar = data[37:37+roomDesLen]
-            roomDes = Room.recvRoomVar(skt, roomDataVar, roomDesLen)
-            roomData = roomDataConst + roomDataVar
-            data = data.replace(roomData, b'')
-            #ChangeRoom.sendChangeRoom(skt, 1)
+        elif (message[0] == CHANGEROOM):
+            msgType, desiredRoomNum = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: desiredRoomNum:', desiredRoomNum)
             continue
         
-        elif (data[0] == CHARACTER):
-            characterDataConst = data[0:48]
-            msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = Character.recvCharacterConst(characterDataConst)
-            characterDataVar = data[48:48+charDesLen]
-            charDes = Character.recvCharacterVar(characterDataVar, charDesLen)
-            characterData = characterDataConst + characterDataVar
-            data = data.replace(characterData, b'')
-        
-        elif (data[0] == GAME):
-            gameDataConst = data[0:7]
-            msgType, initPoints, statLimit, gameDesLen = Game.recvGameConst(gameDataConst)
-            gameDataVar = data[7:7+gameDesLen]
-            gameDes = Game.recvGameVar(gameDataVar, gameDesLen)
-            gameData = gameDataConst + gameDataVar
-            data = data.replace(gameData, b'')
+        elif (message[0] == FIGHT):
+            msgType = message
+            print('DEBUG: Type:', msgType)
             continue
         
-        elif (data[0] == LEAVE):
-            pass
-        
-        elif (data[0] == CONNECTION):
-            pass
-        
-        elif (data[0] == VERSION):
-            versionData = data[0:5]
-            msgType, major, minor, extSize = Version.recvVersion(versionData)
-            data = data.replace(versionData, b'')
+        elif (message[0] == PVPFIGHT):
+            msgType, targetName = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: targetName:', targetName)
             continue
         
-        else:
-            print('ERROR: Invalid message type detected, erasing buffer!')
-            data = data.replace(data, b'')
+        elif (message[0] == LOOT):
+            msgType, targetName = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: targetName:', targetName)
             continue
-"""
+        
+        elif (message[0] == START):
+            msgType = message
+            print('DEBUG: Type:', msgType)
+            continue
+        
+        elif (message[0] == ERROR):
+            msgType, errCode, errMsgLen, errMsg = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: errCode:', errCode)
+            print('DEBUG: errMsgLen:', errMsgLen)
+            print('DEBUG: errMsg:', errMsg)
+            continue
+        
+        elif (message[0] == ACCEPT):
+            msgType, acceptedMsg = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: acceptedMsg:', acceptedMsg)
+            continue
+        
+        elif (message[0] == ROOM):
+            msgType, roomNum, roomName, roomDesLen, roomDes = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: roomNum:', roomNum)
+            print('DEBUG: roomName:', roomName)
+            print('DEBUG: roomDesLen:', roomDesLen)
+            print('DEBUG: roomDes:', roomDes)
+            continue
+        
+        elif (message[0] == CHARACTER):
+            msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: Name:', name)
+            print('DEBUG: Flags:', flags)
+            print('DEBUG: Attack:', attack)
+            print('DEBUG: Defense:', defense)
+            print('DEBUG: Regen:', regen)
+            print('DEBUG: Health:', health)
+            print('DEBUG: Gold:', gold)
+            print('DEBUG: Room:', room)
+            print('DEBUG: charDesLen:', charDesLen)
+            print('DEBUG: charDes:', charDes)
+            continue
+        
+        elif (message[0] == GAME):
+            msgType, initPoints, statLimit, gameDesLen, gameDes = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: initPoints:', initPoints)
+            print('DEBUG: statLimit:', statLimit)
+            print('DEBUG: gameDesLen:', gameDesLen)
+            print('DEBUG: gameDes:', gameDes)
+            continue
+        
+        elif (message[0] == LEAVE):
+            msgType = message
+            print('DEBUG: Type:', msgType)
+            continue
+        
+        elif (message[0] == CONNECTION):
+            msgType, roomNum, roomName, roomDesLen, roomDes = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: roomNum:', roomNum)
+            print('DEBUG: roomName:', roomName)
+            print('DEBUG: roomDesLen:', roomDesLen)
+            print('DEBUG: roomDes:', roomDes)
+            continue
+        
+        elif (message[0] == VERSION):
+            msgType, major, minor, extSize = message
+            print('DEBUG: Type:', msgType)
+            print('DEBUG: major:', major)
+            print('DEBUG: minor:', minor)
+            print('DEBUG: extSize:', extSize)
+            continue
