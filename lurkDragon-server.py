@@ -305,15 +305,15 @@ if serverSkt == -1:
 # Assigned range: 5010 - 5014
 address = '0.0.0.0'
 port = 5010
-availablePorts = 5
+ports = [5010, 5011, 5012, 5013, 5014]
 
-for port in availablePorts:
+for port in ports:
     try:
         serverSkt.bind((address, port))
         break
     except OSError:
         print('ERROR: OSError, trying port:', port+1)
-        port += 1
+        continue
 
 serverSkt.listen()
 print('DEBUG: Listening on address:', address, 'port:', port)
