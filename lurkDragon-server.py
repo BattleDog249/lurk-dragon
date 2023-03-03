@@ -47,6 +47,21 @@ class Server:
             return None
         character = (CHARACTER, name, Server.characters[name][0], Server.characters[name][1], Server.characters[name][2], Server.characters[name][3], Server.characters[name][4], Server.characters[name][5], Server.characters[name][6], Server.characters[name][7], Server.characters[name][8])
         return character
+    
+    def sendCharacter(skt, name):
+        name = str(name)
+        character = Server.getCharacter(name)
+        try:
+            characterPacked = struct.pack('<B32sB7H%ds' %character[9], character[0], bytes(character[1], 'utf-8'), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], bytes(character[10], 'utf-8'))
+            print('DEBUG: Sending CHARACTER message!')
+            Lurk.lurkSend(skt, characterPacked)
+        except struct.error:
+            print('ERROR: Failed to pack CHARACTER structure!')
+            raise struct.error
+        except LurkException:
+            print('ERROR: lurkSend() failed!')
+            raise LurkException
+        return 0
         
     def getRoom(name):
         """Function for getting current room of provided character name"""
@@ -170,12 +185,16 @@ def handleClient(skt):
             
             elif (message[0] == START):
                 print('DEBUG: Handling START!')
-                activeCharacter = Server.activeCharacters.update({skt: name})
-                print('DEBUG: activeCharacters:', activeCharacter)
+                # 1. Acquire character that is getting started
+                    # a. Probably best done through activeCharacter dictionary?
+                # 2. Update character with new flag
+                # 3. Send updated character back to client, along with room, connections, and other characters in same room
+                character = Server.getCharacter(Server.activeCharacters[skt])
+                print('DEBUG: Got character from socket:', character)
                 Server.characters.update({name:[0x98, attack, defense, regen, 100, 0, 1, charDesLen, charDes]})
                 room = Server.getRoom(name)
                 room = Server.sendRoom(skt, room)
-                character = Lurk.sendCharacter(name)
+                character = Server.sendCharacter(skt, name)
                 # Send CHARACTER messages for all characters with same room number
                 continue
             
@@ -234,12 +253,16 @@ def handleClient(skt):
                 
                 if (name in Server.characters):
                     print('INFO: Existing character found, reprising!')
+                    activeCharacter = Server.activeCharacters.update({skt: name})
+                    print('DEBUG: activeCharacters:', activeCharacter)
                     character = Server.getCharacter(name)
                     status = Lurk.sendCharacter(skt, character)
                     # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                     continue
                 
                 print('INFO: Adding new character to world!')
+                activeCharacter = Server.activeCharacters.update({skt: name})
+                print('DEBUG: activeCharacters:', activeCharacter)
                 Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
                 character = Server.getCharacter(name)
                 print('DEBUG: Passing to Lurk.sendCharacter():', character)
