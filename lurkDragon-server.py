@@ -72,7 +72,7 @@ class Server:
             return None
         character = Server.getCharacter(name)
         print('DEBUG: getRoom() found {} in characters!'.format(character[1]))
-        room = character[6]
+        room = character[8]
         print('DEBUG: getRoom() returning room number {}'.format(room))
         return room
     
