@@ -168,7 +168,7 @@ def handleClient(skt):
                 print('DEBUG: targetName:', targetName)
                 continue
             
-            elif (message == START):
+            elif (message[0] == START):
                 print('DEBUG: Handling START!')
                 activeCharacter = Server.activeCharacters.update({skt: name})
                 print('DEBUG: activeCharacters:', activeCharacter)
