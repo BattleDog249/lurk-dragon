@@ -72,12 +72,14 @@ class Lurk:
                 except struct.error:
                     # If lurkMsgType is a valid int, but not a valid lurk message in its entirety, continue looking for next lurk msg type
                     print('ERROR: Failed to unpack constant MESSAGE data!')
+                    i += messageHeaderLen
                     continue
                 messageData = data[messageHeaderLen:messageHeaderLen+msgLen]
                 try:
                     message, = struct.unpack('<%ds' %msgLen, messageData)
                 except struct.error:
                     print('ERROR: Failed to unpack variable MESSAGE data!')
+                    i += msgLen
                     continue
                 print('DEBUG: Message:', message)
                 # Pack values into a tuple, and append to the list of messages to send to interpreter
@@ -93,6 +95,7 @@ class Lurk:
                     msgType, desiredRoomNum = struct.unpack('<BH', changeroomHeader)
                 except struct.error:
                     print('ERROR: Failed to unpack CHANGEROOM data!')
+                    i += changeroomHeaderLen
                     continue
                 messages.append((msgType, desiredRoomNum))
                 i += changeroomHeaderLen
@@ -106,6 +109,7 @@ class Lurk:
                     msgType = struct.unpack('<B', fightHeader)
                 except struct.error:
                     print('ERROR: Failed to unpack FIGHT data!')
+                    i += fightHeaderLen
                     continue
                 messages.append((msgType,))
                 i += fightHeaderLen
@@ -119,6 +123,7 @@ class Lurk:
                     msgType, targetName = struct.unpack('<B32s', pvpfightHeader)
                 except struct.error:
                     print('ERROR: Failed to unpack PVPFIGHT data!')
+                    i += pvpfightHeaderLen
                     continue
                 messages.append((msgType, targetName.decode('utf-8')))
                 i += pvpfightHeaderLen
@@ -132,6 +137,7 @@ class Lurk:
                     msgType, targetName = struct.unpack('<B32s', lootHeader)
                 except struct.error:
                     print('ERROR: Failed to unpack LOOT data!')
+                    i += lootHeaderLen
                     continue
                 messages.append((msgType, targetName.decode('utf-8')))
                 i += lootHeaderLen
@@ -145,6 +151,7 @@ class Lurk:
                     msgType = struct.unpack('<B', startHeader)
                 except struct.error:
                     print('ERROR: Failed to unpack START data!')
+                    i += startHeaderLen
                     continue
                 messages.append((msgType,))
                 i += startHeaderLen
@@ -158,12 +165,14 @@ class Lurk:
                     msgType, errCode, errMsgLen = struct.unpack('<2BH', errorHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack constant ERROR data!')
+                    i += errorHeaderLen
                     continue
                 errorData = data[errorHeaderLen:errorHeaderLen+errMsgLen]
                 try:
                     errMsg, = struct.unpack('<%ds' %errMsgLen, errorData)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack variable ERROR data!')
+                    i += errMsgLen
                     continue
                 messages.append((msgType, errCode, errMsgLen, errMsg.decode('utf-8')))
                 i += errorHeaderLen + errMsgLen
@@ -177,6 +186,7 @@ class Lurk:
                     msgType, acceptedMsg = struct.unpack('<2B', acceptHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack ACCEPT data!')
+                    i += acceptHeaderLen
                     continue
                 messages.append((msgType, acceptedMsg))
                 i += acceptHeaderLen
@@ -190,12 +200,14 @@ class Lurk:
                     msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', roomHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack constant ROOM data!')
+                    i += roomHeaderLen
                     continue
                 roomData = data[roomHeaderLen:roomHeaderLen+roomDesLen]
                 try:
                     roomDes = struct.unpack('<%ds' %roomDesLen, roomData)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack variable ROOM data!')
+                    i += roomDesLen
                     continue
                 messages.append((msgType, roomNum, roomName, roomDesLen, roomDes.decode('utf-8')))
                 i += roomHeaderLen + roomDesLen
@@ -209,12 +221,14 @@ class Lurk:
                     msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack constant CHARACTER data!')
+                    i += characterHeaderLen
                     continue
                 characterData = data[characterHeaderLen:characterHeaderLen+charDesLen]
                 try:
                     charDes, = struct.unpack('<%ds' %charDesLen, characterData)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack variable CHARACTER data!')
+                    i += charDesLen
                     continue
                 messages.append((msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8')))
                 i += characterHeaderLen + charDesLen
@@ -228,12 +242,14 @@ class Lurk:
                     msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', gameHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack constant GAME data!')
+                    i += gameHeaderLen
                     continue
                 gameData = data[gameHeaderLen:gameHeaderLen+gameDesLen]
                 try:
                     gameDes, = struct.unpack('<%ds' %gameDesLen, gameData)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack variable GAME data!')
+                    i += gameDesLen
                     continue
                 messages.append((msgType, initPoints, statLimit, gameDesLen, gameDes.decode('utf-8')))
                 i += gameHeaderLen + gameDesLen
@@ -247,6 +263,7 @@ class Lurk:
                     msgType = struct.unpack('<B', leaveHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack LEAVE data!')
+                    i += leaveHeaderLen
                     continue
                 messages.append((msgType,))
                 i += leaveHeaderLen
@@ -260,15 +277,17 @@ class Lurk:
                     msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', connectionHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack constant CONNECTION data!')
+                    i += connectionHeaderLen
                     continue
                 connectionData = data[37:37+roomDesLen]
                 try:
                     roomDes = struct.unpack('<%ds' %roomDesLen, connectionData)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack variable CONNECTION data!')
+                    i += roomDesLen
                     continue
                 messages.append((msgType, roomNum, roomName, roomDesLen, roomDes.decode('utf-8')))
-                i += connectionHeaderLen +  roomDesLen
+                i += connectionHeaderLen + roomDesLen
                 continue
             
             elif (data[0] == VERSION):
@@ -279,6 +298,7 @@ class Lurk:
                     msgType, major, minor, extSize = struct.unpack('<3BH', versionHeader)
                 except struct.error:
                     print('ERROR: lurkRead() failed to unpack VERSION data!')
+                    i += versionHeaderLen
                     continue
                 messages.append((msgType, major, minor, extSize))
                 i += versionHeaderLen
