@@ -32,7 +32,7 @@ class Server:
         Server.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
         print('DEBUG: Added Client: ', Server.clients[skt])
     def removeClient(skt):
-        print('DEBUG: Removing Client: ', Server.clients[skt])
+        #print('DEBUG: Removing Client: ', Server.clients[skt])
         Server.clients.pop(skt)
         #print('DEBUG: Connected Clients:', Client.clients)
     def getClients():                   # Pull list of all connected clients
@@ -181,7 +181,7 @@ def handleClient(skt):
         try:
             messages = Lurk.lurkRecv(skt)
             if (messages is None):
-                print('WARN: Client must have disconnected is messages is None.')
+                print('WARN: Client must have disconnected if messages is None.')
                 break
         except ConnectionError:
             print('WARN: Lurk.lurkRecv() ConnectionError, breaking')
