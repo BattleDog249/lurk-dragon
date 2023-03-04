@@ -141,7 +141,7 @@ class Server:
         return 0
     
     connections = {
-        0: (1, 2),
+        0: (1),
         1: (0, 2),
         2: (1,)
     }
@@ -208,30 +208,31 @@ def handleClient(skt):
                 continue
             
             elif (message[0] == CHANGEROOM):
-                msgType, desiredRoomNum = message
+                msgType, newRoomNum = message
                 print('DEBUG: Type:', msgType)
-                print('DEBUG: desiredRoom:', desiredRoomNum)
+                print('DEBUG: desiredRoom:', newRoomNum)
+                
                 character = Server.getCharacter(Server.activeCharacters[skt])
-                msgType, name, flags, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes = character
-                #roomNum = Server.getRoom(name)
+                msgType, name, flags, attack, defense, regen, health, gold, oldRoomNum, charDesLen, charDes = character
                 if (flags != 0x98): # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
                     print('ERROR: Character not started, sending ERROR code 5!')
-                    status = Server.sendError(skt, 5)
+                    Server.sendError(skt, 5)
                     continue
                 print('DEBUG: Server.connections:', Server.connections)
-                print('DEBUG: Server.connections[currentRoom]:', Server.connections[currentRoom])
-                if (desiredRoomNum not in Server.connections[currentRoom]):            # This is giving me issues, needs work
+                print('DEBUG: Server.connections[currentRoomNum]:', Server.connections[oldRoomNum])
+                
+                if (newRoomNum not in Server.connections[oldRoomNum]):            # This is giving me issues, needs work
                     print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
                     status = Server.sendError(skt, 1)
                     continue
-                room = desiredRoomNum
-                Server.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
+                Server.characters.update({name: [flags, attack, defense, regen, health, gold, newRoomNum, charDesLen, charDes]})
                 print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
-                Server.sendRoom(skt, room)
-                #Server.sendCharacter(skt, name)
-                for character in Server.characters:
-                    if (character[8] == room):
-                        status = Server.sendCharacter(skt, character[1])
+                Server.sendRoom(skt, newRoomNum)
+                # Send CHARACTER messages for all characters with same room number
+                for key, value in Server.characters.items():
+                    if (value[6] != newRoomNum):
+                        continue
+                    Server.sendCharacter(skt, key)
                 #for room in Server.connections:
                     #if (room == )
                 continue
@@ -268,15 +269,16 @@ def handleClient(skt):
                     continue
                 Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]})    # Fix hardcoding specific flag
                 Server.sendRoom(skt, character[8])
-                #status = Server.sendCharacter(skt, name)
                 # Send CHARACTER messages for all characters with same room number
                 for key, value in Server.characters.items():
                     if (value[6] != room):
                         continue
                     Server.sendCharacter(skt, key)
-                for i in Server.connections:
-                    if (character[8] == room):
+                '''
+                for key, value in Server.connections.items():
+                    if (value[8] == room):
                         Server.sendConnection(skt, room)
+                '''
                 continue
             
             elif (message[0] == ERROR):
