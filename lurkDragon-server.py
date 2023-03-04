@@ -326,24 +326,29 @@ def handleClient(skt):
                     status = Server.sendError(skt, 4)
                     continue
                 
-                status = Lurk.sendAccept(skt, CHARACTER)
+                Lurk.sendAccept(skt, CHARACTER)
                 
                 if (name in Server.characters):
-                    print('INFO: Existing character found, reprising!')
+                    print('INFO: Existing character found:', Server.characters[name])
+                    print('INFO: All characters:', Server.characters)
                     Server.activeCharacters.update({name: skt})
-                    print('DEBUG: activeCharacters:', Server.activeCharacters)
-                    character = Server.getCharacter(name)
-                    status = Lurk.sendCharacter(skt, character)
+                    print('DEBUG: New activeCharacter in activeCharacters:', Server.activeCharacters[name])
+                    print('DEBUG: All activeCharacters:', Server.activeCharacters)
+                    reprisedCharacter = Server.getCharacter(name)
+                    print('DEBUG: Sending reprised character:', reprisedCharacter)
+                    Lurk.sendCharacter(skt, reprisedCharacter)
                     # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                     continue
                 
                 Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
-                print('INFO: Adding new character to world!')
+                print('INFO: New character in characters:', Server.characters[name])
+                print('INFO: All characters:', Server.characters)
                 Server.activeCharacters.update({name: skt})
-                print('DEBUG: activeCharacters:', Server.activeCharacters)
-                character = Server.getCharacter(name)
-                print('DEBUG: Passing to Lurk.sendCharacter():', character)
-                status = Lurk.sendCharacter(skt, character)
+                print('DEBUG: New activeCharacter in activeCharacters:', Server.activeCharacters[name])
+                print('DEBUG: All activeCharacters:', Server.activeCharacters)
+                processedCharacter = Server.getCharacter(name)
+                print('DEBUG: Sending validated character:', processedCharacter)
+                Lurk.sendCharacter(skt, processedCharacter)
                 # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                 continue
             
