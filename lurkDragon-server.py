@@ -40,6 +40,9 @@ class Server:
     def getClient(skt):                 # Pull information on specified client
         return Server.clients[skt]
     
+    # Dictionary
+    # Key: Name
+    # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
     characters = {}
     
     def getCharacter(name):
@@ -267,8 +270,8 @@ def handleClient(skt):
                 Server.sendRoom(skt, character[8])
                 #status = Server.sendCharacter(skt, name)
                 # Send CHARACTER messages for all characters with same room number
-                for name in Server.characters:
-                    character = Server.getCharacter(Server.characters[name])
+                for character in Server.characters:
+                    character = Server.characters[name]
                     print('CHARACTER[6]:', character[6])
                     print('CHARACTER[8]:', character[8])
                     if (character[6] == room):
