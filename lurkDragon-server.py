@@ -66,18 +66,17 @@ class Server:
             raise LurkException
         return 0
         
-    def getRoom(name):
-        """Function for getting current room of provided character name"""
-        if name not in Server.characters:
-            print('ERROR: getRoom() cannot find character in characters!')
+    def getRoom(roomNum):
+        """Function for getting room data of provided room number"""
+        if room not in Server.rooms:
+            print('ERROR: getRoom() cannot find room in rooms!')
             return None
-        character = Server.getCharacter(name)
-        msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
-        print('DEBUG: getRoom() found {} in characters!'.format(name))
-        print('DEBUG: getRoom() returning room number {}'.format(room))
+        room = (ROOM, roomNum, Server.rooms[roomNum][0], len(Server.rooms[roomNum][1]), Server.rooms[roomNum][1])
         return room
     
-    # {characterName: skt}
+    # Must be a better way to associate connected sockets with an "in-use" character
+    # This stuff is heavily broken
+    # {skt: name}
     activeCharacters = {}
     
     def getActiveCharacter(name):
@@ -110,9 +109,9 @@ class Server:
         except struct.error:
             print('ERROR: Failed to pack ERROR structure!')
             raise struct.error
-        except Lurk.lurkSend.error:
+        except LurkException:
             print('ERROR: lurkSend() failed!')
-            raise Lurk.lurkSend.Error
+            raise LurkException
         return 0
     
     rooms = {
@@ -133,22 +132,55 @@ class Server:
         except struct.error:
             print('ERROR: Failed to pack ROOM structure!')
             raise struct.error
+        except LurkException:
+            print('ERROR: lurkSend() failed!')
+            raise LurkException
+        return 0
+    
+    connections = {
+        0: (1, 2),
+        1: (0, 2),
+        2: (1,)
+    }
+
+    # Looks good!
+    def sendConnection(skt, room):
+        """Send a lurk CONNECTION message to a socket.
+
+        Args:
+            skt (socket): Socket to send data to
+            connection (tuple): CONNECTION data
+
+        Raises:
+            struct.error: Failed to pack data into a structure
+            Lurk.lurkSend.Error: Function lurkSend failed
+
+        Returns:
+            int: 0 if function finishes successfully
+        """
+        roomNum = int(room)
+        roomName = Server.rooms[roomNum][0]
+        roomDesLen = len(Server.rooms[roomNum][1])
+        roomDes = Server.rooms[roomNum][1]
+        if (roomNum != Server.connections):
+            return None
+        try:
+            connectionPacked = struct.pack('<BH32sH%ds' %roomDesLen, CONNECTION, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
+            print('DEBUG: Sending CONNECTION message!')
+            Lurk.lurkSend(skt, connectionPacked)
+        except struct.error:
+            print('ERROR: Failed to pack CONNECTION structure!')
+            raise struct.error
         except Lurk.lurkSend.error:
             print('ERROR: lurkSend() failed!')
             raise Lurk.lurkSend.Error
         return 0
-    
-    connections = {
-        0: (1,),
-        1: (0, 2),
-        2: (1,)
-    }
 
 def handleClient(skt):
     while True:
         try:
             messages = Lurk.lurkRecv(skt)
-            if (messages == None):
+            if (messages is None):
                 print('WARN: Client must have disconnected is messages is None.')
                 break
         except ConnectionError:
@@ -183,7 +215,6 @@ def handleClient(skt):
                     print('ERROR: Character not started, sending ERROR code 5!')
                     status = Server.sendError(skt, 5)
                     continue
-                print('DEBUG: desiredRoom:', desiredRoomNum)
                 print('DEBUG: Server.connections:', Server.connections)
                 print('DEBUG: Server.connections[currentRoom]:', Server.connections[currentRoom])
                 if (desiredRoomNum not in Server.connections[currentRoom]):            # This is giving me issues, needs work
@@ -194,7 +225,12 @@ def handleClient(skt):
                 Server.characters.update({name: [flags, attack, defense, regen, health, gold, room, charDesLen, charDes]})
                 print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
                 Server.sendRoom(skt, room)
-                Server.sendCharacter(skt, name)
+                #Server.sendCharacter(skt, name)
+                for character in Server.characters:
+                    if (character[8] == room):
+                        status = Server.sendCharacter(skt, character[1])
+                #for room in Server.connections:
+                    #if (room == )
                 continue
             
             elif (message[0] == FIGHT):
@@ -219,14 +255,24 @@ def handleClient(skt):
                 # 2. Update character with new flag
                 # 3. Send updated character back to client, along with room, connections, and other characters in same room
                 # Holy shit this works?! Testing....
-                character = Server.getCharacter(Server.activeCharacters[name])   # Working...
-                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
-                print('DEBUG: Got character from socket:', character)           # Okay...
-                Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]}) # Potential issue location?
-                room = Server.getRoom(name) #Issue here...
-                room = Server.sendRoom(skt, room)
-                character = Server.sendCharacter(skt, name)
+                try:
+                    character = Server.getCharacter(Server.activeCharacters[skt])
+                    msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
+                    print('DEBUG: Got character from socket:', character)
+                except:
+                    print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
+                    Server.sendError(skt, 5)
+                    continue
+                Server.characters.update({name:[0x98, attack, defense, regen, health, gold, room, charDesLen, charDes]})    # Fix hardcoding specific flag
+                Server.sendRoom(skt, character[8])
+                #status = Server.sendCharacter(skt, name)
                 # Send CHARACTER messages for all characters with same room number
+                for character in Server.characters:
+                    if (character[8] == room):
+                        Server.sendCharacter(skt, character[1])
+                for i in Server.connections:
+                    if (character[8] == room):
+                        Server.sendConnection(skt, room)
                 continue
             
             elif (message[0] == ERROR):
@@ -347,7 +393,7 @@ def handleClient(skt):
                 print('DEBUG: message[0] not a valid LURK type?')
                 continue
     # Cleanup disconencted client routine goes here
-    print('Client disconnected, removing:', skt)
+    print('INFO: Client disconnected, removing:', skt)
     Server.removeClient(skt)
 
 # Establish IPv4 TCP socket
