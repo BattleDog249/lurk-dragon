@@ -268,7 +268,9 @@ def handleClient(skt):
                 #status = Server.sendCharacter(skt, name)
                 # Send CHARACTER messages for all characters with same room number
                 for character in Server.characters:
-                    if (character[8] == room):
+                    print('CHARACTER[6]:', character[6])
+                    print('CHARACTER[8]:', character[8])
+                    if (character[6] == room):
                         Server.sendCharacter(skt, character[1])
                 for i in Server.connections:
                     if (character[8] == room):
