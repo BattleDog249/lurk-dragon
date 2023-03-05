@@ -123,7 +123,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential PVPFIGHT header: {}'.format(pvpfightHeader))
                     targetName = struct.unpack('<32s', pvpfightHeader)
-                    return (msgType, targetName)
+                    return (msgType, targetName.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack PVPFIGHT!')
                     continue
@@ -137,7 +137,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential LOOT header: {}'.format(lootHeader))
                     targetName = struct.unpack('<32s', lootHeader)
-                    return (msgType, targetName)
+                    return (msgType, targetName.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack LOOT!')
                     continue
@@ -161,7 +161,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential ERROR data: {}'.format(errorData))
                     errMsg, = struct.unpack('<%ds' %errMsgLen, errorData)
-                    return (msgType, errCode, errMsgLen, errMsg)
+                    return (msgType, errCode, errMsgLen, errMsg.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ERROR!')
                     continue
@@ -195,7 +195,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential ROOM data: {}'.format(roomData))
                     roomDes, = struct.unpack('<%ds' %roomDesLen, roomData)
-                    return (msgType, roomNum, roomName, roomDesLen, roomDes)   
+                    return (msgType, roomNum, roomName.decode('utf-8'), roomDesLen, roomDes.decode('utf-8'))   
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ROOM!')
                     continue
@@ -215,7 +215,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential CHARACTER data: {}'.format(characterData))
                     charDes, = struct.unpack('<%ds' %charDesLen, characterData)
-                    return (msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes)
+                    return (msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CHARACTER!')
                     continue
@@ -235,7 +235,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential GAME data: {}'.format(gameData))
                     gameDes, = struct.unpack('<%ds' %gameDesLen, gameData)
-                    return (msgType, initPoints, statLimit, gameDesLen, gameDes)
+                    return (msgType, initPoints, statLimit, gameDesLen, gameDes.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack GAME!')
                     continue
@@ -259,7 +259,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential CONNECTION data: {}'.format(connectionData))
                     roomDes = struct.unpack('<%ds' %roomDesLen, connectionData)
-                    return (msgType, roomNum, roomName, roomDesLen, roomDes)
+                    return (msgType, roomNum, roomName.decode('utf-8'), roomDesLen, roomDes.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CONNECTION header!')
                     continue
