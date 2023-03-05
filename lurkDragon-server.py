@@ -270,7 +270,7 @@ def handleClient(skt):
                 for key, value in Server.connections.items():
                     if (key != currentRoom):
                         continue
-                    for key, value in Server.connections[key]:
+                    for value in Server.connections[key]:
                         Server.sendConnection(skt, value)
                 continue
             
