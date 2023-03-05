@@ -183,16 +183,15 @@ def cleanupClient(skt):
 
 def handleClient(skt):
     while True:
-        try:
-            message = Lurk.lurkRecv(skt)
-            if not message:
-                print('ERROR: handleClient: lurkRecv returned None, breaking while loop!')
-                break
-        except:
-            print('ERROR: handleClient: lurkRecv raised Exception, cleaning up client & breaking?')
+        message = Lurk.lurkRecv(skt)
+        
+        if not message:
+            print('ERROR: handleClient: lurkRecv returned None, breaking while loop!')
+            print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
+            cleanupClient(skt)
             break
             
-        if (message[0] == MESSAGE):
+        elif (message[0] == MESSAGE):
             msgType, msgLen, recvName, sendName, message = message
             print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
             print('DEBUG: Message Length:', msgLen)
@@ -387,6 +386,8 @@ def handleClient(skt):
         # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
         elif (message[0] == LEAVE):
             print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
+            cleanupClient(skt)
             break
         
         elif (message[0] == CONNECTION):
@@ -415,8 +416,6 @@ def handleClient(skt):
         else:
             print('DEBUG: message[0] not a valid LURK type?')
             continue
-    print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
-    cleanupClient(skt)
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
