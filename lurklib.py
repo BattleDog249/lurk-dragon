@@ -23,24 +23,13 @@ VERSION = int(14)
 class LurkException(Exception):
     pass
 class Lurk:
-    def lurkSend(skt, messages):
-        if type(messages) == list:
-            for message in messages:
-                msgType = message[0]
-                try:
-                    skt.sendall(message)
-                    print('DEBUG: lurkSend() sent a message!')
-                    continue
-                except ConnectionError:
-                    print(Fore.RED+'ERROR: lurkSend: ConnectionError, raising LurkException!')
-                    raise LurkException
-            return 0
+    def lurkSend(skt, message):
         try:
-            skt.sendall(messages)
-            print('DEBUG: lurkSend() sent 1 message!')
+            skt.sendall(message)
+            print(Fore.WHITE+'DEBUG: lurkSend: Sent message!')
             return 0
         except ConnectionError:
-            print(Fore.RED+'ERROR: lurkSend: ConnectionError, raising LurkException!')
+            print(Fore.RED+'ERROR: lurkSend: Caught ConnectionError, raising LurkException!')
             raise LurkException
     
     def lurkRecv(skt):
@@ -48,17 +37,23 @@ class Lurk:
         data = bytearray(b'')
         try:
             data = skt.recv(1024)
-            if data == b'':     # If recv returns null, client disconnected. This fixes LurkScan!
+            if data == b'':
                 print(Fore.RED+'ERROR: lurkRecv: Received empty {}, signaling a client disconnect, returning None!'.format(data))
                 return None
-        except socket.error or ConnectionError or OSError:
-            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, ConnectionError, or OSError, returning None!')
+        except socket.error:
+            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, returning None!')
+            return None
+        except ConnectionError:
+            print(Fore.RED+'ERROR: lurkRecv: Caught ConnectionError, returning None!')
+            return None
+        except OSError:
+            print(Fore.RED+'ERROR: lurkRecv: Caught OSError, returning None!')
             return None
         
-        print('DEBUG: lurkRecv: Data:', data)
+        print(Fore.WHITE+'DEBUG: lurkRecv: Data:', data)
         i = 0
         while i < len(data):
-            print('DEBUG: lurkRecv: Data at index {}: {}'.format(i, data[i]))
+            print(Fore.WHITE+'DEBUG: lurkRecv: Data at index {}: {}'.format(i, data[i]))
             
             if (data[i] < 1 or data[i] > 14):
                     print(Fore.RED+'ERROR: lurkRecv: {} not a valid lurk message type!'.format(data[i]))
