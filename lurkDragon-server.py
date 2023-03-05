@@ -197,7 +197,7 @@ def handleClient(skt):
             
             if (message[0] == MESSAGE):
                 msgType, msgLen, recvName, sendName, message = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: Message Length:', msgLen)
                 print('DEBUG: Recipient Name:', recvName)
                 print('DEBUG: Sender Name:', sendName)
@@ -211,7 +211,7 @@ def handleClient(skt):
             
             elif (message[0] == CHANGEROOM):
                 msgType, newRoomNum = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: desiredRoom:', newRoomNum)
                 
                 character = Server.getCharacter(Server.activeCharacters[skt])
@@ -255,13 +255,13 @@ def handleClient(skt):
             
             elif (message[0] == PVPFIGHT):
                 msgType, targetName = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: targetName:', targetName)
                 continue
             
             elif (message[0] == LOOT):
                 msgType, targetName = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: targetName:', targetName)
                 continue
             
@@ -300,7 +300,7 @@ def handleClient(skt):
             
             elif (message[0] == ERROR):
                 msgType, errCode, errMsgLen, errMsg = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: errCode:', errCode)
                 print('DEBUG: errMsgLen:', errMsgLen)
                 print('DEBUG: errMsg:', errMsg)
@@ -311,7 +311,7 @@ def handleClient(skt):
             
             elif (message[0] == ACCEPT):
                 msgType, acceptedMsg = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: acceptedMsg:', acceptedMsg)
                 
                 print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
@@ -320,7 +320,7 @@ def handleClient(skt):
             
             elif (message[0] == ROOM):
                 msgType, roomNum, roomName, roomDesLen, roomDes = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: roomNum:', roomNum)
                 print('DEBUG: roomName:', roomName)
                 print('DEBUG: roomDesLen:', roomDesLen)
@@ -332,7 +332,7 @@ def handleClient(skt):
             
             elif (message[0] == CHARACTER):
                 msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: Name:', name)
                 print('DEBUG: Flags:', flags)
                 print('DEBUG: Attack:', attack)
@@ -377,7 +377,7 @@ def handleClient(skt):
             
             elif (message[0] == GAME):
                 msgType, initPoints, statLimit, gameDesLen, gameDes = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: initPoints:', initPoints)
                 print('DEBUG: statLimit:', statLimit)
                 print('DEBUG: gameDesLen:', gameDesLen)
@@ -389,11 +389,12 @@ def handleClient(skt):
             
             # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
             elif (message[0] == LEAVE):
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 break
             
             elif (message[0] == CONNECTION):
                 msgType, roomNum, roomName, roomDesLen, roomDes = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: roomNum:', roomNum)
                 print('DEBUG: roomName:', roomName)
                 print('DEBUG: roomDesLen:', roomDesLen)
@@ -405,7 +406,7 @@ def handleClient(skt):
             
             elif (message[0] == VERSION):
                 msgType, major, minor, extSize = message
-                print('DEBUG: Type:', msgType)
+                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
                 print('DEBUG: major:', major)
                 print('DEBUG: minor:', minor)
                 print('DEBUG: extSize:', extSize)
@@ -417,7 +418,7 @@ def handleClient(skt):
             else:
                 print('DEBUG: message[0] not a valid LURK type?')
                 continue
-    print('INFO: handleClient: Running cleanupClient!')
+    print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
     cleanupClient(skt)
 
 # Establish IPv4 TCP socket
