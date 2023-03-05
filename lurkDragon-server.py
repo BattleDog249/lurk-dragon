@@ -180,12 +180,11 @@ def handleClient(skt):
         try:
             messages = Lurk.lurkRecv(skt)
             if (messages is None):
-                print('WARN: Client must have disconnected if messages is None.')
+                print('ERROR: handleClient: lurkRecv returned None, breaking while loop!')
                 break
         except ConnectionError:
-            print('WARN: Lurk.lurkRecv() ConnectionError, breaking')
+            print('ERROR: handleClient: lurkRecv returned ConnectionError, breaking while loop!')
             break
-        print('DEBUG: List of Messages:', messages)
         for message in messages:
             
             if (message[0] == MESSAGE):

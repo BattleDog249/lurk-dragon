@@ -322,6 +322,7 @@ class Lurk:
                 print(Fore.RED+'ERROR: lurkRecv: Invalid message type {}, continuing!'.format(data[i]))
                 i += 1
                 continue
+        print(Fore.GREEN+'INFO: lurkRecv: Returning messages:', messages)
         return messages
     
     def sendMessage(skt, message):
