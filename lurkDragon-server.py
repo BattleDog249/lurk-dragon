@@ -217,14 +217,25 @@ def handleClient(skt):
                     continue
                 Server.characters.update({name: [flags, attack, defense, regen, health, gold, newRoomNum, charDesLen, charDes]})
                 print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
+                
                 Server.sendRoom(skt, newRoomNum)
+                
                 # Send CHARACTER messages for all characters with same room number
                 for key, value in Server.characters.items():
                     if (value[6] != newRoomNum):
                         continue
                     Server.sendCharacter(skt, key)
-                #for room in Server.connections:
-                    #if (room == )
+                
+                # Send CONNECTION messages for all connections with current room
+                for key, value in Server.connections.items():
+                    print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
+                    if (key != currentRoom):
+                        print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, currentRoom))
+                        continue
+                    print('DEBUG: Found connections:', Server.connections[key])
+                    for value in Server.connections[key]:
+                        print('DEBUG: Sending CONNECTION with value:', value)
+                        Server.sendConnection(skt, value)
                 continue
             
             elif (message[0] == FIGHT):
@@ -258,12 +269,16 @@ def handleClient(skt):
                     Server.sendError(skt, 5)
                     continue
                 Server.characters.update({name:[0x98, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes]})    # Fix hardcoding specific flag
+                
+                # Send ROOM message
                 Server.sendRoom(skt, character[8])
+                
                 # Send CHARACTER messages for all characters with same room number
                 for key, value in Server.characters.items():
                     if (value[6] != currentRoom):
                         continue
                     Server.sendCharacter(skt, key)
+                    
                 # Send CONNECTION messages for all connections with current room
                 for key, value in Server.connections.items():
                     print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
