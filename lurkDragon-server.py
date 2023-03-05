@@ -2,7 +2,7 @@
 
 import threading
 
-from lurklib import *
+from lurklibtest import *
 
 MAJOR = int(2)
 MINOR = int(3)
@@ -146,7 +146,6 @@ class Server:
         6: (2,)
     }
 
-    # Looks good!
     def sendConnection(skt, room):
         """Send a lurk CONNECTION message to a socket.
 
