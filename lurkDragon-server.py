@@ -184,239 +184,237 @@ def cleanupClient(skt):
 def handleClient(skt):
     while True:
         try:
-            messages = Lurk.lurkRecv(skt)
-            if (messages is None):
+            message = Lurk.lurkRecv(skt)
+            if not message:
                 print('ERROR: handleClient: lurkRecv returned None, breaking while loop!')
                 break
         except:
             print('ERROR: handleClient: lurkRecv raised Exception, cleaning up client & breaking?')
             break
             
-        for message in messages:
+        if (message[0] == MESSAGE):
+            msgType, msgLen, recvName, sendName, message = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: Message Length:', msgLen)
+            print('DEBUG: Recipient Name:', recvName)
+            print('DEBUG: Sender Name:', sendName)
+            print('DEBUG: Message:', message)
             
-            if (message[0] == MESSAGE):
-                msgType, msgLen, recvName, sendName, message = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: Message Length:', msgLen)
-                print('DEBUG: Recipient Name:', recvName)
-                print('DEBUG: Sender Name:', sendName)
-                print('DEBUG: Message:', message)
-                
-                message = (msgType, msgLen, sendName, recvName, message)         # Flipped send/recv
-                # Find socket to send to that corresponds with the desired recipient, then send message to that socket
-                #sendSkt = Server.getSocketByName(recvName)
-                #Lurk.sendMessage(sendSkt, message)
+            message = (msgType, msgLen, sendName, recvName, message)         # Flipped send/recv
+            # Find socket to send to that corresponds with the desired recipient, then send message to that socket
+            #sendSkt = Server.getSocketByName(recvName)
+            #Lurk.sendMessage(sendSkt, message)
+            continue
+        
+        elif (message[0] == CHANGEROOM):
+            msgType, newRoomNum = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: desiredRoom:', newRoomNum)
+            
+            character = Server.getCharacter(Server.activeCharacters[skt])
+            msgType, name, flags, attack, defense, regen, health, gold, oldRoomNum, charDesLen, charDes = character
+            if (flags != 0x98): # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
+                print('ERROR: Character not started, sending ERROR code 5!')
+                Server.sendError(skt, 5)
                 continue
+            print('DEBUG: Server.connections:', Server.connections)
+            print('DEBUG: Server.connections[currentRoomNum]:', Server.connections[oldRoomNum])
             
-            elif (message[0] == CHANGEROOM):
-                msgType, newRoomNum = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: desiredRoom:', newRoomNum)
-                
+            if (newRoomNum not in Server.connections[oldRoomNum]):            # This is giving me issues, needs work
+                print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
+                status = Server.sendError(skt, 1)
+                continue
+            Server.characters.update({name: [flags, attack, defense, regen, health, gold, newRoomNum, charDesLen, charDes]})
+            print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
+            
+            Server.sendRoom(skt, newRoomNum)
+            
+            # Send CHARACTER messages for all characters with same room number
+            for key, value in Server.characters.items():
+                if (value[6] != newRoomNum):
+                    continue
+                Server.sendCharacter(skt, key)
+            
+            # Send CONNECTION messages for all connections with current room
+            for key, value in Server.connections.items():
+                print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
+                if (key != newRoomNum):
+                    print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, newRoomNum))
+                    continue
+                print('DEBUG: Found connections:', Server.connections[key])
+                for value in Server.connections[key]:
+                    print('DEBUG: Sending CONNECTION with value:', value)
+                    Server.sendConnection(skt, value)
+            continue
+        
+        elif (message[0] == FIGHT):
+            continue
+        
+        elif (message[0] == PVPFIGHT):
+            msgType, targetName = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: targetName:', targetName)
+            continue
+        
+        elif (message[0] == LOOT):
+            msgType, targetName = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: targetName:', targetName)
+            continue
+        
+        elif (message[0] == START):
+            print('DEBUG: Handling START!')
+            try:
                 character = Server.getCharacter(Server.activeCharacters[skt])
-                msgType, name, flags, attack, defense, regen, health, gold, oldRoomNum, charDesLen, charDes = character
-                if (flags != 0x98): # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
-                    print('ERROR: Character not started, sending ERROR code 5!')
-                    Server.sendError(skt, 5)
+                msgType, name, flags, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes = character
+                print('DEBUG: Got character from socket:', character)
+            except:
+                print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
+                Server.sendError(skt, 5)
+                continue
+            Server.characters.update({name:[0x98, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes]})    # Fix hardcoding specific flag
+            
+            # Send ROOM message
+            Server.sendRoom(skt, character[8])
+            
+            # Send CHARACTER messages for all characters with same room number
+            for key, value in Server.characters.items():
+                if (value[6] != currentRoom):
                     continue
-                print('DEBUG: Server.connections:', Server.connections)
-                print('DEBUG: Server.connections[currentRoomNum]:', Server.connections[oldRoomNum])
+                Server.sendCharacter(skt, key)
                 
-                if (newRoomNum not in Server.connections[oldRoomNum]):            # This is giving me issues, needs work
-                    print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
-                    status = Server.sendError(skt, 1)
+            # Send CONNECTION messages for all connections with current room
+            for key, value in Server.connections.items():
+                print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
+                if (key != currentRoom):
+                    print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, currentRoom))
                     continue
-                Server.characters.update({name: [flags, attack, defense, regen, health, gold, newRoomNum, charDesLen, charDes]})
-                print('DEBUG: Sending updated character after changeroom:', Server.getCharacter(name))
-                
-                Server.sendRoom(skt, newRoomNum)
-                
-                # Send CHARACTER messages for all characters with same room number
-                for key, value in Server.characters.items():
-                    if (value[6] != newRoomNum):
-                        continue
-                    Server.sendCharacter(skt, key)
-                
-                # Send CONNECTION messages for all connections with current room
-                for key, value in Server.connections.items():
-                    print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
-                    if (key != newRoomNum):
-                        print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, newRoomNum))
-                        continue
-                    print('DEBUG: Found connections:', Server.connections[key])
-                    for value in Server.connections[key]:
-                        print('DEBUG: Sending CONNECTION with value:', value)
-                        Server.sendConnection(skt, value)
+                print('DEBUG: Found connections:', Server.connections[key])
+                for value in Server.connections[key]:
+                    print('DEBUG: Sending CONNECTION with value:', value)
+                    Server.sendConnection(skt, value)
+            continue
+        
+        elif (message[0] == ERROR):
+            msgType, errCode, errMsgLen, errMsg = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: errCode:', errCode)
+            print('DEBUG: errMsgLen:', errMsgLen)
+            print('DEBUG: errMsg:', errMsg)
+            
+            print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            status = Server.sendError(skt, 0)
+            continue
+        
+        elif (message[0] == ACCEPT):
+            msgType, acceptedMsg = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: acceptedMsg:', acceptedMsg)
+            
+            print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            status = Server.sendError(skt, 0)
+            continue
+        
+        elif (message[0] == ROOM):
+            msgType, roomNum, roomName, roomDesLen, roomDes = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: roomNum:', roomNum)
+            print('DEBUG: roomName:', roomName)
+            print('DEBUG: roomDesLen:', roomDesLen)
+            print('DEBUG: roomDes:', roomDes)
+            
+            print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            status = Server.sendError(skt, 0)
+            continue
+        
+        elif (message[0] == CHARACTER):
+            msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: Name:', name)
+            print('DEBUG: Flags:', flags)
+            print('DEBUG: Attack:', attack)
+            print('DEBUG: Defense:', defense)
+            print('DEBUG: Regen:', regen)
+            print('DEBUG: Health:', health)
+            print('DEBUG: Gold:', gold)
+            print('DEBUG: Room:', room)
+            print('DEBUG: charDesLen:', charDesLen)
+            print('DEBUG: charDes:', charDes)
+            
+            if (attack + defense + regen > INIT_POINTS):
+                print('WARN: Character stats invalid, sending ERROR code 4!')
+                status = Server.sendError(skt, 4)
                 continue
             
-            elif (message[0] == FIGHT):
-                continue
+            Lurk.sendAccept(skt, CHARACTER)
             
-            elif (message[0] == PVPFIGHT):
-                msgType, targetName = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: targetName:', targetName)
-                continue
-            
-            elif (message[0] == LOOT):
-                msgType, targetName = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: targetName:', targetName)
-                continue
-            
-            elif (message[0] == START):
-                print('DEBUG: Handling START!')
-                try:
-                    character = Server.getCharacter(Server.activeCharacters[skt])
-                    msgType, name, flags, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes = character
-                    print('DEBUG: Got character from socket:', character)
-                except:
-                    print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
-                    Server.sendError(skt, 5)
-                    continue
-                Server.characters.update({name:[0x98, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes]})    # Fix hardcoding specific flag
-                
-                # Send ROOM message
-                Server.sendRoom(skt, character[8])
-                
-                # Send CHARACTER messages for all characters with same room number
-                for key, value in Server.characters.items():
-                    if (value[6] != currentRoom):
-                        continue
-                    Server.sendCharacter(skt, key)
-                    
-                # Send CONNECTION messages for all connections with current room
-                for key, value in Server.connections.items():
-                    print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
-                    if (key != currentRoom):
-                        print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, currentRoom))
-                        continue
-                    print('DEBUG: Found connections:', Server.connections[key])
-                    for value in Server.connections[key]:
-                        print('DEBUG: Sending CONNECTION with value:', value)
-                        Server.sendConnection(skt, value)
-                continue
-            
-            elif (message[0] == ERROR):
-                msgType, errCode, errMsgLen, errMsg = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: errCode:', errCode)
-                print('DEBUG: errMsgLen:', errMsgLen)
-                print('DEBUG: errMsg:', errMsg)
-                
-                print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-                status = Server.sendError(skt, 0)
-                continue
-            
-            elif (message[0] == ACCEPT):
-                msgType, acceptedMsg = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: acceptedMsg:', acceptedMsg)
-                
-                print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-                status = Server.sendError(skt, 0)
-                continue
-            
-            elif (message[0] == ROOM):
-                msgType, roomNum, roomName, roomDesLen, roomDes = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: roomNum:', roomNum)
-                print('DEBUG: roomName:', roomName)
-                print('DEBUG: roomDesLen:', roomDesLen)
-                print('DEBUG: roomDes:', roomDes)
-                
-                print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-                status = Server.sendError(skt, 0)
-                continue
-            
-            elif (message[0] == CHARACTER):
-                msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: Name:', name)
-                print('DEBUG: Flags:', flags)
-                print('DEBUG: Attack:', attack)
-                print('DEBUG: Defense:', defense)
-                print('DEBUG: Regen:', regen)
-                print('DEBUG: Health:', health)
-                print('DEBUG: Gold:', gold)
-                print('DEBUG: Room:', room)
-                print('DEBUG: charDesLen:', charDesLen)
-                print('DEBUG: charDes:', charDes)
-                
-                if (attack + defense + regen > INIT_POINTS):
-                    print('WARN: Character stats invalid, sending ERROR code 4!')
-                    status = Server.sendError(skt, 4)
-                    continue
-                
-                Lurk.sendAccept(skt, CHARACTER)
-                
-                if (name in Server.characters):
-                    print('INFO: Existing character found:', Server.characters[name])
-                    print('INFO: All characters:', Server.characters)
-                    Server.activeCharacters.update({skt: name})
-                    print('DEBUG: New activeCharacter in activeCharacters:', Server.activeCharacters[skt])
-                    print('DEBUG: All activeCharacters:', Server.activeCharacters)
-                    reprisedCharacter = Server.getCharacter(name)
-                    print('DEBUG: Sending reprised character:', reprisedCharacter)
-                    Lurk.sendCharacter(skt, reprisedCharacter)
-                    # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
-                    continue
-                
-                Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
-                print('INFO: New character in characters:', Server.characters[name])
+            if (name in Server.characters):
+                print('INFO: Existing character found:', Server.characters[name])
                 print('INFO: All characters:', Server.characters)
                 Server.activeCharacters.update({skt: name})
                 print('DEBUG: New activeCharacter in activeCharacters:', Server.activeCharacters[skt])
                 print('DEBUG: All activeCharacters:', Server.activeCharacters)
-                processedCharacter = Server.getCharacter(name)
-                print('DEBUG: Sending validated character:', processedCharacter)
-                Lurk.sendCharacter(skt, processedCharacter)
+                reprisedCharacter = Server.getCharacter(name)
+                print('DEBUG: Sending reprised character:', reprisedCharacter)
+                Lurk.sendCharacter(skt, reprisedCharacter)
                 # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                 continue
             
-            elif (message[0] == GAME):
-                msgType, initPoints, statLimit, gameDesLen, gameDes = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: initPoints:', initPoints)
-                print('DEBUG: statLimit:', statLimit)
-                print('DEBUG: gameDesLen:', gameDesLen)
-                print('DEBUG: gameDes:', gameDes)
-                
-                print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-                status = Server.sendError(skt, 0)
-                continue
+            Server.characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, charDesLen, charDes]})
+            print('INFO: New character in characters:', Server.characters[name])
+            print('INFO: All characters:', Server.characters)
+            Server.activeCharacters.update({skt: name})
+            print('DEBUG: New activeCharacter in activeCharacters:', Server.activeCharacters[skt])
+            print('DEBUG: All activeCharacters:', Server.activeCharacters)
+            processedCharacter = Server.getCharacter(name)
+            print('DEBUG: Sending validated character:', processedCharacter)
+            Lurk.sendCharacter(skt, processedCharacter)
+            # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
+            continue
+        
+        elif (message[0] == GAME):
+            msgType, initPoints, statLimit, gameDesLen, gameDes = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: initPoints:', initPoints)
+            print('DEBUG: statLimit:', statLimit)
+            print('DEBUG: gameDesLen:', gameDesLen)
+            print('DEBUG: gameDes:', gameDes)
             
-            # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
-            elif (message[0] == LEAVE):
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                break
+            print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            status = Server.sendError(skt, 0)
+            continue
+        
+        # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
+        elif (message[0] == LEAVE):
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            break
+        
+        elif (message[0] == CONNECTION):
+            msgType, roomNum, roomName, roomDesLen, roomDes = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: roomNum:', roomNum)
+            print('DEBUG: roomName:', roomName)
+            print('DEBUG: roomDesLen:', roomDesLen)
+            print('DEBUG: roomDes:', roomDes)
             
-            elif (message[0] == CONNECTION):
-                msgType, roomNum, roomName, roomDesLen, roomDes = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: roomNum:', roomNum)
-                print('DEBUG: roomName:', roomName)
-                print('DEBUG: roomDesLen:', roomDesLen)
-                print('DEBUG: roomDes:', roomDes)
-                
-                print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-                status = Server.sendError(skt, 0)
-                continue
+            print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            status = Server.sendError(skt, 0)
+            continue
+        
+        elif (message[0] == VERSION):
+            msgType, major, minor, extSize = message
+            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
+            print('DEBUG: major:', major)
+            print('DEBUG: minor:', minor)
+            print('DEBUG: extSize:', extSize)
             
-            elif (message[0] == VERSION):
-                msgType, major, minor, extSize = message
-                print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-                print('DEBUG: major:', major)
-                print('DEBUG: minor:', minor)
-                print('DEBUG: extSize:', extSize)
-                
-                print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-                status = Server.sendError(skt, 0)
-                continue
-            
-            else:
-                print('DEBUG: message[0] not a valid LURK type?')
-                continue
+            print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            status = Server.sendError(skt, 0)
+            continue
+        
+        else:
+            print('DEBUG: message[0] not a valid LURK type?')
+            continue
     print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
     cleanupClient(skt)
 
