@@ -157,8 +157,6 @@ class Server:
         roomName = Server.rooms[roomNum][0]
         roomDesLen = len(Server.rooms[roomNum][1])
         roomDes = Server.rooms[roomNum][1]
-        if (roomNum != Server.connections):
-            return None
         try:
             connectionPacked = struct.pack('<BH32sH%ds' %roomDesLen, CONNECTION, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
             print('DEBUG: Sending CONNECTION message!')
@@ -272,7 +270,7 @@ def handleClient(skt):
                     if (key != currentRoom):
                         print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, currentRoom))
                         continue
-                    print('DEBUG: Found connection:', Server.connections[key])
+                    print('DEBUG: Found connections:', Server.connections[key])
                     for value in Server.connections[key]:
                         print('DEBUG: Sending CONNECTION with value:', value)
                         Server.sendConnection(skt, value)
