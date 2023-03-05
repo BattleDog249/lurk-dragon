@@ -67,7 +67,7 @@ class Lurk:
                 if not msgType:
                     print(Fore.RED+'ERROR: lurkRecv: Received {}, signaling a client disconnect, returning None!'.format(msgType))
                     return None
-                msgType = struct.unpack('<B', msgType)
+                msgType, = struct.unpack('<B', msgType)
             except struct.error:
                 print(Fore.RED+'ERROR: lurkRecv: Failed to unpack msgType!')
                 continue
