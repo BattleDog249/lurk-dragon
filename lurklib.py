@@ -68,7 +68,7 @@ class Lurk:
                 messageHeaderLen = i + 67
                 messageHeader = data[i:messageHeaderLen]
                 try:
-                    msgType, msgLen, recvName, sendName, narration = struct.unpack('<BH32s30sH', messageHeader)
+                    msgType, msgLen, recvName, sendName = struct.unpack('<BH32s32s', messageHeader)
                 except struct.error:
                     # If lurkMsgType is a valid int, but not a valid lurk message in its entirety, continue looking for next lurk msg type
                     print('ERROR: Failed to unpack constant MESSAGE data!')
@@ -83,7 +83,7 @@ class Lurk:
                     continue
                 print('DEBUG: Message:', message)
                 # Pack values into a tuple, and append to the list of messages to send to interpreter
-                messages.append((msgType, msgLen, recvName.decode('utf-8'), sendName.decode('utf-8'), narration, message.decode('utf-8')))
+                messages.append((msgType, msgLen, recvName.decode('utf-8'), sendName.decode('utf-8'), message.decode('utf-8')))
                 i += messageHeaderLen + msgLen
                 continue
             

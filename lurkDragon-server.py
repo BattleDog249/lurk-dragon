@@ -73,11 +73,17 @@ class Server:
     # This stuff is heavily broken
     # {skt: name}
     activeCharacters = {}
+    def getSocketByName(name):
+        for key, value in Server.activeCharacters:
+            if (value != name):
+                continue
+            return key
     
-    def getActiveCharacter(name):
-        name = str(name)
-        skt = Server.activeCharacters[name]
-        return skt
+    def getNameBySocket(skt):
+        for key, value in Server.activeCharacters:
+            if (key != skt):
+                continue
+            return value
     
     monsters = {}
     
@@ -183,18 +189,17 @@ def handleClient(skt):
         for message in messages:
             
             if (message[0] == MESSAGE):
-                msgType, msgLen, recvName, sendName, narration, message = message
+                msgType, msgLen, recvName, sendName, message = message
                 print('DEBUG: Type:', msgType)
                 print('DEBUG: Message Length:', msgLen)
                 print('DEBUG: Recipient Name:', recvName)
                 print('DEBUG: Sender Name:', sendName)
-                print('DEBUG: End of sender Name or narration marker:', narration)
                 print('DEBUG: Message:', message)
                 
-                message = (msgType, msgLen, sendName, recvName, narration, message)         # Flipped send/recv
+                message = (msgType, msgLen, sendName, recvName, message)         # Flipped send/recv
                 # Find socket to send to that corresponds with the desired recipient, then send message to that socket
-                skt = Server.getActiveCharacter()
-                status = Lurk.sendMessage(skt, message)
+                sendSkt = Server.getSocketByName(recvName)
+                Lurk.sendMessage(sendSkt, message)
                 continue
             
             elif (message[0] == CHANGEROOM):
@@ -255,11 +260,6 @@ def handleClient(skt):
             
             elif (message[0] == START):
                 print('DEBUG: Handling START!')
-                # 1. Acquire character that is getting started
-                    # a. Probably best done through activeCharacter dictionary?
-                # 2. Update character with new flag
-                # 3. Send updated character back to client, along with room, connections, and other characters in same room
-                # Holy shit this works?! Testing....
                 try:
                     character = Server.getCharacter(Server.activeCharacters[skt])
                     msgType, name, flags, attack, defense, regen, health, gold, currentRoom, charDesLen, charDes = character
