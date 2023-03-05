@@ -3,6 +3,8 @@
 import socket
 import struct
 
+from colorama import *
+
 MESSAGE = int(1)
 CHANGEROOM = int(2)
 FIGHT = int(3)
@@ -30,7 +32,7 @@ class Lurk:
                     print('DEBUG: lurkSend() sent a message!')
                     continue
                 except ConnectionError:
-                    print('WARN: ConnectionError, raising LurkException!')
+                    print(Fore.RED+'ERROR: lurkSend: ConnectionError, raising LurkException!')
                     raise LurkException
             return 0
         try:
@@ -38,7 +40,7 @@ class Lurk:
             print('DEBUG: lurkSend() sent 1 message!')
             return 0
         except ConnectionError:
-            print('WARN: ConnectionError, raising LurkException!')
+            print(Fore.RED+'ERROR: lurkSend: ConnectionError, raising LurkException!')
             raise LurkException
     
     def lurkRecv(skt):
@@ -47,10 +49,10 @@ class Lurk:
         try:
             data = skt.recv(1024)
             if data == b'':     # If recv returns null, client disconnected. This fixes LurkScan!
-                print('ERROR: lurkRecv: Received empty {}, signaling a client disconnect, returning None!'.format(data))
+                print(Fore.RED+'ERROR: lurkRecv: Received empty {}, signaling a client disconnect, returning None!'.format(data))
                 return None
         except socket.error or ConnectionError or OSError:
-            print('ERROR: lurkRecv: Caught socket.error, ConnectionError, or OSError, returning None!')
+            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, ConnectionError, or OSError, returning None!')
             return None
         
         print('DEBUG: lurkRecv: Data:', data)
@@ -59,7 +61,7 @@ class Lurk:
             print('DEBUG: lurkRecv: Data at index {}: {}'.format(i, data[i]))
             
             if (data[i] < 1 or data[i] > 14):
-                    print('ERROR: lurkRecv: {} not a valid lurk message type!'.format(data[i]))
+                    print(Fore.RED+'ERROR: lurkRecv: {} not a valid lurk message type!'.format(data[i]))
                     i += 1
                     continue
             
@@ -71,7 +73,7 @@ class Lurk:
                 try:
                     msgType, msgLen, recvName, sendName = struct.unpack('<BH32s32s', messageHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack MESSAGE header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack MESSAGE header!')
                     i += messageHeaderLen
                     continue
                 messageData = data[messageHeaderLen:messageHeaderLen+msgLen]
@@ -79,7 +81,7 @@ class Lurk:
                 try:
                     message, = struct.unpack('<%ds' %msgLen, messageData)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack MESSAGE data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack MESSAGE data!')
                     i += msgLen
                     continue
                 messages.append((msgType, msgLen, recvName.decode('utf-8'), sendName.decode('utf-8'), message.decode('utf-8')))
@@ -94,7 +96,7 @@ class Lurk:
                 try:
                     msgType, desiredRoomNum = struct.unpack('<BH', changeroomHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv(): Failed to unpack CHANGEROOM header!')
+                    print(Fore.RED+'ERROR: lurkRecv(): Failed to unpack CHANGEROOM header!')
                     i += changeroomHeaderLen
                     continue
                 messages.append((msgType, desiredRoomNum))
@@ -109,7 +111,7 @@ class Lurk:
                 try:
                     msgType = struct.unpack('<B', fightHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack FIGHT header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack FIGHT header!')
                     i += fightHeaderLen
                     continue
                 messages.append((msgType,))
@@ -124,7 +126,7 @@ class Lurk:
                 try:
                     msgType, targetName = struct.unpack('<B32s', pvpfightHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack PVPFIGHT header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack PVPFIGHT header!')
                     i += pvpfightHeaderLen
                     continue
                 messages.append((msgType, targetName.decode('utf-8')))
@@ -139,7 +141,7 @@ class Lurk:
                 try:
                     msgType, targetName = struct.unpack('<B32s', lootHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack LOOT header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack LOOT header!')
                     i += lootHeaderLen
                     continue
                 messages.append((msgType, targetName.decode('utf-8')))
@@ -154,7 +156,7 @@ class Lurk:
                 try:
                     msgType = struct.unpack('<B', startHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack START header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack START header!')
                     i += startHeaderLen
                     continue
                 messages.append((msgType))
@@ -169,7 +171,7 @@ class Lurk:
                 try:
                     msgType, errCode, errMsgLen = struct.unpack('<2BH', errorHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack ERROR header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ERROR header!')
                     i += errorHeaderLen
                     continue
                 errorData = data[errorHeaderLen:errorHeaderLen+errMsgLen]
@@ -177,7 +179,7 @@ class Lurk:
                 try:
                     errMsg, = struct.unpack('<%ds' %errMsgLen, errorData)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack ERROR data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ERROR data!')
                     i += errMsgLen
                     continue
                 messages.append((msgType, errCode, errMsgLen, errMsg.decode('utf-8')))
@@ -192,7 +194,7 @@ class Lurk:
                 try:
                     msgType, acceptedMsg = struct.unpack('<2B', acceptHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack ACCEPT data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ACCEPT data!')
                     i += acceptHeaderLen
                     continue
                 messages.append((msgType, acceptedMsg))
@@ -207,7 +209,7 @@ class Lurk:
                 try:
                     msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', roomHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack ROOM header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ROOM header!')
                     i += roomHeaderLen
                     continue
                 roomData = data[roomHeaderLen:roomHeaderLen+roomDesLen]
@@ -215,7 +217,7 @@ class Lurk:
                 try:
                     roomDes, = struct.unpack('<%ds' %roomDesLen, roomData)
                 except struct.error:
-                    print('ERROR: lurkRead() failed to unpack variable ROOM data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack ROOM data!')
                     i += roomDesLen
                     continue
                 messages.append((msgType, roomNum, roomName, roomDesLen, roomDes.decode('utf-8')))
@@ -230,7 +232,7 @@ class Lurk:
                 try:
                     msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<B32sB7H', characterHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack CHARACTER header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CHARACTER header!')
                     i += characterHeaderLen
                     continue
                 characterData = data[characterHeaderLen:characterHeaderLen+charDesLen]
@@ -238,7 +240,7 @@ class Lurk:
                 try:
                     charDes, = struct.unpack('<%ds' %charDesLen, characterData)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack CHARACTER data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CHARACTER data!')
                     i += characterHeaderLen + charDesLen
                     continue
                 messages.append((msgType, name.decode('utf-8'), hex(flags), attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8')))
@@ -253,7 +255,7 @@ class Lurk:
                 try:
                     msgType, initPoints, statLimit, gameDesLen = struct.unpack('<B3H', gameHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack GAME header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack GAME header!')
                     i += gameHeaderLen
                     continue
                 gameData = data[gameHeaderLen:gameHeaderLen+gameDesLen]
@@ -261,7 +263,7 @@ class Lurk:
                 try:
                     gameDes, = struct.unpack('<%ds' %gameDesLen, gameData)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack GAME data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack GAME data!')
                     i += gameDesLen
                     continue
                 messages.append((msgType, initPoints, statLimit, gameDesLen, gameDes.decode('utf-8')))
@@ -276,7 +278,7 @@ class Lurk:
                 try:
                     msgType = struct.unpack('<B', leaveHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack LEAVE header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack LEAVE header!')
                     i += leaveHeaderLen
                     continue
                 messages.append((msgType))
@@ -291,7 +293,7 @@ class Lurk:
                 try:
                     msgType, roomNum, roomName, roomDesLen = struct.unpack('<BH32sH', connectionHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack CONNECTION header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CONNECTION header!')
                     i += connectionHeaderLen
                     continue
                 connectionData = data[37:37+roomDesLen]
@@ -299,7 +301,7 @@ class Lurk:
                 try:
                     roomDes = struct.unpack('<%ds' %roomDesLen, connectionData)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack CONNECTION data!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CONNECTION data!')
                     i += roomDesLen
                     continue
                 messages.append((msgType, roomNum, roomName, roomDesLen, roomDes.decode('utf-8')))
@@ -314,7 +316,7 @@ class Lurk:
                 try:
                     msgType, major, minor, extSize = struct.unpack('<3BH', versionHeader)
                 except struct.error:
-                    print('ERROR: lurkRecv: Failed to unpack VERSION header!')
+                    print(Fore.RED+'ERROR: lurkRecv: Failed to unpack VERSION header!')
                     i += versionHeaderLen
                     continue
                 messages.append((msgType, major, minor, extSize))
@@ -322,7 +324,7 @@ class Lurk:
                 continue
             
             else:
-                print('ERROR: lurkRecv: Invalid message type {}, continuing!'.format(data[i]))
+                print(Fore.RED+'ERROR: lurkRecv: Invalid message type {}, continuing!'.format(data[i]))
                 i += 1
                 continue
         return messages
