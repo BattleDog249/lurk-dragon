@@ -3,7 +3,7 @@
 import socket
 import struct
 
-from colorama import *
+from colorama import Fore
 
 MESSAGE = int(1)
 CHANGEROOM = int(2)
@@ -38,15 +38,9 @@ class Lurk:
             if data == b'':
                 print(Fore.RED+'ERROR: lurkRecv: Received {}, signaling a client disconnect, returning None!'.format(data))
                 return None
-        #except socket.error:
-            #print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, raising socket.error!')
-            #raise socket.error
-        except ConnectionError:
-            print(Fore.RED+'ERROR: lurkRecv: Caught ConnectionError, raising ConnectionError!')
-            raise ConnectionError
-        except OSError:
-            print(Fore.RED+'ERROR: lurkRecv: Caught OSError, raising OSError!')
-            raise OSError
+        except socket.error:
+            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, raising socket.error!')
+            return None
         
         print(Fore.WHITE+'DEBUG: lurkRecv: Data:', data)
         i = 0

@@ -32,13 +32,7 @@ class Server:
         Server.clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
         print('DEBUG: Added Client: ', Server.clients[skt])
     def removeClient(skt):
-        #print('DEBUG: Removing Client: ', Server.clients[skt])
-        Server.clients.pop(skt)
-        #print('DEBUG: Connected Clients:', Client.clients)
-    def getClients():                   # Pull list of all connected clients
-        return Server.clients
-    def getClient(skt):                 # Pull information on specified client
-        return Server.clients[skt]
+        return Server.clients.pop(skt)
     
     # Dictionary (Key: Value)
     # Key: Name
@@ -118,7 +112,11 @@ class Server:
     rooms = {
         0: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
         1: ('Dark Grove', 'A hallway leading away from the starting room.'),
-        2: ('Hidden Valley', 'Seems to be remnants of a ranch here...')
+        2: ('Hidden Valley', 'Seems to be remnants of a ranch here...'),
+        3: ('Decrepit Mine', 'A dark mineshaft full of cobwebs and dust.'),
+        4: ('Red Barn', 'Simply put, a big red barn.'),
+        5: ('Barn Loft', 'The loft, full things nobody wanted to throw away.'),
+        6: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.')
     }
     
     def sendRoom(skt, room):
@@ -140,8 +138,12 @@ class Server:
     
     connections = {
         0: (1,),
-        1: (0, 2),
-        2: (1,)
+        1: (2,),
+        2: (1, 4, 6),
+        3: (2),
+        4: (2, 5),
+        5: (4,),
+        6: (2,)
     }
 
     # Looks good!
@@ -175,6 +177,11 @@ class Server:
             raise socket.error
         return 0
 
+def cleanupClient(skt):
+    Server.removeClient(skt)
+    skt.shutdown(2)
+    skt.close()
+
 def handleClient(skt):
     while True:
         try:
@@ -182,14 +189,10 @@ def handleClient(skt):
             if (messages is None):
                 print('ERROR: handleClient: lurkRecv returned None, breaking while loop!')
                 break
-        except ConnectionError:
-            print('ERROR: handleClient: lurkRecv returned ConnectionError, breaking while loop!')
-            Server.removeClient(skt)
+        except:
+            print('ERROR: handleClient: lurkRecv raised Exception, cleaning up client & breaking?')
             break
-        except OSError:
-            print('ERROR: handleClient: lurkRecv returned OSError, breaking while loop!')
-            Server.removeClient(skt)
-            break
+            
         for message in messages:
             
             if (message[0] == MESSAGE):
@@ -386,10 +389,7 @@ def handleClient(skt):
             
             # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
             elif (message[0] == LEAVE):
-                Server.removeClient(skt)
-                skt.shutdown(2)
-                skt.close()
-                continue
+                break
             
             elif (message[0] == CONNECTION):
                 msgType, roomNum, roomName, roomDesLen, roomDes = message
@@ -417,11 +417,7 @@ def handleClient(skt):
             else:
                 print('DEBUG: message[0] not a valid LURK type?')
                 continue
-    # Cleanup disconencted client routine goes here
-    print('INFO: Client disconnemoving:', skt)
-    Server.removeClient(skt)
-    skt.shutdown(2)
-    skt.close()
+    cleanupClient(skt)
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
