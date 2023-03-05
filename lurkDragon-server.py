@@ -198,8 +198,8 @@ def handleClient(skt):
                 
                 message = (msgType, msgLen, sendName, recvName, message)         # Flipped send/recv
                 # Find socket to send to that corresponds with the desired recipient, then send message to that socket
-                sendSkt = Server.getSocketByName(recvName)
-                Lurk.sendMessage(sendSkt, message)
+                #sendSkt = Server.getSocketByName(recvName)
+                #Lurk.sendMessage(sendSkt, message)
                 continue
             
             elif (message[0] == CHANGEROOM):
