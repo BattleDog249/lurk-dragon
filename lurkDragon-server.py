@@ -229,8 +229,8 @@ def handleClient(skt):
                 # Send CONNECTION messages for all connections with current room
                 for key, value in Server.connections.items():
                     print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
-                    if (key != currentRoom):
-                        print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, currentRoom))
+                    if (key != newRoomNum):
+                        print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, newRoomNum))
                         continue
                     print('DEBUG: Found connections:', Server.connections[key])
                     for value in Server.connections[key]:
