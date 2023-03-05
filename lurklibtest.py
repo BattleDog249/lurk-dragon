@@ -208,7 +208,7 @@ class Lurk:
                         print(Fore.RED+'ERROR: lurkRecv: Received b'', signaling a client disconnect, returning None!')
                         return None
                     print('DEBUG: lurkRecv: Potential CHARACTER header: {}'.format(characterHeader))
-                    name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<32sB7H', characterHeader)
+                    name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<32sB3Hh3H', characterHeader)
                     characterData = Lurk.recvAll(skt, charDesLen)
                     if not characterData:
                         print(Fore.RED+'ERROR: lurkRecv: Received b'', signaling a client disconnect, returning None!')
