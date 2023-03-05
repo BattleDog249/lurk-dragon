@@ -27,7 +27,7 @@ class Lurk:
             print(Fore.WHITE+'DEBUG: lurkSend: Sent message!')
             return 0
         except socket.error:
-            print(Fore.RED+'ERROR: lurkSend: Caught socket.error, raising socket.error!')
+            print(Fore.RED+'ERROR: lurkSend: Caught socket.error, returning None!')
             raise socket.error
     
     def lurkRecv(skt):
@@ -39,7 +39,7 @@ class Lurk:
                 print(Fore.RED+'ERROR: lurkRecv: Received {}, signaling a client disconnect, returning None!'.format(data))
                 return None
         except socket.error:
-            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, raising socket.error!')
+            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, returning None!')
             return None
         
         print(Fore.WHITE+'DEBUG: lurkRecv: Data:', data)

@@ -417,6 +417,7 @@ def handleClient(skt):
             else:
                 print('DEBUG: message[0] not a valid LURK type?')
                 continue
+    print('INFO: handleClient: Running cleanupClient!')
     cleanupClient(skt)
 
 # Establish IPv4 TCP socket
