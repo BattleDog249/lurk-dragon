@@ -20,17 +20,15 @@ LEAVE = int(12)
 CONNECTION = int(13)
 VERSION = int(14)
 
-class LurkException(Exception):
-    pass
 class Lurk:
     def lurkSend(skt, message):
         try:
             skt.sendall(message)
             print(Fore.WHITE+'DEBUG: lurkSend: Sent message!')
             return 0
-        except ConnectionError:
-            print(Fore.RED+'ERROR: lurkSend: Caught ConnectionError, raising LurkException!')
-            raise LurkException
+        except socket.error:
+            print(Fore.RED+'ERROR: lurkSend: Caught socket.error, raising socket.error!')
+            raise socket.error
     
     def lurkRecv(skt):
         messages = []
@@ -38,17 +36,17 @@ class Lurk:
         try:
             data = skt.recv(1024)
             if data == b'':
-                print(Fore.RED+'ERROR: lurkRecv: Received empty {}, signaling a client disconnect, returning None!'.format(data))
+                print(Fore.RED+'ERROR: lurkRecv: Received {}, signaling a client disconnect, returning None!'.format(data))
                 return None
-        except socket.error:
-            print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, returning None!')
-            return None
+        #except socket.error:
+            #print(Fore.RED+'ERROR: lurkRecv: Caught socket.error, raising socket.error!')
+            #raise socket.error
         except ConnectionError:
-            print(Fore.RED+'ERROR: lurkRecv: Caught ConnectionError, returning None!')
-            return None
+            print(Fore.RED+'ERROR: lurkRecv: Caught ConnectionError, raising ConnectionError!')
+            raise ConnectionError
         except OSError:
-            print(Fore.RED+'ERROR: lurkRecv: Caught OSError, returning None!')
-            return None
+            print(Fore.RED+'ERROR: lurkRecv: Caught OSError, raising OSError!')
+            raise OSError
         
         print(Fore.WHITE+'DEBUG: lurkRecv: Data:', data)
         i = 0
@@ -467,9 +465,9 @@ class Lurk:
         except struct.error:
             print('ERROR: Failed to pack CHARACTER structure!')
             raise struct.error
-        except LurkException:
+        except socket.error:
             print('ERROR: lurkSend() failed!')
-            raise LurkException
+            raise socket.error
         return 0
     def sendGame(skt, game):
         """_summary_

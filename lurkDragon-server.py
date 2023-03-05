@@ -64,9 +64,9 @@ class Server:
         except struct.error:
             print('ERROR: Failed to pack CHARACTER structure!')
             raise struct.error
-        except LurkException:
+        except socket.error:
             print('ERROR: lurkSend() failed!')
-            raise LurkException
+            raise socket.error
         return 0
     
     # Must be a better way to associate connected sockets with an "in-use" character
@@ -110,9 +110,9 @@ class Server:
         except struct.error:
             print('ERROR: Failed to pack ERROR structure!')
             raise struct.error
-        except LurkException:
+        except socket.error:
             print('ERROR: lurkSend() failed!')
-            raise LurkException
+            raise socket.error
         return 0
     
     rooms = {
@@ -133,9 +133,9 @@ class Server:
         except struct.error:
             print('ERROR: Failed to pack ROOM structure!')
             raise struct.error
-        except LurkException:
+        except socket.error:
             print('ERROR: lurkSend() failed!')
-            raise LurkException
+            raise socket.error
         return 0
     
     connections = {
@@ -168,11 +168,11 @@ class Server:
             print('DEBUG: Sending CONNECTION message!')
             Lurk.lurkSend(skt, connectionPacked)
         except struct.error:
-            print('ERROR: Failed to pack CONNECTION structure!')
+            print('ERROR: Server.sendConnection: Failed to pack CONNECTION, raising struct.error!')
             raise struct.error
-        except LurkException:
-            print('ERROR: lurkSend() failed!')
-            raise LurkException
+        except socket.error:
+            print('ERROR: Server.sendConnection: lurkSend returned socket.error, raising socket.error!')
+            raise socket.error
         return 0
 
 def handleClient(skt):
@@ -184,6 +184,11 @@ def handleClient(skt):
                 break
         except ConnectionError:
             print('ERROR: handleClient: lurkRecv returned ConnectionError, breaking while loop!')
+            Server.removeClient(skt)
+            break
+        except OSError:
+            print('ERROR: handleClient: lurkRecv returned OSError, breaking while loop!')
+            Server.removeClient(skt)
             break
         for message in messages:
             
@@ -413,8 +418,10 @@ def handleClient(skt):
                 print('DEBUG: message[0] not a valid LURK type?')
                 continue
     # Cleanup disconencted client routine goes here
-    print('INFO: Client disconnected, removing:', skt)
+    print('INFO: Client disconnemoving:', skt)
     Server.removeClient(skt)
+    skt.shutdown(2)
+    skt.close()
 
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
