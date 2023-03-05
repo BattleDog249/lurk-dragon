@@ -268,9 +268,13 @@ def handleClient(skt):
                     Server.sendCharacter(skt, key)
                 # Send CONNECTION messages for all connections with current room
                 for key, value in Server.connections.items():
+                    print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
                     if (key != currentRoom):
+                        print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, currentRoom))
                         continue
+                    print('DEBUG: Found connection:', Server.connections[key])
                     for value in Server.connections[key]:
+                        print('DEBUG: Sending CONNECTION with value:', value)
                         Server.sendConnection(skt, value)
                 continue
             
