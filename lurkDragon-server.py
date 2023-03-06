@@ -385,8 +385,7 @@ def handleClient(skt):
         
         # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
         elif (message[0] == LEAVE):
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', msgType)
-            print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
+            print(Fore.GREEN+'INFO: handleClient: Received LEAVE, running cleanupClient!')
             cleanupClient(skt)
             break
         
