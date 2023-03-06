@@ -418,7 +418,7 @@ class Lurk:
             _type_: _description_
         """
         try:
-            characterPacked = struct.pack('<B32sB3Hh3H%ds' %character[9], character[0].encode(), character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10].encode())
+            characterPacked = struct.pack('<B32sB3Hh3H%ds' %character[9], character[0], character[1].encode(), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10].encode())
             print('DEBUG: Sending CHARACTER message!')
             Lurk.lurkSend(skt, characterPacked)
         except struct.error:
