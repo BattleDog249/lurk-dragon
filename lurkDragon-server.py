@@ -2,7 +2,7 @@
 
 import threading
 
-from lurklibtest import *
+from lurklib import *
 
 MAJOR = int(2)
 MINOR = int(3)
