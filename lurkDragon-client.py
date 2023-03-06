@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import lurk
-import struct
 import socket
 
 # Establish IPv4 TCP socket
