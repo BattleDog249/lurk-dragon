@@ -215,7 +215,7 @@ class Lurk:
                         return None
                     print('DEBUG: lurkRecv: Potential CHARACTER data: {}'.format(characterData))
                     charDes, = struct.unpack('<%ds' %charDesLen, characterData)
-                    return (msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, charDes)
+                    return (msgType, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8'))
                 except struct.error:
                     print(Fore.RED+'ERROR: lurkRecv: Failed to unpack CHARACTER!')
                     continue
@@ -418,7 +418,7 @@ class Lurk:
             _type_: _description_
         """
         try:
-            characterPacked = struct.pack('<B32sB7H%ds' %character[9], character[0], character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10])
+            characterPacked = struct.pack('<B32sB7H%ds' %character[9], bytes(character[0], 'utf-8'), character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10])
             print('DEBUG: Sending CHARACTER message!')
             Lurk.lurkSend(skt, characterPacked)
         except struct.error:
