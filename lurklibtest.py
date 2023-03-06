@@ -71,7 +71,6 @@ class Lurk:
             except struct.error:
                 print(Fore.RED+'ERROR: lurkRecv: Failed to unpack msgType!')
                 continue
-            print('msgType:', msgType, 'Type:', type(msgType))
             if msgType < 1 or msgType > 14:
                 print(Fore.RED+'ERROR: lurkRecv: {} not a valid lurk message type!'.format(msgType))
                 continue
