@@ -1,11 +1,4 @@
-"""_summary_
-
-    Raises:
-        struct.error: _description_
-        send.Error: _description_
-
-    Returns:
-        _type_: _description_
+"""LURK protocol-related variables and functions that can be used in a client or server.
 """
 #!/usr/bin/env python3
 
@@ -47,8 +40,8 @@ def send(skt, message):
     """_summary_
 
     Args:
-        skt (_type_): _description_
-        message (_type_): _description_
+        skt (socket): _description_
+        message (packed): _description_
 
     Returns:
         _type_: _description_
@@ -64,11 +57,11 @@ def recv(skt, size):
     """Receives size amount of bytes from a socket, and returns full lurk message
 
     Args:
-        skt (socket): _description_
-        size (int): _description_
+        skt (socket): Socket to receive from.
+        size (int): Size of message to receive from socket buffer.
 
     Returns:
-        bytearray: _description_
+        bytearray: Raw data received from socket.
         None: recv call failed
     """
     data = bytearray()
@@ -94,211 +87,224 @@ def read(skt):
         try:
             lurk_type = recv(skt, 1)
             if not lurk_type:
-                print(Fore.RED+'ERROR: read: Received {}, signaling a client disconnect, returning None!'.format(lurk_type))
+                print(Fore.RED+f'ERROR: read: Received {lurk_type}, signaling a client disconnect, returning None!')
                 return None
             lurk_type, = struct.unpack('<B', lurk_type)
         except struct.error:
             print(Fore.RED+'ERROR: read: Failed to unpack lurk_type!')
             continue
         if lurk_type < 1 or lurk_type > 14:
-            print(Fore.RED+'ERROR: read: {} not a valid lurk message type!'.format(lurk_type))
+            print(Fore.RED+f'ERROR: read: {lurk_type} not a valid lurk message type!')
             continue
         if lurk_type == MESSAGE:
-            print('DEBUG: read: Handling potential MESSAGE type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential MESSAGE type {lurk_type}')
             try:
                 lurk_header = recv(skt, MESSAGE_LEN - 1)
                 if not lurk_header:
                     print(Fore.RED+'ERROR: read: readAll returned None, signaling socket disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential MESSAGE header: {}'.format(lurk_header))
+                print(f'DEBUG: read: Potential MESSAGE header: {lurk_header}')
                 msg_len, recipient_name, sender_name = struct.unpack('<H32s32s', lurk_header)
                 lurk_data = recv(skt, msg_len)
                 if not lurk_data:
                     print(Fore.RED+'ERROR: read: readAll returned None, signaling socket disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential MESSAGE data: {}'.format(lurk_data))
-                message, = struct.unpack('<%ds' %msg_len, lurk_data)
+                print(f'DEBUG: read: Potential MESSAGE data: {lurk_data}')
+                message, = struct.unpack(f'<{msg_len}s', lurk_data)
                 return (lurk_type, msg_len, recipient_name.decode('utf-8'), sender_name.decode('utf-8'), message.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack MESSAGE!')
                 continue
         elif lurk_type == CHANGEROOM:
-            print('DEBUG: read: Handling potential CHANGEROOM type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential CHANGEROOM type {lurk_type}')
             try:
                 lurk_header = recv(skt, CHANGEROOM_LEN - 1)
                 if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential CHANGEROOM header: {}'.format(lurk_header))
+                print(f'DEBUG: read: Potential CHANGEROOM header: {lurk_header}')
                 room_num, = struct.unpack('<H', lurk_header)
                 return (lurk_type, room_num)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CHANGEROOM!')
                 continue
         elif lurk_type == FIGHT:
-            print('DEBUG: read: Handling potential FIGHT type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential FIGHT type {lurk_type}')
             return (lurk_type,)
         elif lurk_type == PVPFIGHT:
-            print('DEBUG: read: Handling potential PVPFIGHT type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential PVPFIGHT type {lurk_type}')
             try:
-                pvpfightHeader = recv(skt, PVPFIGHT_LEN - 1)
-                if not pvpfightHeader:
+                lurk_header = recv(skt, PVPFIGHT_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential PVPFIGHT header: {}'.format(pvpfightHeader))
-                targetName = struct.unpack('<32s', pvpfightHeader)
-                return (lurk_type, targetName.decode('utf-8'))
+                print(f'DEBUG: read: Potential PVPFIGHT header: {lurk_header}')
+                character_name = struct.unpack('<32s', lurk_header)
+                return (lurk_type, character_name.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack PVPFIGHT!')
                 continue
         elif lurk_type == LOOT:
-            print('DEBUG: read: Handling potential LOOT type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential LOOT type {lurk_type}')
             try:
-                lootHeader = recv(skt, LOOT_LEN - 1)
-                if not lootHeader:
+                lurk_header = recv(skt, LOOT_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential LOOT header: {}'.format(lootHeader))
-                targetName = struct.unpack('<32s', lootHeader)
-                return (lurk_type, targetName.decode('utf-8'))
+                print(f'DEBUG: read: Potential LOOT header: {lurk_header}')
+                character_name = struct.unpack('<32s', lurk_header)
+                return (lurk_type, character_name.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack LOOT!')
                 continue
         elif lurk_type == START:
-            print('DEBUG: read: Handling potential START type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential START type {lurk_type}')
             return (lurk_type,)
         elif lurk_type == ERROR:
-            print('DEBUG: read: Handling potential ERROR type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential ERROR type {lurk_type}')
             try:
-                errorHeader = recv(skt, ERROR_LEN - 1)
-                if not errorHeader:
+                lurk_header = recv(skt, ERROR_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential ERROR header: {}'.format(errorHeader))
-                errCode, errMsgLen = struct.unpack('<BH', errorHeader)
-                errorData = recv(skt, errMsgLen)
-                if not errorData:
+                print(f'DEBUG: read: Potential ERROR header: {lurk_header}')
+                error_code, error_msg_len = struct.unpack('<BH', lurk_header)
+                lurk_data = recv(skt, error_msg_len)
+                if not lurk_data:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential ERROR data: {}'.format(errorData))
-                errMsg, = struct.unpack('<%ds' %errMsgLen, errorData)
-                return (lurk_type, errCode, errMsgLen, errMsg.decode('utf-8'))
+                print(f'DEBUG: read: Potential ERROR data: {lurk_data}')
+                error_msg, = struct.unpack(f'<{error_msg_len}s', lurk_data)
+                return (lurk_type, error_code, error_msg_len, error_msg.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ERROR!')
                 continue
         elif lurk_type == ACCEPT:
-            print('DEBUG: read: Handling potential ACCEPT type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential ACCEPT type {lurk_type}')
             try:
-                acceptHeader = recv(skt, ACCEPT_LEN - 1)
-                if not acceptHeader:
+                lurk_header = recv(skt, ACCEPT_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential ACCEPT header: {}'.format(acceptHeader))
-                acceptedMsg, = struct.unpack('<B', acceptHeader)
-                return (lurk_type, acceptedMsg)
+                print(f'DEBUG: read: Potential ACCEPT header: {lurk_header}')
+                accepted_msg, = struct.unpack('<B', lurk_header)
+                return (lurk_type, accepted_msg)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ACCEPT!')
                 continue
         elif lurk_type == ROOM:
-            print('DEBUG: read: Handling potential ROOM type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential ROOM type {lurk_type}')
             try:
-                roomHeader = recv(skt, ROOM_LEN - 1)
-                if not roomHeader:
+                lurk_header = recv(skt, ROOM_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential ROOM header: {}'.format(roomHeader))
-                roomNum, roomName, roomDesLen = struct.unpack('<H32sH', roomHeader)
-                roomData = recv(skt, roomDesLen)
-                if not roomData:
+                print(f'DEBUG: read: Potential ROOM header: {lurk_header}')
+                room_num, room_name, room_des_len = struct.unpack('<H32sH', lurk_header)
+                lurk_data = recv(skt, room_des_len)
+                if not lurk_data:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential ROOM data: {}'.format(roomData))
-                roomDes, = struct.unpack('<%ds' %roomDesLen, roomData)
-                return (lurk_type, roomNum, roomName.decode('utf-8'), roomDesLen, roomDes.decode('utf-8'))
+                print(f'DEBUG: read: Potential ROOM data: {lurk_data}')
+                room_des, = struct.unpack(f'<{room_des_len}s', lurk_data)
+                return (lurk_type, room_num, room_name.decode('utf-8'), room_des_len, room_des.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ROOM!')
                 continue
         elif lurk_type == CHARACTER:
-            print('DEBUG: read: Handling potential CHARACTER type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential CHARACTER type {lurk_type}')
             try:
-                characterHeader = recv(skt, CHARACTER_LEN - 1)
-                if not characterHeader:
+                lurk_header = recv(skt, CHARACTER_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential CHARACTER header: {}'.format(characterHeader))
-                name, flags, attack, defense, regen, health, gold, room, charDesLen = struct.unpack('<32sB3Hh3H', characterHeader)
-                characterData = recv(skt, charDesLen)
-                if not characterData:
+                print(f'DEBUG: read: Potential CHARACTER header: {lurk_header}')
+                name, flags, attack, defense, regen, health, gold, room, char_des_len = struct.unpack('<32sB3Hh3H', lurk_header)
+                lurk_data = recv(skt, char_des_len)
+                if not lurk_data:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential CHARACTER data: {}'.format(characterData))
-                charDes, = struct.unpack('<%ds' %charDesLen, characterData)
-                return (lurk_type, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, charDes.decode('utf-8'))
+                print(f'DEBUG: read: Potential CHARACTER data: {lurk_data}')
+                char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
+                return (lurk_type, name.decode('utf-8'), flags, attack, defense, regen, health, gold, room, char_des_len, char_des.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CHARACTER!')
                 continue
         elif lurk_type == GAME:
-            print('DEBUG: read: Handling potential GAME type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential GAME type {lurk_type}')
             try:
-                gameHeader = recv(skt, GAME_LEN - 1)
-                if not gameHeader:
+                lurk_header = recv(skt, GAME_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential GAME header: {}'.format(gameHeader))
-                initPoints, statLimit, gameDesLen = struct.unpack('<3H', gameHeader)
-                gameData = recv(skt, gameDesLen)
-                if not gameData:
+                print(f'DEBUG: read: Potential GAME header: {lurk_header}')
+                init_points, stat_limit, game_des_len = struct.unpack('<3H', lurk_header)
+                lurk_data = recv(skt, game_des_len)
+                if not lurk_data:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential GAME data: {}'.format(gameData))
-                gameDes, = struct.unpack('<%ds' %gameDesLen, gameData)
-                return (lurk_type, initPoints, statLimit, gameDesLen, gameDes.decode('utf-8'))
+                print(f'DEBUG: read: Potential GAME data: {lurk_data}')
+                game_des, = struct.unpack(f'<{game_des_len}s', lurk_data)
+                return (lurk_type, init_points, stat_limit, game_des_len, game_des.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack GAME!')
                 continue
         elif lurk_type == LEAVE:
-            print('DEBUG: read: Handling potential LEAVE type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential LEAVE type {lurk_type}')
             return (lurk_type,)
         elif lurk_type == CONNECTION:
-            print('DEBUG: read: Handling potential CONNECTION type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential CONNECTION type {lurk_type}')
             try:
-                connectionHeader = recv(skt, CONNECTION_LEN - 1)
-                if not connectionHeader:
+                lurk_header = recv(skt, CONNECTION_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential CONNECTION header: {}'.format(connectionHeader))
-                roomNum, roomName, roomDesLen = struct.unpack('<H32sH', connectionHeader)
-                connectionData = recv(skt, roomDesLen)
-                if not connectionData:
+                print(f'DEBUG: read: Potential CONNECTION header: {lurk_header}')
+                room_num, room_name, room_des_len = struct.unpack('<H32sH', lurk_header)
+                lurk_data = recv(skt, room_des_len)
+                if not lurk_data:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential CONNECTION data: {}'.format(connectionData))
-                roomDes = struct.unpack('<%ds' %roomDesLen, connectionData)
-                return (lurk_type, roomNum, roomName.decode('utf-8'), roomDesLen, roomDes.decode('utf-8'))
+                print(f'DEBUG: read: Potential CONNECTION data: {lurk_data}')
+                room_des = struct.unpack(f'<{room_des_len}s', lurk_data)
+                return (lurk_type, room_num, room_name.decode('utf-8'), room_des_len, room_des.decode('utf-8'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CONNECTION header!')
                 continue
         elif lurk_type == VERSION:
-            print('DEBUG: read: Handling potential VERSION type {}'.format(lurk_type))
+            print(f'DEBUG: read: Handling potential VERSION type {lurk_type}')
             try:
-                versionHeader = recv(skt, VERSION_LEN - 1)
-                if not versionHeader:
+                lurk_header = recv(skt, VERSION_LEN - 1)
+                if not lurk_header:
                     print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
                     return None
-                print('DEBUG: read: Potential VERSION header: {}'.format(versionHeader))
-                major, minor, extSize = struct.unpack('<2BH', versionHeader)
-                return (lurk_type, major, minor, extSize)
+                print(f'DEBUG: read: Potential VERSION header: {lurk_header}')
+                major, minor, extension_len = struct.unpack('<2BH', lurk_header)
+                return (lurk_type, major, minor, extension_len)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack VERSION header!')
                 continue
         else:
-            print(Fore.RED+'ERROR: read: Invalid message type {}, continuing!'.format(lurk_type))
+            print(Fore.RED+f'ERROR: read: Invalid message type {lurk_type}, continuing!')
             continue
 def sendMessage(skt, message):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        message (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        messagePacked = struct.pack('<BH32s30sH%ds' %message[1], message[0], message[1], message[2], message[3], message[4], message[5])
+        packed = struct.pack(f'<BH32s30sH{message[1]}s', message[0], message[1], message[2], message[3], message[4], message[5])
         print('DEBUG: Sending MESSAGE message!')
-        send(skt, messagePacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack MESSAGE structure!')
         raise struct.error
@@ -307,10 +313,23 @@ def sendMessage(skt, message):
         raise send.Error
     return 0
 def sendChangeroom(skt, changeRoom):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        changeRoom (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        changeroomPacked = struct.pack('<BH', changeRoom[0], changeRoom[1])
+        packed = struct.pack('<BH', changeRoom[0], changeRoom[1])
         print('DEBUG: Sending CHANGEROOM message!')
-        send(skt, changeroomPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack CHANGEROOM structure!')
         raise struct.error
@@ -319,10 +338,22 @@ def sendChangeroom(skt, changeRoom):
         raise send.Error
     return 0
 def sendFight(skt):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        fightPacked = struct.pack('<B', FIGHT)
+        packed = struct.pack('<B', FIGHT)
         print('DEBUG: Sending FIGHT message!')
-        send(skt, fightPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack FIGHT structure!')
         raise struct.error
@@ -331,10 +362,23 @@ def sendFight(skt):
         raise send.Error
     return 0
 def sendPvpfight(skt, pvpFight):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        pvpFight (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        pvpfightPacked = struct.pack('<B32s', pvpFight[0], pvpFight[1])
+        packed = struct.pack('<B32s', pvpFight[0], pvpFight[1])
         print('DEBUG: Sending PVPFIGHT message!')
-        send(skt, pvpfightPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack PVPFIGHT structure!')
         raise struct.error
@@ -343,10 +387,23 @@ def sendPvpfight(skt, pvpFight):
         raise send.Error
     return 0
 def sendLoot(skt, loot):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        loot (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        lootPacked = struct.pack('<B32s', loot[0], loot[1])
+        packed = struct.pack('<B32s', loot[0], loot[1])
         print('DEBUG: Sending LOOT message!')
-        send(skt, lootPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack LOOT structure!')
         raise struct.error
@@ -355,10 +412,23 @@ def sendLoot(skt, loot):
         raise send.Error
     return 0
 def sendStart(skt, start):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        start (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        startPacked = struct.pack('<B', START)
+        packed = struct.pack('<B', START)
         print('DEBUG: Sending START message!')
-        send(skt, startPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack START structure!')
         raise struct.error
@@ -381,9 +451,9 @@ def sendError(skt, error):
         _type_: _description_
     """
     try:
-        errorPacked = struct.pack('<2BH%ds' %error[2], error[0], error[1], error[2], bytes(error[3], 'utf-8'))
+        packed = struct.pack(f'<2BH{error[2]}s', error[0], error[1], error[2], bytes(error[3], 'utf-8'))
         print('DEBUG: Sending ERROR message!')
-        send(skt, errorPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack ERROR structure!')
         raise struct.error
@@ -392,10 +462,23 @@ def sendError(skt, error):
         raise send.Error
     return 0
 def sendAccept(skt, accept):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        accept (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        acceptPacked = struct.pack('<2B', ACCEPT, accept)
+        packed = struct.pack('<2B', ACCEPT, accept)
         print('DEBUG: Sending ACCEPT message!')
-        send(skt, acceptPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack ACCEPT structure!')
         raise struct.error
@@ -404,10 +487,23 @@ def sendAccept(skt, accept):
         raise send.Error
     return 0
 def sendRoom(skt, room):
+    """_summary_
+
+    Args:
+        skt (_type_): _description_
+        room (_type_): _description_
+
+    Raises:
+        struct.error: _description_
+        send.Error: _description_
+
+    Returns:
+        _type_: _description_
+    """
     try:
-        roomPacked = struct.pack('<BH32sH%ds' %room[3], room[0], room[1], room[2], room[3], bytes(room[4], 'utf-8'))
+        packed = struct.pack(f'<BH32sH{room[3]}s', room[0], room[1], room[2], room[3], bytes(room[4], 'utf-8'))
         print('DEBUG: Sending ROOM message!')
-        send(skt, roomPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack ROOM structure!')
         raise struct.error
@@ -430,9 +526,9 @@ def sendCharacter(skt, character):
         _type_: _description_
     """
     try:
-        characterPacked = struct.pack('<B32sB3Hh3H%ds' %character[9], character[0], character[1].encode(), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10].encode())
+        packed = struct.pack(f'<B32sB3Hh3H{character[9]}s', character[0], character[1].encode(), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10].encode())
         print('DEBUG: Sending CHARACTER message!')
-        send(skt, characterPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack CHARACTER structure!')
         raise struct.error
@@ -455,9 +551,9 @@ def sendGame(skt, game):
         _type_: _description_
     """
     try:
-        gamePacked = struct.pack('<B3H%ds' %game[3], game[0], game[1], game[2], game[3], bytes(game[4], 'utf-8'))
+        packed = struct.pack(f'<B3H{game[3]}s', game[0], game[1], game[2], game[3], bytes(game[4], 'utf-8'))
         print('DEBUG: Sending GAME message!')
-        send(skt, gamePacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack GAME structure!')
         raise struct.error
@@ -479,9 +575,9 @@ def sendLeave(skt):
         int: 0 if function finishes successfully
     """
     try:
-        leavePacked = struct.pack('<B', LEAVE)
+        packed = struct.pack('<B', LEAVE)
         print('DEBUG: Sending LEAVE message!')
-        send(skt, leavePacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack LEAVE structure!')
         raise struct.error
@@ -504,9 +600,9 @@ def sendConnection(skt, connection):
         int: 0 if function finishes successfully
     """
     try:
-        connectionPacked = struct.pack('<BH32sH%ds' %connection[3], connection[0], connection[1], connection[2], connection[3], connection[4])
+        packed = struct.pack(f'<BH32sH{connection[3]}s', connection[0], connection[1], connection[2], connection[3], connection[4])
         print('DEBUG: Sending CONNECTION message!')
-        send(skt, connectionPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack CONNECTION structure!')
         raise struct.error
@@ -529,9 +625,9 @@ def sendVersion(skt, version):
         int: 0 if function finishes successfully
     """
     try:
-        versionPacked = struct.pack('<3BH', version[0], version[1], version[2], version[3])
+        packed = struct.pack('<3BH', version[0], version[1], version[2], version[3])
         print('DEBUG: Sending VERSION message!')
-        send(skt, versionPacked)
+        send(skt, packed)
     except struct.error:
         print('ERROR: Failed to pack VERSION structure!')
         raise struct.error

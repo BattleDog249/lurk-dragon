@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-from lurk import *
+import lurk
+import struct
+import socket
 
 # Establish IPv4 TCP socket
 skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,13 +19,13 @@ characterDescription = "This is a collision test dummy, it is not sentient!"
 #character1 = (10, "Big Stupid Guy", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
 #status = Lurk.sendCharacter(skt, character1)
 character2 = (10, "Legan", 0x4, 25, 25, 50, 1, 2, 3, len(characterDescription), characterDescription)
-status = Lurk.sendCharacter(skt, character2)
+status = lurk.sendCharacter(skt, character2)
 #character3 = Character(10, "Test Dummy #3", 0x4, 25, 25, 100, 20, 100, 40, len(characterDescription), characterDescription)
 #status = Lurk.sendCharacter(skt, character3)
 
 while True:
     try:
-        messages = Lurk.lurkRecv(skt)
+        messages = lurk.recv(skt)
         if (messages == None):
             print('WARN: Server must have disconnected!')
             break
@@ -33,7 +35,7 @@ while True:
     print('DEBUG: List of Messages:', messages)
     for message in messages:
         
-        if (message[0] == MESSAGE):
+        if (message[0] == lurk.MESSAGE):
             msgType, msgLen, recvName, sendName, narration, message = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: Message Length:', msgLen)
@@ -43,35 +45,35 @@ while True:
             print('DEBUG: Message:', message)
             continue
         
-        elif (message[0] == CHANGEROOM):
+        elif (message[0] == lurk.CHANGEROOM):
             msgType, desiredRoomNum = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: desiredRoomNum:', desiredRoomNum)
             continue
         
-        elif (message[0] == FIGHT):
+        elif (message[0] == lurk.FIGHT):
             msgType = message
             print('DEBUG: Type:', msgType)
             continue
         
-        elif (message[0] == PVPFIGHT):
+        elif (message[0] == lurk.PVPFIGHT):
             msgType, targetName = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: targetName:', targetName)
             continue
         
-        elif (message[0] == LOOT):
+        elif (message[0] == lurk.LOOT):
             msgType, targetName = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: targetName:', targetName)
             continue
         
-        elif (message[0] == START):
+        elif (message[0] == lurk.START):
             msgType = message
             print('DEBUG: Type:', msgType)
             continue
         
-        elif (message[0] == ERROR):
+        elif (message[0] == lurk.ERROR):
             msgType, errCode, errMsgLen, errMsg = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: errCode:', errCode)
@@ -79,13 +81,13 @@ while True:
             print('DEBUG: errMsg:', errMsg)
             continue
         
-        elif (message[0] == ACCEPT):
+        elif (message[0] == lurk.ACCEPT):
             msgType, acceptedMsg = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: acceptedMsg:', acceptedMsg)
             continue
         
-        elif (message[0] == ROOM):
+        elif (message[0] == lurk.ROOM):
             msgType, roomNum, roomName, roomDesLen, roomDes = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: roomNum:', roomNum)
@@ -94,7 +96,7 @@ while True:
             print('DEBUG: roomDes:', roomDes)
             continue
         
-        elif (message[0] == CHARACTER):
+        elif (message[0] == lurk.CHARACTER):
             msgType, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: Name:', name)
@@ -110,7 +112,7 @@ while True:
             
             continue
         
-        elif (message[0] == GAME):
+        elif (message[0] == lurk.GAME):
             msgType, initPoints, statLimit, gameDesLen, gameDes = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: initPoints:', initPoints)
@@ -119,12 +121,12 @@ while True:
             print('DEBUG: gameDes:', gameDes)
             continue
         
-        elif (message[0] == LEAVE):
+        elif (message[0] == lurk.LEAVE):
             msgType = message
             print('DEBUG: Type:', msgType)
             continue
         
-        elif (message[0] == CONNECTION):
+        elif (message[0] == lurk.CONNECTION):
             msgType, roomNum, roomName, roomDesLen, roomDes = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: roomNum:', roomNum)
@@ -133,7 +135,7 @@ while True:
             print('DEBUG: roomDes:', roomDes)
             continue
         
-        elif (message[0] == VERSION):
+        elif (message[0] == lurk.VERSION):
             msgType, major, minor, extSize = message
             print('DEBUG: Type:', msgType)
             print('DEBUG: major:', major)
@@ -141,4 +143,4 @@ while True:
             print('DEBUG: extSize:', extSize)
             continue
         
-Lurk.sendStart(skt, 6)
+lurk.sendStart(skt, 6)
