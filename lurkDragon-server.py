@@ -383,7 +383,6 @@ def handleClient(skt):
             status = Server.sendError(skt, 0)
             continue
         
-        # Probably needs some work and potential error handling, alongside returning something useful rather than continue?
         elif (message[0] == LEAVE):
             print(Fore.GREEN+'INFO: handleClient: Received LEAVE, running cleanupClient!')
             cleanupClient(skt)
@@ -419,12 +418,11 @@ def handleClient(skt):
 # Establish IPv4 TCP socket
 serverSkt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if serverSkt == -1:
-    print('ERROR: Server socket error!')
-    exit
+    print(Fore.RED+'ERROR: Server socket creation error, stopping!')
+    quit()
 
 # Assigned range: 5010 - 5014
 address = '0.0.0.0'
-port = 5010
 ports = [5010, 5011, 5012, 5013, 5014]
 
 for port in ports:
@@ -432,11 +430,11 @@ for port in ports:
         serverSkt.bind((address, port))
         break
     except OSError:
-        print('ERROR: OSError, trying port:', port+1)
+        print(Fore.CYAN+'WARN: Port {} unavailable:', port)
         continue
 
 serverSkt.listen()
-print('DEBUG: Listening on address:', address, 'port:', port)
+print(Fore.WHITE+'INFO: Listening on address:', address, 'port:', port)
 
 while True:
     clientSkt, clientAddr = serverSkt.accept()
