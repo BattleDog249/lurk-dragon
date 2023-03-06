@@ -430,7 +430,7 @@ for port in ports:
         serverSkt.bind((address, port))
         break
     except OSError:
-        print(Fore.CYAN+'WARN: Port {} unavailable:', port)
+        print(Fore.CYAN+'WARN: Port {} unavailable!'.format(port))
         continue
 
 serverSkt.listen()
