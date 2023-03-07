@@ -74,6 +74,10 @@ def recv(skt, size):
         except socket.error:
             return None
     return data
+def pack():
+    pass
+def unpack():
+    pass
 def read(skt):
     """Reads and interprets binary lurk messages from socket.
 
