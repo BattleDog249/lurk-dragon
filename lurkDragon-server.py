@@ -153,7 +153,7 @@ class Server:
 
         Args:
             skt (socket): Socket to send data to
-            connection (tuple): CONNECTION data
+            room (tuple): Room number
 
         Raises:
             struct.error: Failed to pack data into a structure

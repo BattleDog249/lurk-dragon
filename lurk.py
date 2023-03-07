@@ -37,11 +37,11 @@ VERSION = int(14)
 VERSION_LEN = int(5)
 
 def send(skt, message):
-    """_summary_
+    """Sends an entire Lurk message to the specified socket.
 
     Args:
-        skt (socket): _description_
-        message (packed): _description_
+        skt (socket): Socket to send Lurk message to.
+        message (packed): Lurk message, usually packed in byte format.
 
     Returns:
         _type_: _description_
@@ -287,65 +287,56 @@ def read(skt):
         else:
             print(Fore.RED+f'ERROR: read: Invalid message type {lurk_type}, continuing!')
             continue
-def sendMessage(skt, message):
-    """_summary_
+def sendMessage(skt, lurk_message):
+    """Sends a Lurk MESSAGE message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        message (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk MESSAGE message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack(f'<BH32s30sH{message[1]}s', message[0], message[1], message[2], message[3], message[4], message[5])
-        print('DEBUG: Sending MESSAGE message!')
+        packed = struct.pack(f'<BH32s30sH{lurk_message[1]}s', lurk_message[0], lurk_message[1], lurk_message[2], lurk_message[3], lurk_message[4], lurk_message[5])
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack MESSAGE structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendChangeroom(skt, changeRoom):
-    """_summary_
+def sendChangeroom(skt, lurk_message):
+    """Sends a Lurk CHANGEROOM message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        changeRoom (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk CHANGEROOM message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack('<BH', changeRoom[0], changeRoom[1])
+        packed = struct.pack('<BH', lurk_message[0], lurk_message[1])
         print('DEBUG: Sending CHANGEROOM message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack CHANGEROOM structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
 def sendFight(skt):
-    """_summary_
+    """Sends a Lurk FIGHT message to a specified socket.
 
     Args:
-        skt (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk FIGHT message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -354,73 +345,61 @@ def sendFight(skt):
         packed = struct.pack('<B', FIGHT)
         print('DEBUG: Sending FIGHT message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack FIGHT structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {FIGHT}')
+        raise struct.error from exc
     return 0
-def sendPvpfight(skt, pvpFight):
-    """_summary_
+def sendPvpfight(skt, lurk_message):
+    """Sends a Lurk PVPFIGHT message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        pvpFight (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk PVPFIGHT message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack('<B32s', pvpFight[0], pvpFight[1])
+        packed = struct.pack('<B32s', lurk_message[0], lurk_message[1])
         print('DEBUG: Sending PVPFIGHT message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack PVPFIGHT structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendLoot(skt, loot):
-    """_summary_
+def sendLoot(skt, lurk_message):
+    """Sends a Lurk LOOT message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        loot (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk LOOT message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack('<B32s', loot[0], loot[1])
+        packed = struct.pack('<B32s', lurk_message[0], lurk_message[1])
         print('DEBUG: Sending LOOT message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack LOOT structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendStart(skt, start):
-    """_summary_
+def sendStart(skt):
+    """Sends a Lurk START message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        start (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk START message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -429,147 +408,123 @@ def sendStart(skt, start):
         packed = struct.pack('<B', START)
         print('DEBUG: Sending START message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack START structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {START}')
+        raise struct.error from exc
     return 0
-def sendError(skt, error):
-    """_summary_
+def sendError(skt, lurk_message):
+    """Sends a Lurk ERROR message to a specified socket.
 
     Args:
-        skt (socket): Receiving socket
-        error (tuple): (lurk_type, errorCode, errorMsgLen, errorMsg)
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk ERROR message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack(f'<2BH{error[2]}s', error[0], error[1], error[2], bytes(error[3], 'utf-8'))
+        packed = struct.pack(f'<2BH{lurk_message[2]}s', lurk_message[0], lurk_message[1], lurk_message[2], bytes(lurk_message[3], 'utf-8'))
         print('DEBUG: Sending ERROR message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack ERROR structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendAccept(skt, accept):
-    """_summary_
+def sendAccept(skt, lurk_message):
+    """Sends a Lurk ACCEPT message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        accept (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk VERSION message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack('<2B', ACCEPT, accept)
+        packed = struct.pack('<2B', lurk_message[0], lurk_message[1])
         print('DEBUG: Sending ACCEPT message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack ACCEPT structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendRoom(skt, room):
-    """_summary_
+def sendRoom(skt, lurk_message):
+    """Sends a Lurk ROOM message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        room (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk ROOM message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack(f'<BH32sH{room[3]}s', room[0], room[1], room[2], room[3], bytes(room[4], 'utf-8'))
+        packed = struct.pack(f'<BH32sH{lurk_message[3]}s', lurk_message[0], lurk_message[1], lurk_message[2], lurk_message[3], bytes(lurk_message[4], 'utf-8'))
         print('DEBUG: Sending ROOM message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack ROOM structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendCharacter(skt, character):
-    """_summary_
+def sendCharacter(skt, lurk_message):
+    """Sends a Lurk CHARACTER message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        character (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk CHARACTER message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack(f'<B32sB3Hh3H{character[9]}s', character[0], character[1].encode(), character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9], character[10].encode())
+        packed = struct.pack(f'<B32sB3Hh3H{lurk_message[9]}s', lurk_message[0], lurk_message[1].encode(), lurk_message[2], lurk_message[3], lurk_message[4], lurk_message[5], lurk_message[6], lurk_message[7], lurk_message[8], lurk_message[9], lurk_message[10].encode())
         print('DEBUG: Sending CHARACTER message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack CHARACTER structure!')
-        raise struct.error
-    except socket.error:
-        print('ERROR: send() failed!')
-        raise socket.error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendGame(skt, game):
-    """_summary_
+def sendGame(skt, lurk_message):
+    """Sends a Lurk GAME message to a specified socket.
 
     Args:
-        skt (_type_): _description_
-        game (_type_): _description_
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk GAME message to be sent.
 
     Raises:
-        struct.error: _description_
-        send.Error: _description_
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
     """
     try:
-        packed = struct.pack(f'<B3H{game[3]}s', game[0], game[1], game[2], game[3], bytes(game[4], 'utf-8'))
+        packed = struct.pack(f'<B3H{lurk_message[3]}s', lurk_message[0], lurk_message[1], lurk_message[2], lurk_message[3], bytes(lurk_message[4], 'utf-8'))
         print('DEBUG: Sending GAME message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack GAME structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
 def sendLeave(skt):
-    """Send a lurk LEAVE message to a socket.
+    """Sends a Lurk LEAVE message to a specified socket.
 
     Args:
-        skt (socket): Socket to send data to
+        skt (socket): Socket to send data to.
 
     Raises:
-        struct.error: Failed to pack data into a structure
-        send.Error: Function send failed
+        struct.error: Raised if packing message failed.
 
     Returns:
         int: 0 if function finishes successfully
@@ -578,60 +533,49 @@ def sendLeave(skt):
         packed = struct.pack('<B', LEAVE)
         print('DEBUG: Sending LEAVE message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack LEAVE structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {LEAVE}')
+        raise struct.error from exc
     return 0
-def sendConnection(skt, connection):
-    """Send a lurk CONNECTION message to a socket.
+def sendConnection(skt, lurk_message):
+    """Sends a Lurk CONNECTION message to a specified socket.
 
     Args:
-        skt (socket): Socket to send data to
-        connection (tuple): CONNECTION data
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk CONNECTION message to be sent.
 
     Raises:
-        struct.error: Failed to pack data into a structure
-        send.Error: Function send failed
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         int: 0 if function finishes successfully
     """
     try:
-        packed = struct.pack(f'<BH32sH{connection[3]}s', connection[0], connection[1], connection[2], connection[3], connection[4])
+        packed = struct.pack(f'<BH32sH{lurk_message[3]}s', lurk_message[0], lurk_message[1], lurk_message[2], lurk_message[3], lurk_message[4])
         print('DEBUG: Sending CONNECTION message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack CONNECTION structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
-def sendVersion(skt, version):
-    """Send a lurk VERSION message to a socket.
+def sendVersion(skt, lurk_message):
+    """Sends a Lurk VERSION message to a specified socket.
 
     Args:
-        skt (socket): Socket to send data to
-        version (tuple): VERSION data
+        skt (socket): Socket to send data to.
+        lurk_message (tuple): Entire Lurk VERSION message to be sent.
 
     Raises:
-        struct.error: Failed to pack data into a structure
-        send.Error: Function send failed
+        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
-        int: 0 if function finishes successfully
+        _type_: _description_
     """
     try:
-        packed = struct.pack('<3BH', version[0], version[1], version[2], version[3])
+        packed = struct.pack('<3BH', lurk_message[0], lurk_message[1], lurk_message[2], lurk_message[3])
         print('DEBUG: Sending VERSION message!')
         send(skt, packed)
-    except struct.error:
-        print('ERROR: Failed to pack VERSION structure!')
-        raise struct.error
-    except send.error:
-        print('ERROR: send() failed!')
-        raise send.Error
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        raise struct.error from exc
     return 0
