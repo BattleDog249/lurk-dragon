@@ -230,8 +230,8 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential CHARACTER data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
-                name = name.decode('utf-8')
-                char_des = char_des.decode('utf-8')
+                name = name.decode('utf-8', 'ignore')
+                char_des = char_des.decode('utf-8', 'ignore')
                 return (CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des)     # Issue here with lurktest -t; cannot decode 0xff with utf-8?
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CHARACTER!')
