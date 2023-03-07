@@ -115,7 +115,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential MESSAGE data: {lurk_data}')
                 message, = struct.unpack(f'<{msg_len}s', lurk_data)
-                return (lurk_type, msg_len, recipient_name.decode('utf-8'), sender_name.decode('utf-8'), message.decode('utf-8'))
+                return (MESSAGE, msg_len, recipient_name.decode('utf-8', 'ignore'), sender_name.decode('utf-8', 'ignore'), message.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack MESSAGE!')
                 continue
@@ -128,13 +128,13 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential CHANGEROOM header: {lurk_header}')
                 room_num, = struct.unpack('<H', lurk_header)
-                return (lurk_type, room_num)
+                return (CHANGEROOM, room_num)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CHANGEROOM!')
                 continue
         elif lurk_type == FIGHT:
             print(f'DEBUG: read: Handling potential FIGHT type {lurk_type}')
-            return (lurk_type,)
+            return (FIGHT,)
         elif lurk_type == PVPFIGHT:
             print(f'DEBUG: read: Handling potential PVPFIGHT type {lurk_type}')
             try:
@@ -144,7 +144,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential PVPFIGHT header: {lurk_header}')
                 character_name = struct.unpack('<32s', lurk_header)
-                return (lurk_type, character_name.decode('utf-8'))
+                return (PVPFIGHT, character_name.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack PVPFIGHT!')
                 continue
@@ -157,13 +157,13 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential LOOT header: {lurk_header}')
                 character_name = struct.unpack('<32s', lurk_header)
-                return (lurk_type, character_name.decode('utf-8'))
+                return (LOOT, character_name.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack LOOT!')
                 continue
         elif lurk_type == START:
             print(f'DEBUG: read: Handling potential START type {lurk_type}')
-            return (lurk_type,)
+            return (START,)
         elif lurk_type == ERROR:
             print(f'DEBUG: read: Handling potential ERROR type {lurk_type}')
             try:
@@ -179,7 +179,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential ERROR data: {lurk_data}')
                 error_msg, = struct.unpack(f'<{error_msg_len}s', lurk_data)
-                return (lurk_type, error_code, error_msg_len, error_msg.decode('utf-8'))
+                return (ERROR, error_code, error_msg_len, error_msg.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ERROR!')
                 continue
@@ -192,7 +192,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential ACCEPT header: {lurk_header}')
                 accepted_msg, = struct.unpack('<B', lurk_header)
-                return (lurk_type, accepted_msg)
+                return (ACCEPT, accepted_msg)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ACCEPT!')
                 continue
@@ -211,7 +211,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential ROOM data: {lurk_data}')
                 room_des, = struct.unpack(f'<{room_des_len}s', lurk_data)
-                return (lurk_type, room_num, room_name.decode('utf-8'), room_des_len, room_des.decode('utf-8'))
+                return (ROOM, room_num, room_name.decode('utf-8', 'ignore'), room_des_len, room_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ROOM!')
                 continue
@@ -230,7 +230,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential CHARACTER data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
-                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen, health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))     # Issue here with lurktest -t; cannot decode 0xff with utf-8?
+                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen, health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CHARACTER!')
                 continue
@@ -249,13 +249,13 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential GAME data: {lurk_data}')
                 game_des, = struct.unpack(f'<{game_des_len}s', lurk_data)
-                return (lurk_type, init_points, stat_limit, game_des_len, game_des.decode('utf-8'))
+                return (GAME, init_points, stat_limit, game_des_len, game_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack GAME!')
                 continue
         elif lurk_type == LEAVE:
             print(f'DEBUG: read: Handling potential LEAVE type {lurk_type}')
-            return (lurk_type,)
+            return (LEAVE,)
         elif lurk_type == CONNECTION:
             print(f'DEBUG: read: Handling potential CONNECTION type {lurk_type}')
             try:
@@ -271,7 +271,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential CONNECTION data: {lurk_data}')
                 room_des = struct.unpack(f'<{room_des_len}s', lurk_data)
-                return (lurk_type, room_num, room_name.decode('utf-8'), room_des_len, room_des.decode('utf-8'))
+                return (CONNECTION, room_num, room_name.decode('utf-8', 'ignore'), room_des_len, room_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CONNECTION header!')
                 continue
@@ -284,7 +284,7 @@ def read(skt):
                     return None
                 print(f'DEBUG: read: Potential VERSION header: {lurk_header}')
                 major, minor, extension_len = struct.unpack('<2BH', lurk_header)
-                return (lurk_type, major, minor, extension_len)
+                return (VERSION, major, minor, extension_len)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack VERSION header!')
                 continue
