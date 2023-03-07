@@ -33,7 +33,7 @@ GAME_DESCRIPTION_LEN = int(len(GAME_DESCRIPTION))
 
 """Class for managing functions used across the server"""
 clients = {}
-def addClient(skt):
+def add_client(skt):
     """_summary_
 
     Args:
@@ -41,7 +41,7 @@ def addClient(skt):
     """
     clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
     print('DEBUG: Added Client: ', clients[skt])
-def removeClient(skt):
+def remove_client(skt):
     """_summary_
 
     Args:
@@ -55,7 +55,7 @@ def removeClient(skt):
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
 characters = {}
-def getCharacter(name):
+def get_character(name):
     """_summary_
 
     Args:
@@ -65,11 +65,11 @@ def getCharacter(name):
         _type_: _description_
     """
     if name not in characters:
-        print('ERROR: getCharacter() cannot find character in characters!')
+        print('ERROR: get_character() cannot find character in characters!')
         return None
     character = (lurk.CHARACTER, name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
-def sendCharacter(skt, name):
+def send_character(skt, name):
     """Function for sending a character that is already found on the server
 
     Args:
@@ -84,7 +84,7 @@ def sendCharacter(skt, name):
         _type_: _description_
     """
     name = str(name)
-    character = getCharacter(name)
+    character = get_character(name)
     lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
     try:
         packed = struct.pack(f'<B32sB7H{char_des_len}s', lurk_type, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, char_des_len, bytes(char_des, 'utf-8'))
@@ -98,7 +98,7 @@ def sendCharacter(skt, name):
 # This stuff is heavily broken
 # {skt: name}
 activeCharacters = {}
-def getSocketByName(name):
+def get_socket_by_name(name):
     """_summary_
 
     Args:
@@ -111,7 +111,7 @@ def getSocketByName(name):
         if value != name:
             continue
         return key
-def getNameBySocket(skt):
+def get_name_by_socket(skt):
     """_summary_
 
     Args:
@@ -136,7 +136,7 @@ errors = {
     7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',
     8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
     }
-def sendError(skt, code):
+def send_error(skt, code):
     """_summary_
 
     Args:
@@ -170,7 +170,7 @@ rooms = {
     5: ('Barn Loft', 'The loft, full things nobody wanted to throw away.'),
     6: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.')
 }
-def sendRoom(skt, room):
+def send_room(skt, room):
     """_summary_
 
     Args:
@@ -205,7 +205,7 @@ connections = {
     5: (4,),
     6: (2,)
 }
-def sendConnection(skt, room):
+def send_connection(skt, room):
     """Send a lurk CONNECTION message to a socket.
 
     Args:
@@ -231,16 +231,16 @@ def sendConnection(skt, room):
         print(f'ERROR: Failed to pack message type {lurk.CONNECTION}')
         raise struct.error from exc
     return 0
-def cleanupClient(skt):
+def cleanup_client(skt):
     """_summary_
 
     Args:
         skt (_type_): _description_
     """
-    removeClient(skt)
+    remove_client(skt)
     skt.shutdown(2)
     skt.close()
-def handleClient(skt):
+def handle_client(skt):
     """_summary_
 
     Args:
@@ -249,46 +249,46 @@ def handleClient(skt):
     while True:
         message = lurk.read(skt)
         if not message:
-            print('ERROR: handleClient: read returned None, breaking while loop!')
-            print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
-            cleanupClient(skt)
+            print('ERROR: handle_client: read returned None, breaking while loop!')
+            print(Fore.GREEN+'INFO: handle_client: Running cleanup_client!')
+            cleanup_client(skt)
             break
         if message[0] == lurk.MESSAGE:
             lurk_type, msg_len, recipient_name, sender_name, message = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: Message Length:', msg_len)
             print('DEBUG: Recipient Name:', recipient_name)
             print('DEBUG: Sender Name:', sender_name)
             print('DEBUG: Message:', message)
             message = (lurk_type, msg_len, sender_name, recipient_name, message)         # Flipped send/recv
             # Find socket to send to that corresponds with the desired recipient, then send message to that socket
-            #sendSkt = Server.getSocketByName(recvName)
-            #lurk.sendMessage(sendSkt, message)
+            #sendSkt = Server.get_socket_by_name(recvName)
+            #lurk.send_message(sendSkt, message)
             continue
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room_num = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: desiredRoom:', new_room_num)
-            character = getCharacter(activeCharacters[skt])
+            character = get_character(activeCharacters[skt])
             lurk_type, name, flags, attack, defense, regen, health, gold, old_room_num, char_des_len, char_des = character
             if flags != 0x98: # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
                 print('ERROR: Character not started, sending ERROR code 5!')
-                sendError(skt, 5)
+                send_error(skt, 5)
                 continue
             print('DEBUG: connections:', connections)
             print('DEBUG: connections[currentRoomNum]:', connections[old_room_num])
             if new_room_num not in connections[old_room_num]:            # This is giving me issues, needs work
                 print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
-                status = sendError(skt, 1)
+                send_error(skt, 1)
                 continue
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
-            print('DEBUG: Sending updated character after changeroom:', getCharacter(name))
-            sendRoom(skt, new_room_num)
+            print('DEBUG: Sending updated character after changeroom:', get_character(name))
+            send_room(skt, new_room_num)
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != new_room_num:
                     continue
-                sendCharacter(skt, key)
+                send_character(skt, key)
             # Send CONNECTION messages for all connections with current room
             # Maybe there is a more efficient way of doing this?
             for key, value in connections.items():
@@ -297,38 +297,38 @@ def handleClient(skt):
                 print('DEBUG: Found connections:', connections[key])
                 for value in connections[key]:
                     print('DEBUG: Sending CONNECTION with value:', value)
-                    sendConnection(skt, value)
+                    send_connection(skt, value)
             continue
         elif message[0] == lurk.FIGHT:
             continue
         elif message[0] == lurk.PVPFIGHT:
             lurk_type, character_name = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
             continue
         elif message[0] == lurk.LOOT:
             lurk_type, character_name = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
             continue
         elif message[0] == lurk.START:
             print('DEBUG: Handling START!')
             try:
-                character = getCharacter(activeCharacters[skt])
+                character = get_character(activeCharacters[skt])
                 lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
                 print('DEBUG: Got character from socket:', character)
             except:
                 print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
-                sendError(skt, 5)
+                send_error(skt, 5)
                 continue
             characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ROOM message
-            sendRoom(skt, character[8])
+            send_room(skt, character[8])
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != room:
                     continue
-                sendCharacter(skt, key)
+                send_character(skt, key)
             # Send CONNECTION messages for all connections with current room
             for key, value in connections.items():
                 print(f'DEBUG: Evaluating key: {key}, value: {value}')
@@ -338,37 +338,37 @@ def handleClient(skt):
                 print('DEBUG: Found connections:', connections[key])
                 for value in connections[key]:
                     print('DEBUG: Sending CONNECTION with value:', value)
-                    sendConnection(skt, value)
+                    send_connection(skt, value)
             continue
         elif message[0] == lurk.ERROR:
             lurk_type, error_code, error_msg_len, error_msg = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: errCode:', error_code)
             print('DEBUG: errMsgLen:', error_msg_len)
             print('DEBUG: errMsg:', error_msg)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = sendError(skt, 0)
+            status = send_error(skt, 0)
             continue
         elif message[0] == lurk.ACCEPT:
             lurk_type, accepted_msg = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: acceptedMsg:', accepted_msg)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = sendError(skt, 0)
+            status = send_error(skt, 0)
             continue
         elif message[0] == lurk.ROOM:
             lurk_type, room_num, room_name, room_des_len, room_des = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: roomNum:', room_num)
             print('DEBUG: roomName:', room_name)
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = sendError(skt, 0)
+            status = send_error(skt, 0)
             continue
         elif message[0] == lurk.CHARACTER:
             lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: Name:', name)
             print('DEBUG: Flags:', flags)
             print('DEBUG: Attack:', attack)
@@ -381,18 +381,18 @@ def handleClient(skt):
             print('DEBUG: charDes:', char_des)
             if attack + defense + regen > INIT_POINTS:
                 print('WARN: Character stats invalid, sending ERROR code 4!')
-                status = sendError(skt, 4)
+                status = send_error(skt, 4)
                 continue
-            lurk.sendAccept(skt, lurk.CHARACTER)
+            lurk.send_accept(skt, lurk.CHARACTER)
             if name in characters:
                 print('INFO: Existing character found:', characters[name])
                 print('INFO: All characters:', characters)
                 activeCharacters.update({skt: name})
                 print('DEBUG: New activeCharacter in activeCharacters:', activeCharacters[skt])
                 print('DEBUG: All activeCharacters:', activeCharacters)
-                old_character = getCharacter(name)
+                old_character = get_character(name)
                 print('DEBUG: Sending reprised character:', old_character)
-                lurk.sendCharacter(skt, old_character)
+                lurk.send_character(skt, old_character)
                 # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                 continue
             characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, char_des_len, char_des]})
@@ -401,43 +401,43 @@ def handleClient(skt):
             activeCharacters.update({skt: name})
             print('DEBUG: New activeCharacter in activeCharacters:', activeCharacters[skt])
             print('DEBUG: All activeCharacters:', activeCharacters)
-            new_character = getCharacter(name)
+            new_character = get_character(name)
             print('DEBUG: Sending validated character:', new_character)
-            lurk.sendCharacter(skt, new_character)
+            lurk.send_character(skt, new_character)
             # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
             continue
         elif message[0] == lurk.GAME:
             lurk_type, init_points, stat_limit, game_des_len, game_des = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: initPoints:', init_points)
             print('DEBUG: statLimit:', stat_limit)
             print('DEBUG: gameDesLen:', game_des_len)
             print('DEBUG: gameDes:', game_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = sendError(skt, 0)
+            status = send_error(skt, 0)
             continue
         elif message[0] == lurk.LEAVE:
-            print(Fore.GREEN+'INFO: handleClient: Received LEAVE, running cleanupClient!')
-            cleanupClient(skt)
+            print(Fore.GREEN+'INFO: handle_client: Received LEAVE, running cleanup_client!')
+            cleanup_client(skt)
             break
         elif message[0] == lurk.CONNECTION:
             lurk_type, room_num, room_name, room_des_len, room_des = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: roomNum:', room_num)
             print('DEBUG: roomName:', room_name)
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = sendError(skt, 0)
+            status = send_error(skt, 0)
             continue
         elif message[0] == lurk.VERSION:
             lurk_type, major, minor, extension_len = message
-            print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
+            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: major:', major)
             print('DEBUG: minor:', minor)
             print('DEBUG: extSize:', extension_len)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = sendError(skt, 0)
+            status = send_error(skt, 0)
             continue
         else:
             print('DEBUG: message[0] not a valid LURK type?')
@@ -448,25 +448,22 @@ if server_skt == -1:
     print(Fore.RED+'ERROR: Server socket creation error, stopping!')
     sys.exit(0)
 # Assigned range: 5010 - 5014
-address = '0.0.0.0'
-ports = [5010, 5011, 5012, 5013, 5014]
-for port in ports:
+ADDRESS = '0.0.0.0'
+PORTS = [5010, 5011, 5012, 5013, 5014]
+for port in PORTS:
     try:
-        server_skt.bind((address, port))
+        server_skt.bind((ADDRESS, port))
         break
     except OSError:
         print(Fore.CYAN+f'WARN: Port {port} unavailable!')
         continue
 server_skt.listen()
-print(Fore.WHITE+f'INFO: Listening on address: {address}, {port}')
+print(Fore.WHITE+f'INFO: Listening on address: {ADDRESS}, {port}')
 while True:
     client_skt, client_addr = server_skt.accept()
     version = (lurk.VERSION, MAJOR, MINOR, EXT_SIZE)
-    version = lurk.sendVersion(client_skt, version)
+    lurk.send_version(client_skt, version)
     game = (lurk.GAME, INIT_POINTS, STAT_LIMIT, GAME_DESCRIPTION_LEN, GAME_DESCRIPTION)
-    game = lurk.sendGame(client_skt, game)
-    if (version == 0 and game == 0):
-        addClient(client_skt)
-        threading.Thread(target=handleClient, args=(client_skt,), daemon=True).start()
-    else:
-        print('ERROR: VERSION & GAME message failed somehow!')
+    lurk.send_game(client_skt, game)
+    add_client(client_skt)
+    threading.Thread(target=handle_client, args=(client_skt,), daemon=True).start()

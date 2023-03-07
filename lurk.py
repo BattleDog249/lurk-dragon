@@ -75,8 +75,10 @@ def recv(skt, size):
             return None
     return data
 def pack():
+    """"""
     pass
 def unpack():
+    """"""
     pass
 def read(skt):
     """Reads and interprets binary lurk messages from socket.
@@ -91,7 +93,7 @@ def read(skt):
         try:
             lurk_type = recv(skt, 1)
             if not lurk_type:
-                print(Fore.RED+f'ERROR: read: Received {lurk_type}, signaling a client disconnect, returning None!')
+                print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                 return None
             lurk_type, = struct.unpack('<B', lurk_type)
         except struct.error:
@@ -105,17 +107,18 @@ def read(skt):
             try:
                 lurk_header = recv(skt, MESSAGE_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: readAll returned None, signaling socket disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential MESSAGE header: {lurk_header}')
                 msg_len, recipient_name, sender_name = struct.unpack('<H32s32s', lurk_header)
                 lurk_data = recv(skt, msg_len)
                 if not lurk_data:
-                    print(Fore.RED+'ERROR: read: readAll returned None, signaling socket disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential MESSAGE data: {lurk_data}')
                 message, = struct.unpack(f'<{msg_len}s', lurk_data)
-                return (MESSAGE, msg_len, recipient_name.decode('utf-8', 'ignore'), sender_name.decode('utf-8', 'ignore'), message.decode('utf-8', 'ignore'))
+                return (MESSAGE, msg_len, recipient_name.decode('utf-8', 'ignore'),
+                        sender_name.decode('utf-8', 'ignore'), message.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack MESSAGE!')
                 continue
@@ -124,7 +127,7 @@ def read(skt):
             try:
                 lurk_header = recv(skt, CHANGEROOM_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential CHANGEROOM header: {lurk_header}')
                 room_num, = struct.unpack('<H', lurk_header)
@@ -140,7 +143,7 @@ def read(skt):
             try:
                 lurk_header = recv(skt, PVPFIGHT_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential PVPFIGHT header: {lurk_header}')
                 character_name = struct.unpack('<32s', lurk_header)
@@ -153,7 +156,7 @@ def read(skt):
             try:
                 lurk_header = recv(skt, LOOT_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential LOOT header: {lurk_header}')
                 character_name = struct.unpack('<32s', lurk_header)
@@ -169,13 +172,13 @@ def read(skt):
             try:
                 lurk_header = recv(skt, ERROR_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential ERROR header: {lurk_header}')
                 error_code, error_msg_len = struct.unpack('<BH', lurk_header)
                 lurk_data = recv(skt, error_msg_len)
                 if not lurk_data:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential ERROR data: {lurk_data}')
                 error_msg, = struct.unpack(f'<{error_msg_len}s', lurk_data)
@@ -188,7 +191,7 @@ def read(skt):
             try:
                 lurk_header = recv(skt, ACCEPT_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential ACCEPT header: {lurk_header}')
                 accepted_msg, = struct.unpack('<B', lurk_header)
@@ -201,17 +204,18 @@ def read(skt):
             try:
                 lurk_header = recv(skt, ROOM_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential ROOM header: {lurk_header}')
                 room_num, room_name, room_des_len = struct.unpack('<H32sH', lurk_header)
                 lurk_data = recv(skt, room_des_len)
                 if not lurk_data:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential ROOM data: {lurk_data}')
                 room_des, = struct.unpack(f'<{room_des_len}s', lurk_data)
-                return (ROOM, room_num, room_name.decode('utf-8', 'ignore'), room_des_len, room_des.decode('utf-8', 'ignore'))
+                return (ROOM, room_num, room_name.decode('utf-8', 'ignore'),
+                        room_des_len, room_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack ROOM!')
                 continue
@@ -220,17 +224,18 @@ def read(skt):
             try:
                 lurk_header = recv(skt, CHARACTER_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential CHARACTER header: {lurk_header}')
                 name, flags, attack, defense, regen, health, gold, room, char_des_len = struct.unpack('<32sB3Hh3H', lurk_header)
                 lurk_data = recv(skt, char_des_len)
                 if not lurk_data:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential CHARACTER data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
-                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen, health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
+                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
+                        health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CHARACTER!')
                 continue
@@ -239,17 +244,18 @@ def read(skt):
             try:
                 lurk_header = recv(skt, GAME_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential GAME header: {lurk_header}')
                 init_points, stat_limit, game_des_len = struct.unpack('<3H', lurk_header)
                 lurk_data = recv(skt, game_des_len)
                 if not lurk_data:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential GAME data: {lurk_data}')
                 game_des, = struct.unpack(f'<{game_des_len}s', lurk_data)
-                return (GAME, init_points, stat_limit, game_des_len, game_des.decode('utf-8', 'ignore'))
+                return (GAME, init_points, stat_limit,
+                        game_des_len, game_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack GAME!')
                 continue
@@ -261,17 +267,18 @@ def read(skt):
             try:
                 lurk_header = recv(skt, CONNECTION_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential CONNECTION header: {lurk_header}')
                 room_num, room_name, room_des_len = struct.unpack('<H32sH', lurk_header)
                 lurk_data = recv(skt, room_des_len)
                 if not lurk_data:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential CONNECTION data: {lurk_data}')
                 room_des = struct.unpack(f'<{room_des_len}s', lurk_data)
-                return (CONNECTION, room_num, room_name.decode('utf-8', 'ignore'), room_des_len, room_des.decode('utf-8', 'ignore'))
+                return (CONNECTION, room_num, room_name.decode('utf-8', 'ignore'),
+                        room_des_len, room_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack CONNECTION header!')
                 continue
@@ -280,7 +287,7 @@ def read(skt):
             try:
                 lurk_header = recv(skt, VERSION_LEN - 1)
                 if not lurk_header:
-                    print(Fore.RED+'ERROR: read: Received b'', signaling a client disconnect, returning None!')
+                    print(Fore.RED+f'ERROR: read: Recv passed {lurk_type}, returning None!')
                     return None
                 print(f'DEBUG: read: Potential VERSION header: {lurk_header}')
                 major, minor, extension_len = struct.unpack('<2BH', lurk_header)
@@ -291,7 +298,7 @@ def read(skt):
         else:
             print(Fore.RED+f'ERROR: read: Invalid message type {lurk_type}, continuing!')
             continue
-def sendMessage(skt, lurk_message):
+def send_message(skt, lurk_message):
     """Sends a Lurk MESSAGE message to a specified socket.
 
     Args:
@@ -299,7 +306,7 @@ def sendMessage(skt, lurk_message):
         lurk_message (tuple): Entire Lurk MESSAGE message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -311,7 +318,7 @@ def sendMessage(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendChangeroom(skt, lurk_message):
+def send_changeroom(skt, lurk_message):
     """Sends a Lurk CHANGEROOM message to a specified socket.
 
     Args:
@@ -319,7 +326,7 @@ def sendChangeroom(skt, lurk_message):
         lurk_message (tuple): Entire Lurk CHANGEROOM message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -332,7 +339,7 @@ def sendChangeroom(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendFight(skt):
+def send_fight(skt):
     """Sends a Lurk FIGHT message to a specified socket.
 
     Args:
@@ -340,7 +347,7 @@ def sendFight(skt):
         lurk_message (tuple): Entire Lurk FIGHT message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -353,7 +360,7 @@ def sendFight(skt):
         print(f'ERROR: Failed to pack message type {FIGHT}')
         raise struct.error from exc
     return 0
-def sendPvpfight(skt, lurk_message):
+def send_pvpfight(skt, lurk_message):
     """Sends a Lurk PVPFIGHT message to a specified socket.
 
     Args:
@@ -361,7 +368,7 @@ def sendPvpfight(skt, lurk_message):
         lurk_message (tuple): Entire Lurk PVPFIGHT message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -374,7 +381,7 @@ def sendPvpfight(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendLoot(skt, lurk_message):
+def send_loot(skt, lurk_message):
     """Sends a Lurk LOOT message to a specified socket.
 
     Args:
@@ -382,7 +389,7 @@ def sendLoot(skt, lurk_message):
         lurk_message (tuple): Entire Lurk LOOT message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -395,7 +402,7 @@ def sendLoot(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendStart(skt):
+def send_start(skt):
     """Sends a Lurk START message to a specified socket.
 
     Args:
@@ -403,7 +410,7 @@ def sendStart(skt):
         lurk_message (tuple): Entire Lurk START message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -416,7 +423,7 @@ def sendStart(skt):
         print(f'ERROR: Failed to pack message type {START}')
         raise struct.error from exc
     return 0
-def sendError(skt, lurk_message):
+def send_error(skt, lurk_message):
     """Sends a Lurk ERROR message to a specified socket.
 
     Args:
@@ -424,7 +431,7 @@ def sendError(skt, lurk_message):
         lurk_message (tuple): Entire Lurk ERROR message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -437,7 +444,7 @@ def sendError(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendAccept(skt, lurk_message):
+def send_accept(skt, lurk_message):
     """Sends a Lurk ACCEPT message to a specified socket.
 
     Args:
@@ -445,7 +452,7 @@ def sendAccept(skt, lurk_message):
         lurk_message (tuple): Entire Lurk VERSION message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -458,7 +465,7 @@ def sendAccept(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {MESSAGE}')
         raise struct.error from exc
     return 0
-def sendRoom(skt, lurk_message):
+def send_room(skt, lurk_message):
     """Sends a Lurk ROOM message to a specified socket.
 
     Args:
@@ -466,7 +473,7 @@ def sendRoom(skt, lurk_message):
         lurk_message (tuple): Entire Lurk ROOM message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -479,7 +486,7 @@ def sendRoom(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendCharacter(skt, lurk_message):
+def send_character(skt, lurk_message):
     """Sends a Lurk CHARACTER message to a specified socket.
 
     Args:
@@ -487,7 +494,7 @@ def sendCharacter(skt, lurk_message):
         lurk_message (tuple): Entire Lurk CHARACTER message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -500,7 +507,7 @@ def sendCharacter(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendGame(skt, lurk_message):
+def send_game(skt, lurk_message):
     """Sends a Lurk GAME message to a specified socket.
 
     Args:
@@ -508,7 +515,7 @@ def sendGame(skt, lurk_message):
         lurk_message (tuple): Entire Lurk GAME message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
@@ -521,7 +528,7 @@ def sendGame(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendLeave(skt):
+def send_leave(skt):
     """Sends a Lurk LEAVE message to a specified socket.
 
     Args:
@@ -541,7 +548,7 @@ def sendLeave(skt):
         print(f'ERROR: Failed to pack message type {LEAVE}')
         raise struct.error from exc
     return 0
-def sendConnection(skt, lurk_message):
+def send_connection(skt, lurk_message):
     """Sends a Lurk CONNECTION message to a specified socket.
 
     Args:
@@ -549,7 +556,7 @@ def sendConnection(skt, lurk_message):
         lurk_message (tuple): Entire Lurk CONNECTION message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         int: 0 if function finishes successfully
@@ -562,7 +569,7 @@ def sendConnection(skt, lurk_message):
         print(f'ERROR: Failed to pack message type {lurk_message[0]}')
         raise struct.error from exc
     return 0
-def sendVersion(skt, lurk_message):
+def send_version(skt, lurk_message):
     """Sends a Lurk VERSION message to a specified socket.
 
     Args:
@@ -570,7 +577,7 @@ def sendVersion(skt, lurk_message):
         lurk_message (tuple): Entire Lurk VERSION message to be sent.
 
     Raises:
-        struct.error: Raised if passed tuple does not meet Lurk protocol standards for this message type.
+        struct.error: Raised if tuple does not meet Lurk protocol standards for this message type.
 
     Returns:
         _type_: _description_
