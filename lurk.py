@@ -447,11 +447,11 @@ def sendAccept(skt, lurk_message):
         _type_: _description_
     """
     try:
-        packed = struct.pack('<2B', lurk_message[0], lurk_message[1])
+        packed = struct.pack('<2B', ACCEPT, lurk_message)
         print('DEBUG: Sending ACCEPT message!')
         send(skt, packed)
     except Exception as exc:
-        print(f'ERROR: Failed to pack message type {lurk_message[0]}')
+        print(f'ERROR: Failed to pack message type {MESSAGE}')
         raise struct.error from exc
     return 0
 def sendRoom(skt, lurk_message):
