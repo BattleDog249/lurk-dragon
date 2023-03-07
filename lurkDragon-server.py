@@ -4,6 +4,7 @@
 
 import socket
 import struct
+import sys
 import threading
 
 from colorama import Fore
@@ -84,17 +85,14 @@ def sendCharacter(skt, name):
     """
     name = str(name)
     character = getCharacter(name)
-    lurk_type, name, flags, attack, defense, regen, health, gold, room, charDesLen, charDes = character
+    lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
     try:
-        characterPacked = struct.pack('<B32sB7H%ds' %charDesLen, lurk_type, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, charDesLen, bytes(charDes, 'utf-8'))
+        packed = struct.pack(f'<B32sB7H{char_des_len}s', lurk_type, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, char_des_len, bytes(char_des, 'utf-8'))
         print('DEBUG: Sending CHARACTER message!')
-        lurk.send(skt, characterPacked)
-    except struct.error:
-        print('ERROR: Failed to pack CHARACTER structure!')
-        raise struct.error
-    except socket.error:
-        print('ERROR: send() failed!')
-        raise socket.error
+        lurk.send(skt, packed)
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk.CHARACTER}')
+        raise struct.error from exc
     return 0
 # Must be a better way to associate connected sockets with an "in-use" character
 # This stuff is heavily broken
@@ -152,19 +150,16 @@ def sendError(skt, code):
     Returns:
         _type_: _description_
     """
-    errCode = int(code)
-    errMsgLen = len(errors[code])
-    errMsg = errors[code]
+    error_code = int(code)
+    error_msg_len = len(errors[code])
+    error_msg = errors[code]
     try:
-        errorPacked = struct.pack('<2BH%ds' %errMsgLen, lurk.ERROR, errCode, errMsgLen, bytes(errMsg, 'utf-8'))
+        packed = struct.pack(f'<2BH{error_msg_len}s', lurk.ERROR, error_code, error_msg_len, bytes(error_msg, 'utf-8'))
         print('DEBUG: Sending ERROR message!')
-        lurk.send(skt, errorPacked)
-    except struct.error:
-        print('ERROR: Failed to pack ERROR structure!')
-        raise struct.error
-    except socket.error:
-        print('ERROR: send() failed!')
-        raise socket.error
+        lurk.send(skt, packed)
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk.ERROR}')
+        raise struct.error from exc
     return 0
 rooms = {
     0: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
@@ -189,20 +184,17 @@ def sendRoom(skt, room):
     Returns:
         _type_: _description_
     """
-    roomNum = int(room)
-    roomName = rooms[roomNum][0]
-    roomDesLen = len(rooms[roomNum][1])
-    roomDes = rooms[roomNum][1]
+    room_num = int(room)
+    room_name = rooms[room_num][0]
+    room_des_len = len(rooms[room_num][1])
+    room_des = rooms[room_num][1]
     try:
-        roomPacked = struct.pack('<BH32sH%ds' %roomDesLen, lurk.ROOM, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
+        packed = struct.pack(f'<BH32sH{room_des_len}s', lurk.ROOM, room_num, bytes(room_name, 'utf-8'), room_des_len, bytes(room_des, 'utf-8'))
         print('DEBUG: Sending ROOM message!')
-        lurk.send(skt, roomPacked)
-    except struct.error:
-        print('ERROR: Failed to pack ROOM structure!')
-        raise struct.error
-    except socket.error:
-        print('ERROR: send() failed!')
-        raise socket.error
+        lurk.send(skt, packed)
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk.MESSAGE}')
+        raise struct.error from exc
     return 0
 connections = {
     0: (1,),
@@ -227,20 +219,17 @@ def sendConnection(skt, room):
     Returns:
         int: 0 if function finishes successfully
     """
-    roomNum = int(room)
-    roomName = rooms[roomNum][0]
-    roomDesLen = len(rooms[roomNum][1])
-    roomDes = rooms[roomNum][1]
+    room_num = int(room)
+    room_name = rooms[room_num][0]
+    room_des_len = len(rooms[room_num][1])
+    room_des = rooms[room_num][1]
     try:
-        connectionPacked = struct.pack('<BH32sH%ds' %roomDesLen, lurk.CONNECTION, roomNum, bytes(roomName, 'utf-8'), roomDesLen, bytes(roomDes, 'utf-8'))
+        packed = struct.pack(f'<BH32sH{room_des_len}s', lurk.CONNECTION, room_num, bytes(room_name, 'utf-8'), room_des_len, bytes(room_des, 'utf-8'))
         print('DEBUG: Sending CONNECTION message!')
-        lurk.send(skt, connectionPacked)
-    except struct.error:
-        print('ERROR: Server.sendConnection: Failed to pack CONNECTION, raising struct.error!')
-        raise struct.error
-    except socket.error:
-        print('ERROR: Server.sendConnection: send returned socket.error, raising socket.error!')
-        raise socket.error
+        lurk.send(skt, packed)
+    except Exception as exc:
+        print(f'ERROR: Failed to pack message type {lurk.CONNECTION}')
+        raise struct.error from exc
     return 0
 def cleanupClient(skt):
     """_summary_
@@ -264,7 +253,7 @@ def handleClient(skt):
             print(Fore.GREEN+'INFO: handleClient: Running cleanupClient!')
             cleanupClient(skt)
             break
-        elif message[0] == lurk.MESSAGE:
+        if message[0] == lurk.MESSAGE:
             lurk_type, msg_len, recipient_name, sender_name, message = message
             print(Fore.WHITE+'DEBUG: handleClient: Type:', lurk_type)
             print('DEBUG: Message Length:', msg_len)
@@ -342,9 +331,9 @@ def handleClient(skt):
                 sendCharacter(skt, key)
             # Send CONNECTION messages for all connections with current room
             for key, value in connections.items():
-                print('DEBUG: Evaluating key: {}, value: {}'.format(key, value))
+                print(f'DEBUG: Evaluating key: {key}, value: {value}')
                 if key != room:
-                    print('DEBUG: Key {} is not currentRoom {}, continuing'.format(key, room))
+                    print(f'DEBUG: Key {key} is not currentRoom {room}, continuing')
                     continue
                 print('DEBUG: Found connections:', connections[key])
                 for value in connections[key]:
@@ -457,7 +446,7 @@ def handleClient(skt):
 server_skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if server_skt == -1:
     print(Fore.RED+'ERROR: Server socket creation error, stopping!')
-    quit()
+    sys.exit(0)
 # Assigned range: 5010 - 5014
 address = '0.0.0.0'
 ports = [5010, 5011, 5012, 5013, 5014]
