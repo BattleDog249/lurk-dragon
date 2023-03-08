@@ -263,7 +263,7 @@ def handle_client(skt):
             message = (lurk_type, msg_len, sender_name, recipient_name, message)         # Flipped send/recv
             # Find socket to send to that corresponds with the desired recipient, then send message to that socket
             #sendSkt = Server.get_socket_by_name(recvName)
-            #lurk.send_message(sendSkt, message)
+            #lurk.write(sendSkt, message)
             continue
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room_num = message
@@ -383,7 +383,7 @@ def handle_client(skt):
                 print('WARN: Character stats invalid, sending ERROR code 4!')
                 status = send_error(skt, 4)
                 continue
-            lurk.send_accept(skt, lurk.CHARACTER)
+            #lurk.write(skt, lurk.CHARACTER)
             if name in characters:
                 print('INFO: Existing character found:', characters[name])
                 print('INFO: All characters:', characters)
@@ -392,7 +392,7 @@ def handle_client(skt):
                 print('DEBUG: All activeCharacters:', activeCharacters)
                 old_character = get_character(name)
                 print('DEBUG: Sending reprised character:', old_character)
-                lurk.send_character(skt, old_character)
+                lurk.write(skt, old_character)
                 # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
                 continue
             characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, char_des_len, char_des]})
@@ -403,7 +403,7 @@ def handle_client(skt):
             print('DEBUG: All activeCharacters:', activeCharacters)
             new_character = get_character(name)
             print('DEBUG: Sending validated character:', new_character)
-            lurk.send_character(skt, new_character)
+            lurk.write(skt, new_character)
             # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
             continue
         elif message[0] == lurk.GAME:
@@ -462,8 +462,8 @@ print(Fore.WHITE+f'INFO: Listening on address: {ADDRESS}, {port}')
 while True:
     client_skt, client_addr = server_skt.accept()
     version = (lurk.VERSION, MAJOR, MINOR, EXT_SIZE)
-    lurk.send_version(client_skt, version)
+    lurk.write(client_skt, version)
     game = (lurk.GAME, INIT_POINTS, STAT_LIMIT, GAME_DESCRIPTION_LEN, GAME_DESCRIPTION)
-    lurk.send_game(client_skt, game)
+    lurk.write(client_skt, game)
     add_client(client_skt)
     threading.Thread(target=handle_client, args=(client_skt,), daemon=True).start()
