@@ -276,6 +276,12 @@ def handle_client(skt):
                     send_connection(skt, value)
             continue
         elif message[0] == lurk.FIGHT:
+            # Get character info who sent fight message
+            character = get_character(activeCharacters[skt])
+            lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+            # If no monsters in current room, send error type 7: no fight
+            # Get all monsters in room
+            # Potential damage calculation: damage = attack * attack / (attack + defense)
             continue
         elif message[0] == lurk.PVPFIGHT:
             lurk_type, character_name = message
