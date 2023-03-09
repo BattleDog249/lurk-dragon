@@ -72,7 +72,7 @@ def send(skt, message):
         print(Fore.WHITE+'DEBUG: send: Sent message!')
         return 0
     except socket.error:
-        print(Fore.RED+'ERROR: send: Caught socket.error, returning None!')
+        print(Fore.RED+'ERROR: send: socket.error, returning None!')
         return None
 def read(skt):
     """Reads and interprets binary lurk messages from socket.
@@ -86,7 +86,6 @@ def read(skt):
     while True:
         try:
             lurk_type = recv(skt, 1)
-            print(Fore.WHITE+f'DEBUG: read: Received potential lurk type {int.from_bytes(lurk_type, "little")}')
             if not lurk_type:
                 print(Fore.RED+'ERROR: read: socket.error, returning None!')
                 return None
@@ -97,6 +96,7 @@ def read(skt):
         if lurk_type < 1 or lurk_type > 14:
             print(Fore.RED+f'ERROR: read: {lurk_type} not a valid lurk message type!')
             continue
+        print(Fore.WHITE+f'DEBUG: read: Received potential lurk type {int.from_bytes(lurk_type, "little")}')
         if lurk_type == MESSAGE:
             try:
                 lurk_header = recv(skt, MESSAGE_LEN - 1)
