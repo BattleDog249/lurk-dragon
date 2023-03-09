@@ -383,7 +383,7 @@ def handle_client(skt):
                 print('WARN: Character stats invalid, sending ERROR code 4!')
                 status = send_error(skt, 4)
                 continue
-            #lurk.write(skt, lurk.CHARACTER)
+            lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
             if name in characters:
                 print('INFO: Existing character found:', characters[name])
                 print('INFO: All characters:', characters)
