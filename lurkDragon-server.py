@@ -364,7 +364,8 @@ def handle_client(skt):
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = send_error(skt, 0)
+            #status = send_error(skt, 0)
+            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.CHARACTER:
             lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = message
@@ -381,7 +382,8 @@ def handle_client(skt):
             print('DEBUG: charDes:', char_des)
             if attack + defense + regen > INIT_POINTS:
                 print('WARN: Character stats invalid, sending ERROR code 4!')
-                status = send_error(skt, 4)
+                #status = send_error(skt, 4)
+                lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                 continue
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
             if name in characters:
