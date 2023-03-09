@@ -299,8 +299,8 @@ def handle_client(skt):
                 continue
             characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ROOM message
-            #send_room(skt, character[8])
-            lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
+            send_room(skt, character[8])
+            #lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != room:
