@@ -136,31 +136,6 @@ errors = {
     7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',
     8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
     }
-def send_error(skt, code):
-    """_summary_
-
-    Args:
-        skt (_type_): _description_
-        code (_type_): _description_
-
-    Raises:
-        struct.error: _description_
-        socket.error: _description_
-
-    Returns:
-        _type_: _description_
-    """
-    error_code = int(code)
-    error_msg_len = len(errors[code])
-    error_msg = errors[code]
-    try:
-        packed = struct.pack(f'<2BH{error_msg_len}s', lurk.ERROR, error_code, error_msg_len, bytes(error_msg, 'utf-8'))
-        print('DEBUG: Sending ERROR message!')
-        lurk.send(skt, packed)
-    except Exception as exc:
-        print(f'ERROR: Failed to pack message type {lurk.ERROR}')
-        raise struct.error from exc
-    return 0
 rooms = {
     0: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
     1: ('Dark Grove', 'A hallway leading away from the starting room.'),
@@ -273,17 +248,18 @@ def handle_client(skt):
             lurk_type, name, flags, attack, defense, regen, health, gold, old_room_num, char_des_len, char_des = character
             if flags != 0x98: # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
                 print('ERROR: Character not started, sending ERROR code 5!')
-                send_error(skt, 5)
+                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             print('DEBUG: connections:', connections)
             print('DEBUG: connections[currentRoomNum]:', connections[old_room_num])
             if new_room_num not in connections[old_room_num]:            # This is giving me issues, needs work
                 print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
-                send_error(skt, 1)
+                lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
             print('DEBUG: Sending updated character after changeroom:', get_character(name))
-            send_room(skt, new_room_num)
+            #send_room(skt, new_room_num)
+            lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != new_room_num:
@@ -319,11 +295,12 @@ def handle_client(skt):
                 print('DEBUG: Got character from socket:', character)
             except:
                 print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
-                send_error(skt, 5)
+                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ROOM message
-            send_room(skt, character[8])
+            #send_room(skt, character[8])
+            lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], rooms[character[8]][1]))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != room:
@@ -347,14 +324,14 @@ def handle_client(skt):
             print('DEBUG: errMsgLen:', error_msg_len)
             print('DEBUG: errMsg:', error_msg)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = send_error(skt, 0)
+            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.ACCEPT:
             lurk_type, accepted_msg = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: acceptedMsg:', accepted_msg)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = send_error(skt, 0)
+            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.ROOM:
             lurk_type, room_num, room_name, room_des_len, room_des = message
@@ -364,7 +341,6 @@ def handle_client(skt):
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            #status = send_error(skt, 0)
             lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.CHARACTER:
@@ -382,7 +358,6 @@ def handle_client(skt):
             print('DEBUG: charDes:', char_des)
             if attack + defense + regen > INIT_POINTS:
                 print('WARN: Character stats invalid, sending ERROR code 4!')
-                #status = send_error(skt, 4)
                 lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                 continue
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
@@ -416,7 +391,7 @@ def handle_client(skt):
             print('DEBUG: gameDesLen:', game_des_len)
             print('DEBUG: gameDes:', game_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = send_error(skt, 0)
+            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.LEAVE:
             print(Fore.GREEN+'INFO: handle_client: Received LEAVE, running cleanup_client!')
@@ -430,7 +405,7 @@ def handle_client(skt):
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = send_error(skt, 0)
+            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.VERSION:
             lurk_type, major, minor, extension_len = message
@@ -439,7 +414,7 @@ def handle_client(skt):
             print('DEBUG: minor:', minor)
             print('DEBUG: extSize:', extension_len)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            status = send_error(skt, 0)
+            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         else:
             print('DEBUG: message[0] not a valid LURK type?')
