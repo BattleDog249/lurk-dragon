@@ -96,7 +96,7 @@ def read(skt):
         if lurk_type < 1 or lurk_type > 14:
             print(Fore.RED+f'ERROR: read: {lurk_type} not a valid lurk message type!')
             continue
-        print(Fore.WHITE+f'DEBUG: read: Received potential lurk type {int.from_bytes(lurk_type, "little")}')
+        print(Fore.WHITE+f'DEBUG: read: Received potential lurk type {lurk_type}')
         if lurk_type == MESSAGE:
             try:
                 lurk_header = recv(skt, MESSAGE_LEN - 1)
