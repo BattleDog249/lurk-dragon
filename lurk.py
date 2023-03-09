@@ -69,7 +69,7 @@ def send(skt, message):
     """
     try:
         skt.sendall(message)
-        print(Fore.WHITE+'DEBUG: send: Sent message!')
+        print(Fore.WHITE+f'DEBUG: send: Sent message type {message[0]}!')
         return 0
     except socket.error:
         print(Fore.RED+'ERROR: send: socket.error, returning None!')
@@ -298,7 +298,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack(f'<BH32s30sH{lurk_message[1]}s', MESSAGE, lurk_message[1], lurk_message[2], lurk_message[3], lurk_message[4], lurk_message[5])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -308,7 +308,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<BH', CHANGEROOM, lurk_message[1])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -318,7 +318,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<B', FIGHT)
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -328,7 +328,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<B32s', PVPFIGHT, lurk_message[1])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -338,7 +338,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<B32s', LOOT, lurk_message[1])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -348,7 +348,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<B', START)
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -358,7 +358,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack(f'<2BH{lurk_message[2]}s', ERROR, lurk_message[1], lurk_message[2], bytes(lurk_message[3], 'utf-8'))
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -368,7 +368,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<2B', ACCEPT, lurk_message[1])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -378,7 +378,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack(f'<BH32sH{lurk_message[3]}s', ROOM, lurk_message[1], lurk_message[2], lurk_message[3], bytes(lurk_message[4], 'utf-8'))
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -388,7 +388,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack(f'<B32sB3Hh3H{lurk_message[9]}s', CHARACTER, lurk_message[1].encode(), lurk_message[2], lurk_message[3], lurk_message[4], lurk_message[5], lurk_message[6], lurk_message[7], lurk_message[8], lurk_message[9], lurk_message[10].encode())
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -398,7 +398,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack(f'<B3H{lurk_message[3]}s', GAME, lurk_message[1], lurk_message[2], lurk_message[3], bytes(lurk_message[4], 'utf-8'))
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -408,7 +408,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<B', LEAVE)
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -418,7 +418,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack(f'<BH32sH{lurk_message[3]}s', CONNECTION, lurk_message[1], lurk_message[2], lurk_message[3], lurk_message[4])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -428,7 +428,7 @@ def write(skt, lurk_message):
         try:
             packed = struct.pack('<3BH', VERSION, lurk_message[1], lurk_message[2], lurk_message[3])
             status = send(skt, packed)
-            if not status:
+            if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
                 return None
         except Exception as exc:
@@ -438,7 +438,7 @@ def write(skt, lurk_message):
         print(Fore.YELLOW+f'WARN: write: Invalid message passed to write: {lurk_message}')
         print(Fore.RED+f'WARN: write: Sending invalid message to socket, hope you are debugging!')
         status = send(skt, lurk_message)
-        if not status:
+        if status != 0:
             print(Fore.RED+'ERROR: write: socket.error, returning None!')
             return None
     return 0
