@@ -259,7 +259,7 @@ def handle_client(skt):
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
             print('DEBUG: Sending updated character after changeroom:', get_character(name))
             #send_room(skt, new_room_num)
-            lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], rooms[new_room_num][1]))
+            lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[character[8][1]]), rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != new_room_num:
@@ -300,7 +300,7 @@ def handle_client(skt):
             characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ROOM message
             #send_room(skt, character[8])
-            lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], rooms[character[8]][1]))
+            lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != room:
