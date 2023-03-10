@@ -287,6 +287,8 @@ def handle_client(skt):
             lurk_type, character_name = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
+            print('ERROR: Server does not currently support PVPFIGHT, sending ERROR code 0!')
+            lurk.write(skt, (lurk.ERROR, 8, len(errors[8]), errors[8]))
             continue
         elif message[0] == lurk.LOOT:
             lurk_type, character_name = message

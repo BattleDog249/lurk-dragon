@@ -138,7 +138,7 @@ def read(skt):
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_header: {lurk_header}')
                 character_name = struct.unpack('<32s', lurk_header)
-                return (PVPFIGHT, character_name.decode('utf-8', 'ignore'))
+                return (PVPFIGHT, character_name)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
                 continue
