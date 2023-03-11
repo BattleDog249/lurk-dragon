@@ -30,28 +30,6 @@ GAME_DESCRIPTION = str(r"""Can you conquer the beast?
 """)
 GAME_DESCRIPTION_LEN = int(len(GAME_DESCRIPTION))
 
-
-"""Class for managing functions used across the server"""
-clients = {}
-def add_client(skt):
-    """_summary_
-
-    Args:
-        skt (_type_): _description_
-    """
-    clients[skt] = skt.fileno()              # Add file descriptor to dictionary for tracking connections
-    print('DEBUG: Added Client: ', clients[skt])
-def remove_client(skt):
-    """_summary_
-
-    Args:
-        skt (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-    return clients.pop(skt)
-
 names = {}
 def add_name(skt, name):
     names.update({name: skt})
@@ -85,31 +63,6 @@ def get_character(name):
         return None
     character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
-def send_character(skt, name):
-    """Function for sending a character that is already found on the server
-
-    Args:
-        skt (_type_): _description_
-        name (_type_): _description_
-
-    Raises:
-        struct.error: _description_
-        socket.error: _description_
-
-    Returns:
-        _type_: _description_
-    """
-    name = str(name)
-    character = get_character(name)
-    name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
-    try:
-        packed = struct.pack(f'<B32sB7H{char_des_len}s', lurk.CHARACTER, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, char_des_len, bytes(char_des, 'utf-8'))
-        print('DEBUG: Sending CHARACTER message!')
-        lurk.send(skt, packed)
-    except Exception as exc:
-        print(f'ERROR: Failed to pack message type {lurk.CHARACTER}')
-        raise struct.error from exc
-    return 0
 # Must be a better way to associate connected sockets with an "in-use" character
 # This stuff is heavily broken
 # {skt: name}
@@ -235,7 +188,6 @@ def cleanup_client(skt):
     Args:
         skt (_type_): _description_
     """
-    remove_client(skt)  # To be depricated
     del_name(sockets[skt])
     del_socket(skt)
     skt.shutdown(2)
@@ -286,19 +238,21 @@ def handle_client(skt):
             send_room(skt, new_room_num)
             #lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters with same room number
-            for key, value in characters.items():
-                if value[6] != new_room_num:
+            for name, stats in characters.items():
+                if stats[6] != room:
                     continue
-                send_character(skt, key)
+                lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             # Send CONNECTION messages for all connections with current room
             # Maybe there is a more efficient way of doing this?
-            for key, value in connections.items():
-                if key != new_room_num:
+            for room_num, connection in connections.items():
+                print(f'DEBUG: Evaluating key: {room_num}, connection: {connection}')
+                if room_num != new_room_num:
+                    print(f'DEBUG: Key {room_num} is not currentRoom {new_room_num}, continuing')
                     continue
-                print('DEBUG: Found connections:', connections[key])
-                for value in connections[key]:
-                    print('DEBUG: Sending CONNECTION with value:', value)
-                    send_connection(skt, value)
+                print('DEBUG: Found connections:', connections[room_num])
+                for connection in connections[room_num]:
+                    print('DEBUG: Sending CONNECTION with connection:', connection)
+                    send_connection(skt, connection)
             continue
         elif message[0] == lurk.FIGHT:
             # Get character info who sent fight message
@@ -337,21 +291,20 @@ def handle_client(skt):
             for name, stats in characters.items():
                 if stats[6] != room:
                     continue
-                #send_character(skt, name)
                 lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             # Send ROOM message
-            send_room(skt, room)
-            #lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
+            #send_room(skt, room)
+            lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
-            for key, value in connections.items():
-                print(f'DEBUG: Evaluating key: {key}, value: {value}')
-                if key != room:
-                    print(f'DEBUG: Key {key} is not currentRoom {room}, continuing')
+            for room_num, connection in connections.items():
+                print(f'DEBUG: Evaluating key: {room_num}, connection: {connection}')
+                if room_num != room:
+                    print(f'DEBUG: Key {room_num} is not currentRoom {room}, continuing')
                     continue
-                print('DEBUG: Found connections:', connections[key])
-                for value in connections[key]:
-                    print('DEBUG: Sending CONNECTION with value:', value)
-                    send_connection(skt, value)
+                print('DEBUG: Found connections:', connections[room_num])
+                for connection in connections[room_num]:
+                    print('DEBUG: Sending CONNECTION with connection:', connection)
+                    send_connection(skt, connection)
             continue
         elif message[0] == lurk.ERROR:
             lurk_type, error_code, error_msg_len, error_msg = message
@@ -475,5 +428,4 @@ while True:
     lurk.write(client_skt, version)
     game = (lurk.GAME, INIT_POINTS, STAT_LIMIT, GAME_DESCRIPTION_LEN, GAME_DESCRIPTION)
     lurk.write(client_skt, game)
-    add_client(client_skt)
     threading.Thread(target=handle_client, args=(client_skt,), daemon=True).start()
