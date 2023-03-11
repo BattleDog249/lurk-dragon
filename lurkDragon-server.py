@@ -234,7 +234,9 @@ def cleanup_client(skt):
     Args:
         skt (_type_): _description_
     """
-    remove_client(skt)
+    remove_client(skt)  # To be depricated
+    del_name(sockets[skt])
+    del_socket(skt)
     skt.shutdown(2)
     skt.close()
 def handle_client(skt):
@@ -277,6 +279,7 @@ def handle_client(skt):
                 print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
+            lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
             print('DEBUG: Sending updated character after changeroom:', get_character(name))
             send_room(skt, new_room_num)
@@ -327,14 +330,16 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
-            # Send ROOM message
-            send_room(skt, room)
-            #lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
+            # Send ACCEPT message
+            lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
                 if value[6] != room:
                     continue
                 send_character(skt, key)
+            # Send ROOM message
+            send_room(skt, room)
+            #lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
             # Send CONNECTION messages for all connections with current room
             for key, value in connections.items():
                 print(f'DEBUG: Evaluating key: {key}, value: {value}')
