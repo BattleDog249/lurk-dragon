@@ -51,10 +51,25 @@ def remove_client(skt):
         _type_: _description_
     """
     return clients.pop(skt)
+
+names = {}
+def add_name(skt, name):
+    names.update({name: skt})
+def del_name(name):
+    return names.pop(name)
+sockets = {}
+def add_socket(skt, name):
+    sockets.update({skt: name})
+def del_socket(skt):
+    return sockets.pop(skt)
+
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
 characters = {}
+def add_character(character):
+    name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
+    characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
 def get_character(name):
     """_summary_
 
@@ -67,7 +82,7 @@ def get_character(name):
     if name not in characters:
         print('ERROR: get_character() cannot find character in characters!')
         return None
-    character = (lurk.CHARACTER, name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
+    character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
 def send_character(skt, name):
     """Function for sending a character that is already found on the server
@@ -85,9 +100,9 @@ def send_character(skt, name):
     """
     name = str(name)
     character = get_character(name)
-    lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+    name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
     try:
-        packed = struct.pack(f'<B32sB7H{char_des_len}s', lurk_type, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, char_des_len, bytes(char_des, 'utf-8'))
+        packed = struct.pack(f'<B32sB7H{char_des_len}s', lurk.CHARACTER, bytes(name, 'utf-8'), flags, attack, defense, regen, health, gold, room, char_des_len, bytes(char_des, 'utf-8'))
         print('DEBUG: Sending CHARACTER message!')
         lurk.send(skt, packed)
     except Exception as exc:
@@ -137,13 +152,20 @@ errors = {
     8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
     }
 rooms = {
+    -1: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
     0: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
     1: ('Dark Grove', 'A hallway leading away from the starting room.'),
     2: ('Hidden Valley', 'Seems to be remnants of a ranch here...'),
     3: ('Decrepit Mine', 'A dark mineshaft full of cobwebs and dust.'),
     4: ('Red Barn', 'Simply put, a big red barn.'),
     5: ('Barn Loft', 'The loft, full things nobody wanted to throw away.'),
-    6: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.')
+    6: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.'),
+    7: (),
+    8: (),
+    9: (),
+    10: (),
+    11: (),
+    12: (),
 }
 def send_room(skt, room):
     """_summary_
@@ -237,15 +259,14 @@ def handle_client(skt):
             print('DEBUG: Message:', message)
             message = (lurk_type, msg_len, sender_name, recipient_name, message)         # Flipped send/recv
             # Find socket to send to that corresponds with the desired recipient, then send message to that socket
-            #sendSkt = Server.get_socket_by_name(recvName)
             #lurk.write(sendSkt, message)
             continue
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room_num = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: desiredRoom:', new_room_num)
-            character = get_character(activeCharacters[skt])
-            lurk_type, name, flags, attack, defense, regen, health, gold, old_room_num, char_des_len, char_des = character
+            character = get_character(sockets[skt])
+            name, flags, attack, defense, regen, health, gold, old_room_num, char_des_len, char_des = character
             if flags != 0x98: # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
                 print('ERROR: Character not started, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
@@ -298,9 +319,9 @@ def handle_client(skt):
         elif message[0] == lurk.START:
             print('DEBUG: Handling START!')
             try:
-                character = get_character(activeCharacters[skt])
-                lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+                character = get_character(sockets[skt])
                 print('DEBUG: Got character from socket:', character)
+                name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
             except:
                 print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
@@ -364,32 +385,29 @@ def handle_client(skt):
             print('DEBUG: Room:', room)
             print('DEBUG: charDesLen:', char_des_len)
             print('DEBUG: charDes:', char_des)
-            if attack + defense + regen > INIT_POINTS:
-                print('WARN: Character stats invalid, sending ERROR code 4!')
-                lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
-                continue
-            lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
             if name in characters:
-                print('INFO: Existing character found:', characters[name])
-                print('INFO: All characters:', characters)
-                activeCharacters.update({skt: name})
-                print('DEBUG: New activeCharacter in activeCharacters:', activeCharacters[skt])
-                print('DEBUG: All activeCharacters:', activeCharacters)
+                activeCharacters.update({skt: name}) # To be depricated
                 old_character = get_character(name)
+                add_name(skt, name)
+                add_socket(skt, name)
                 print('DEBUG: Sending reprised character:', old_character)
-                lurk.write(skt, old_character)
-                # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
-                continue
-            characters.update({name: [0x88, attack, defense, regen, 100, 0, 0, char_des_len, char_des]})
-            print('INFO: New character in characters:', characters[name])
-            print('INFO: All characters:', characters)
-            activeCharacters.update({skt: name})
-            print('DEBUG: New activeCharacter in activeCharacters:', activeCharacters[skt])
-            print('DEBUG: All activeCharacters:', activeCharacters)
-            new_character = get_character(name)
-            print('DEBUG: Sending validated character:', new_character)
-            lurk.write(skt, new_character)
-            # Send MESSAGE to client from narrator that the character has joined the game here, perhaps?
+                name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = old_character
+                lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
+                lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
+            else:
+                if attack + defense + regen > INIT_POINTS:
+                    print('WARN: Character stats invalid, sending ERROR code 4!')
+                    lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
+                    continue
+                activeCharacters.update({skt: name}) # To be depricated
+                new_character = name, 0x88, attack, defense, regen, 100, 0, 0, char_des_len, char_des
+                add_character(new_character)
+                add_name(skt, name)
+                add_socket(skt, name)
+                print('DEBUG: Sending validated character:', new_character)
+                lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
+                lurk.write(skt, (lurk.CHARACTER, new_character[0], new_character[1], new_character[2], new_character[3], new_character[4], new_character[5], new_character[6], new_character[7], new_character[8], new_character[9]))
+            # Send MESSAGE to client from narrator here!
             continue
         elif message[0] == lurk.GAME:
             lurk_type, init_points, stat_limit, game_des_len, game_des = message
