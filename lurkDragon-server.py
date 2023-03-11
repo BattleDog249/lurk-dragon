@@ -235,8 +235,8 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
             print('DEBUG: Sending updated character after changeroom:', get_character(name))
-            send_room(skt, new_room_num)
-            #lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
+            #send_room(skt, new_room_num)
+            lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters with same room number
             for name, stats in characters.items():
                 if stats[6] != new_room_num:
