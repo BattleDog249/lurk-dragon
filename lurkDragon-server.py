@@ -299,7 +299,7 @@ def handle_client(skt):
         elif message[0] == lurk.FIGHT:
             # Get character info who sent fight message
             character = get_character(activeCharacters[skt])
-            lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+            name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
             # If no monsters in current room, send error type 7: no fight
             # Get all monsters in room
             # Potential damage calculation: damage = attack * attack / (attack + defense)
@@ -328,7 +328,7 @@ def handle_client(skt):
                 continue
             characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ROOM message
-            send_room(skt, character[8])
+            send_room(skt, room)
             #lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
             # Send CHARACTER messages for all characters with same room number
             for key, value in characters.items():
