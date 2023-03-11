@@ -239,7 +239,7 @@ def handle_client(skt):
             #lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters with same room number
             for name, stats in characters.items():
-                if stats[6] != room:
+                if stats[6] != new_room_num:
                     continue
                 lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             # Send CONNECTION messages for all connections with current room
