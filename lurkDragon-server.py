@@ -333,10 +333,11 @@ def handle_client(skt):
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
-            for key, value in characters.items():
-                if value[6] != room:
+            for name, stats in characters.items():
+                if stats[6] != room:
                     continue
-                send_character(skt, key)
+                #send_character(skt, name)
+                lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             # Send ROOM message
             send_room(skt, room)
             #lurk.write(skt, (lurk.ROOM, character[8], rooms[character[8]][0], len(rooms[character[8][1]]), rooms[character[8]][1]))
