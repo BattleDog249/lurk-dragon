@@ -376,7 +376,7 @@ def write(skt, lurk_message):
             raise struct.error from exc
     elif lurk_message[0] == ROOM:
         try:
-            packed = struct.pack(f'<BH32sH{lurk_message[3]}s', ROOM, lurk_message[1], lurk_message[2], lurk_message[3], bytes(lurk_message[4], 'utf-8'))
+            packed = struct.pack(f'<BH32sH{lurk_message[3]}s', ROOM, bytes(lurk_message[1], 'utf-8'), lurk_message[2], lurk_message[3], bytes(lurk_message[4], 'utf-8'))
             status = send(skt, packed)
             if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
