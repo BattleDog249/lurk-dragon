@@ -265,8 +265,8 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             if room == 0:
-                print('DEBUG: Setting character to start room over buffer room')
-                characters.update({name:[0x98, attack, defense, regen, health, gold, 1, char_des_len, char_des]})    # Fix hardcoding specific flag
+                room = 1
+                characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             else:
                 characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ACCEPT message
