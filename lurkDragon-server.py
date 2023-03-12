@@ -182,9 +182,11 @@ def handle_client(skt):
             print('DEBUG: Recipient Name:', recipient_name)
             print('DEBUG: Sender Name:', sender_name)
             print('DEBUG: Message:', message)
-            message = (lurk_type, msg_len, sender_name, recipient_name, message)         # Flipped send/recv
+            if skt not in sockets:
+                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                continue
             # Find socket to send to that corresponds with the desired recipient, then send message to that socket
-            #lurk.write(sendSkt, message)
+            lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, sender_name, recipient_name, message))
             continue
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room_num = message
