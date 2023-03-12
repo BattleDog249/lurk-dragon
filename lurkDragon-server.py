@@ -121,11 +121,11 @@ def send_room(skt, room):
 connections = {
     1: (2,),
     2: (3,),
-    3: (2, 4, 5),
+    3: (2, 5, 7),
     4: (3,),
-    5: (6, 7),
+    5: (3, 6),
     6: (5,),
-    7: (5,)
+    7: (3,)
 }
 def send_connection(skt, room):
     """Send a lurk CONNECTION message to a socket.
