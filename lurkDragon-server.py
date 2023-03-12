@@ -77,20 +77,20 @@ errors = {
     }
 rooms = {
     -2: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
-    -1: ('Starting Room', 'Just a room with no connections where players first arrive after first CHARACTER before being moved to starting room after START.'),
-    0: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
-    1: ('Dark Grove', 'A hallway leading away from the starting room.'),
-    2: ('Hidden Valley', 'Seems to be remnants of a ranch here...'),
-    3: ('Decrepit Mine', 'A dark mineshaft full of cobwebs and dust.'),
-    4: ('Red Barn', 'Simply put, a big red barn.'),
-    5: ('Barn Loft', 'The loft, full things nobody wanted to throw away.'),
-    6: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.'),
-    7: (),
+    0: ('Starting Room', 'Just a room with no connections where players first arrive after first CHARACTER before being moved to starting room after START.'),
+    1: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
+    2: ('Dark Grove', 'A hallway leading away from the starting room.'),
+    3: ('Hidden Valley', 'Seems to be remnants of a ranch here...'),
+    4: ('Decrepit Mine', 'A dark mineshaft full of cobwebs and dust.'),
+    5: ('Red Barn', 'Simply put, a big red barn.'),
+    6: ('Barn Loft', 'The loft, full things nobody wanted to throw away.'),
+    7: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.'),
     8: (),
     9: (),
     10: (),
     11: (),
     12: (),
+    13: (),
 }
 def send_room(skt, room):
     """_summary_
@@ -263,8 +263,8 @@ def handle_client(skt):
                 print('DEBUG: Could not find character in active, probably. Sending ERROR 5, as user must specify what character they want to use!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            if room == -1:
-                characters.update({name:[0x98, attack, defense, regen, health, gold, 0, char_des_len, char_des]})    # Fix hardcoding specific flag
+            if room == 0:
+                characters.update({name:[0x98, attack, defense, regen, health, gold, 1, char_des_len, char_des]})    # Fix hardcoding specific flag
             else:
                 characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ACCEPT message
@@ -341,7 +341,7 @@ def handle_client(skt):
                     print('WARN: Character stats invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                new_character = name, 0x88, attack, defense, regen, 100, 0, -1, char_des_len, char_des
+                new_character = name, 0x88, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
                 add_name(skt, name)
                 add_socket(skt, name)
