@@ -149,7 +149,7 @@ def read(skt):
                     print(Fore.RED+'ERROR: read: socket.error, returning None!')
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_header: {lurk_header}')
-                character_name = struct.unpack('<32s', lurk_header)
+                character_name, = struct.unpack('<32s', lurk_header)
                 return (LOOT, character_name.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
