@@ -43,11 +43,11 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': [lurk.ALIVE & lurk.MONSTER, 1, 1, 1, 100, 5, 1, 10,
+characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 1, 10,
                              'Dark gray bunny with a red collar, is it a pet?'],
-              'Undead Farmer': [lurk.ALIVE & lurk.MONSTER, 1, 1, 1, 100, 100, 3, 13,
+              'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 3, 13,
                                 'Test Dead Guy'],
-              'Barnyard Bucko': [lurk.ALIVE & lurk.MONSTER, 1, 1, 1, 100, 100, 5, 43,
+              'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 5, 43,
                                  'Some weird guy you should probably destroy.']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
