@@ -119,9 +119,10 @@ def send_room(skt, room):
         raise struct.error from exc
     return 0
 connections = {
+    0: (1,),
     1: (2,),
-    2: (3,),
-    3: (2, 5, 7),
+    2: (1, 3),
+    3: (2, 4, 5, 7),
     4: (3,),
     5: (3, 6),
     6: (5,),
