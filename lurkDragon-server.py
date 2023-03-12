@@ -66,6 +66,17 @@ def get_character(name):
         return None
     character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
+def send_characters(room_num):
+    """Function for sending all characters to to all connected clients located in provided room number.
+
+    Args:
+        room_num (int): Room number.
+    """
+    for socket, name in sockets.items():            # For each connected client
+        for name, stats in characters.items():          # For each 
+            if stats[6] != room_num:
+                continue
+            lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
 errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
@@ -202,6 +213,19 @@ def handle_client(skt):
             lurk_type, character_name = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
+            player = get_character(sockets[skt])
+            player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
+            target = get_character(character_name)
+            target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
+            # Check that target is in same room and its gold != 0
+            if player_room != target_room:
+                print(Fore.YELLOW+'WARN: Cannot loot target in different room, sending ERROR code 6!')
+                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+            player[6] += target[6]
+            player_gold += target_gold
+            target_gold = 0
+            characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
+            characters.update({target_name: [target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des]})
             continue
         elif message[0] == lurk.START:
             print('DEBUG: Handling START!')
@@ -221,10 +245,13 @@ def handle_client(skt):
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
+            send_characters(room)
+            '''
             for name, stats in characters.items():
                 if stats[6] != room:
                     continue
                 lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+            '''
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
