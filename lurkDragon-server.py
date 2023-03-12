@@ -186,6 +186,10 @@ def handle_client(skt):
             if skt not in sockets:
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
+            if recipient_name not in names:
+                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                continue
+            lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
             # Find socket to send to that corresponds with the desired recipient, then send message to that socket
             lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, sender_name, recipient_name, message))
             continue
