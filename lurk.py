@@ -225,7 +225,7 @@ def read(skt):
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
-                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
+                return (CHARACTER, name.decode('utf-8', 'ignore'), int(flags, 16), attack, defense, regen,
                         health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
@@ -392,7 +392,7 @@ def write(skt, lurk_message):
             raise struct.error from exc
     elif lurk_message[0] == CHARACTER:
         try:
-            packed = struct.pack(f'<B32sB3Hh3H{lurk_message[9]}s', CHARACTER, lurk_message[1].encode(), lurk_message[2], lurk_message[3], lurk_message[4], lurk_message[5], lurk_message[6], lurk_message[7], lurk_message[8], lurk_message[9], lurk_message[10].encode())
+            packed = struct.pack(f'<B32sB3Hh3H{lurk_message[9]}s', CHARACTER, lurk_message[1].encode(), hex(lurk_message[2]), lurk_message[3], lurk_message[4], lurk_message[5], lurk_message[6], lurk_message[7], lurk_message[8], lurk_message[9], lurk_message[10].encode())
             status = send(skt, packed)
             if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')

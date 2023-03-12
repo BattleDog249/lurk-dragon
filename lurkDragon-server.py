@@ -301,7 +301,7 @@ def handle_client(skt):
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
                 # Check if entered JOIN BATTLE flag, if so, set flags appropriately
-                if flags&7 != 0:
+                if flags&7 != 0:    # This doens't work as expected
                     print(Fore.YELLOW+'WARN: JOIN BATTLE flag detected, setting flags appropriately!')
                     new_character = name, lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 else:
