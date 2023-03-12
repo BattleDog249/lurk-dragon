@@ -44,8 +44,8 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': (0xa0, 1, 1, 1, 100, 0, 0, 10, 'Test Bunny'),
-              'Undead villager': (0xa0, 1, 1, 1, 100, 0, 2, 13, 'Test Dead Guy')}
+characters = {'Blue Bunny': [0xa0, 1, 1, 1, 100, 0, 0, 10, 'Test Bunny'],
+              'Undead villager': [0xa0, 1, 1, 1, 100, 0, 2, 13, 'Test Dead Guy']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
@@ -265,6 +265,7 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             if room == 0:
+                print('DEBUG: Setting character to start room over buffer room')
                 characters.update({name:[0x98, attack, defense, regen, health, gold, 1, char_des_len, char_des]})    # Fix hardcoding specific flag
             else:
                 characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
@@ -276,7 +277,6 @@ def handle_client(skt):
                     continue
                 lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             # Send ROOM message
-            #send_room(skt, room)
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
             for room_num, connection in connections.items():
