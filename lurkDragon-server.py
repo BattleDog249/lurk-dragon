@@ -215,9 +215,9 @@ def handle_client(skt):
                 continue
             if room == 0:
                 room = 1
-                characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
+                characters.update({name:[lurk.ALIVE | lurk.STARTED | lurk.READY, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             else:
-                characters.update({name:[0x98, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
+                characters.update({name:[lurk.ALIVE | lurk.STARTED | lurk.READY, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
@@ -290,7 +290,8 @@ def handle_client(skt):
                 name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = old_character
                 if flags&7 != 0:
                     flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
-                flags = lurk.ALIVE | lurk.READY
+                else:
+                    flags = lurk.ALIVE | lurk.READY
                 lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
                 lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
                 # Send MESSAGE to client from narrator here, stating welcome back!
@@ -301,8 +302,11 @@ def handle_client(skt):
                     continue
                 # Check if entered JOIN BATTLE flag, if so, set flags appropriately
                 if flags&7 != 0:
+                    print(Fore.YELLOW+'WARN: JOIN BATTLE flag detected, setting flags appropriately!')
                     new_character = name, lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
-                new_character = name, lurk.ALIVE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
+                else:
+                    print(Fore.YELLOW+'WARN: JOIN BATTLE missing, setting flags appropriately!')
+                    new_character = name, lurk.ALIVE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
                 add_name(skt, name)
                 add_socket(skt, name)
