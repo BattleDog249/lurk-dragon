@@ -36,6 +36,12 @@ CONNECTION_LEN = int(37)
 VERSION = int(14)
 VERSION_LEN = int(5)
 
+ALIVE = 0x80
+JOIN_BATTLE = 0x40
+MONSTER = 0x20
+STARTED = 0x10
+READY = 0x08
+
 def recv(skt, size):
     """Receive size amount of bytes from a socket, returning full lurk message
 

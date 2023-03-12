@@ -43,9 +43,12 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': [0xa0, 1, 1, 1, 100, 5, 1, 10, 'Dark gray bunny with a red collar, is it a pet?'],
-              'Undead Farmer': [0xa0, 1, 1, 1, 100, 100, 3, 13, 'Test Dead Guy'],
-              'Barnyard Bucko': [0xa0, 1, 1, 1, 100, 100, 5, 43, 'Some weird guy you should probably destroy.']}
+characters = {'Blue Bunny': [lurk.ALIVE & lurk.MONSTER, 1, 1, 1, 100, 5, 1, 10,
+                             'Dark gray bunny with a red collar, is it a pet?'],
+              'Undead Farmer': [lurk.ALIVE & lurk.MONSTER, 1, 1, 1, 100, 100, 3, 13,
+                                'Test Dead Guy'],
+              'Barnyard Bucko': [lurk.ALIVE & lurk.MONSTER, 1, 1, 1, 100, 100, 5, 43,
+                                 'Some weird guy you should probably destroy.']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
@@ -276,6 +279,7 @@ def handle_client(skt):
             print('DEBUG: charDes:', char_des)
             # Check if player name is already active/online, send error if so
             if name in names:
+                print(Fore.YELLOW+'WARN: Attempting to create character already tied to a socket, sending ERROR code 2!')
                 lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
                 continue
             if name in characters:
