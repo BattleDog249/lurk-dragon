@@ -44,8 +44,9 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': [0xa0, 1, 1, 1, 100, 0, 0, 10, 'Test Bunny'],
-              'Undead villager': [0xa0, 1, 1, 1, 100, 0, 2, 13, 'Test Dead Guy']}
+characters = {'Blue Bunny': [0xa0, 1, 1, 1, 100, 0, 1, 10, 'Test Bunny'],
+              'Undead villager': [0xa0, 1, 1, 1, 100, 0, 3, 13, 'Test Dead Guy'],
+              'Baryard Bucko': [0xa0, 1, 1, 1, 100, 0, 5, 43, 'Some weird guy you should probably destroy.']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
