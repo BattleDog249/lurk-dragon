@@ -72,10 +72,8 @@ def send_characters(room_num):
     Args:
         room_num (int): Room number.
     """
-    for socket, name in sockets.items():            # For each connected client
-        skt = socket
-        player_name = name
-        for player_name, stats in characters.items():          # For each 
+    for socket in names.values():
+        for name, stats in characters.items():
             if stats[6] != room_num:
                 continue
             lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
@@ -251,6 +249,13 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
             send_characters(room)
+            '''
+            for socket in names.values():
+                for name, stats in characters.items():
+                    if stats[6] != room:
+                        continue
+                    lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+            '''
             '''
             for name, stats in characters.items():
                 if stats[6] != room:
