@@ -3,7 +3,6 @@
 #!/usr/bin/env python3
 
 import socket
-import struct
 import sys
 import threading
 
@@ -44,17 +43,17 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': [0xa0, 1, 1, 1, 100, 0, 1, 10, 'Test Bunny'],
-              'Undead villager': [0xa0, 1, 1, 1, 100, 0, 3, 13, 'Test Dead Guy'],
-              'Baryard Bucko': [0xa0, 1, 1, 1, 100, 0, 5, 43, 'Some weird guy you should probably destroy.']}
+characters = {'Blue Bunny': [0xa0, 1, 1, 1, 100, 5, 1, 10, 'Dark gray bunny with a red collar, is it a pet?'],
+              'Undead Farmer': [0xa0, 1, 1, 1, 100, 100, 3, 13, 'Test Dead Guy'],
+              'Barnyard Bucko': [0xa0, 1, 1, 1, 100, 100, 5, 43, 'Some weird guy you should probably destroy.']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
 def get_character(name):
-    """_summary_
+    """Returns tuple of information of character with name.
 
     Args:
-        name (_type_): _description_
+        name (string): Name of character
 
     Returns:
         _type_: _description_
@@ -64,7 +63,6 @@ def get_character(name):
         return None
     character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
-monsters = {}
 errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
@@ -77,7 +75,7 @@ errors = {
     8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
     }
 rooms = {
-    -2: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
+    100: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
     0: ('Starting Room', 'Just a room with no connections where players first arrive after first CHARACTER before being moved to starting room after START.'),
     1: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
     2: ('Dark Grove', 'A hallway leading away from the starting room.'),
@@ -93,32 +91,6 @@ rooms = {
     12: (),
     13: (),
 }
-def send_room(skt, room):
-    """_summary_
-
-    Args:
-        skt (_type_): _description_
-        room (_type_): _description_
-
-    Raises:
-        struct.error: _description_
-        socket.error: _description_
-
-    Returns:
-        _type_: _description_
-    """
-    room_num = int(room)
-    room_name = rooms[room_num][0]
-    room_des_len = len(rooms[room_num][1])
-    room_des = rooms[room_num][1]
-    try:
-        packed = struct.pack(f'<BH32sH{room_des_len}s', lurk.ROOM, room_num, bytes(room_name, 'utf-8'), room_des_len, bytes(room_des, 'utf-8'))
-        print('DEBUG: Sending ROOM message!')
-        lurk.send(skt, packed)
-    except Exception as exc:
-        print(f'ERROR: Failed to pack message type {lurk.MESSAGE}')
-        raise struct.error from exc
-    return 0
 connections = {
     0: (1,),
     1: (2,),
@@ -129,47 +101,21 @@ connections = {
     6: (5,),
     7: (3,)
 }
-def send_connection(skt, room):
-    """Send a lurk CONNECTION message to a socket.
-
-    Args:
-        skt (socket): Socket to send data to
-        room (tuple): Room number
-
-    Raises:
-        struct.error: Failed to pack data into a structure
-        lurk.send.Error: Function send failed
-
-    Returns:
-        int: 0 if function finishes successfully
-    """
-    room_num = int(room)
-    room_name = rooms[room_num][0]
-    room_des_len = len(rooms[room_num][1])
-    room_des = rooms[room_num][1]
-    try:
-        packed = struct.pack(f'<BH32sH{room_des_len}s', lurk.CONNECTION, room_num, bytes(room_name, 'utf-8'), room_des_len, bytes(room_des, 'utf-8'))
-        print('DEBUG: Sending CONNECTION message!')
-        lurk.send(skt, packed)
-    except Exception as exc:
-        print(f'ERROR: Failed to pack message type {lurk.CONNECTION}')
-        raise struct.error from exc
-    return 0
 def cleanup_client(skt):
-    """_summary_
+    """Function for cleaning up a disconnected client.
 
     Args:
-        skt (_type_): _description_
+        skt (socket): Client socket.
     """
     del_name(sockets[skt])
     del_socket(skt)
     skt.shutdown(2)
     skt.close()
 def handle_client(skt):
-    """_summary_
+    """Function for communicating with individual clients.
 
     Args:
-        skt (_type_): _description_
+        skt (socket): Client socket.
     """
     while True:
         message = lurk.read(skt)
@@ -192,7 +138,6 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            # Find socket to send to that corresponds with the desired recipient, then send message to that socket
             lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, sender_name, recipient_name, message))
             continue
         elif message[0] == lurk.CHANGEROOM:
@@ -233,7 +178,6 @@ def handle_client(skt):
                 print('DEBUG: Found connections:', connections[room_num])
                 for connection in connections[room_num]:
                     print('DEBUG: Sending CONNECTION with connection:', connection)
-                    #send_connection(skt, connection)
                     lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
             continue
         elif message[0] == lurk.FIGHT:
@@ -289,7 +233,6 @@ def handle_client(skt):
                 print('DEBUG: Found connections:', connections[room_num])
                 for connection in connections[room_num]:
                     print('DEBUG: Sending CONNECTION with connection:', connection)
-                    #send_connection(skt, connection)
                     lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
             continue
         elif message[0] == lurk.ERROR:
@@ -331,6 +274,10 @@ def handle_client(skt):
             print('DEBUG: Room:', room)
             print('DEBUG: charDesLen:', char_des_len)
             print('DEBUG: charDes:', char_des)
+            # Check if player name is already active/online, send error if so
+            if name in names:
+                lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
+                continue
             if name in characters:
                 old_character = get_character(name)
                 add_name(skt, name)
