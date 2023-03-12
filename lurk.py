@@ -296,7 +296,7 @@ def write(skt, lurk_message):
     """
     if lurk_message[0] == MESSAGE:
         try:
-            packed = struct.pack(f'<BH32s32s{lurk_message[1]}s', MESSAGE, lurk_message[1], lurk_message[2], lurk_message[3], lurk_message[4])
+            packed = struct.pack(f'<BH32s32s{lurk_message[1]}s', MESSAGE, lurk_message[1], bytes(lurk_message[2], 'utf-8'), bytes(lurk_message[3], 'utf-8'), bytes(lurk_message[4], 'utf-8'))
             status = send(skt, packed)
             if status != 0:
                 print(Fore.RED+'ERROR: write: socket.error, returning None!')
