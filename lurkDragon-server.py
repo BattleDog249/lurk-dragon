@@ -233,7 +233,8 @@ def handle_client(skt):
                 print('DEBUG: Found connections:', connections[room_num])
                 for connection in connections[room_num]:
                     print('DEBUG: Sending CONNECTION with connection:', connection)
-                    send_connection(skt, connection)
+                    #send_connection(skt, connection)
+                    lurk.write(skt, (lurk.CONNECTION, connection, connections[room_num][0], len(connections[room_num][1]), connections[room_num][1]))
             continue
         elif message[0] == lurk.FIGHT:
             # Get character info who sent fight message
@@ -288,7 +289,8 @@ def handle_client(skt):
                 print('DEBUG: Found connections:', connections[room_num])
                 for connection in connections[room_num]:
                     print('DEBUG: Sending CONNECTION with connection:', connection)
-                    send_connection(skt, connection)
+                    #send_connection(skt, connection)
+                    lurk.write(skt, (lurk.CONNECTION, connection, connections[room_num][0], len(connections[room_num][1]), connections[room_num][1]))
             continue
         elif message[0] == lurk.ERROR:
             lurk_type, error_code, error_msg_len, error_msg = message

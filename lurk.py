@@ -137,7 +137,7 @@ def read(skt):
                     print(Fore.RED+'ERROR: read: socket.error, returning None!')
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_header: {lurk_header}')
-                character_name = struct.unpack('<32s', lurk_header)
+                character_name, = struct.unpack('<32s', lurk_header)
                 return (PVPFIGHT, character_name)
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
@@ -258,7 +258,7 @@ def read(skt):
                     print(Fore.RED+'ERROR: read: socket.error, returning None!')
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
-                room_des = struct.unpack(f'<{room_des_len}s', lurk_data)
+                room_des, = struct.unpack(f'<{room_des_len}s', lurk_data)
                 return (CONNECTION, room_num, room_name.decode('utf-8', 'ignore'),
                         room_des_len, room_des.decode('utf-8', 'ignore'))
             except struct.error:
