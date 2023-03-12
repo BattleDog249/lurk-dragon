@@ -43,7 +43,7 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 1, 10,
+characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 1, 47,
                              'Dark gray bunny with a red collar, is it a pet?'],
               'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 3, 13,
                                 'Test Dead Guy'],
@@ -288,6 +288,9 @@ def handle_client(skt):
                 add_socket(skt, name)
                 print('DEBUG: Sending reprised character:', old_character)
                 name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = old_character
+                if flags&7 != 0:
+                    flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+                flags = lurk.ALIVE | lurk.READY
                 lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
                 lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
                 # Send MESSAGE to client from narrator here, stating welcome back!
@@ -296,7 +299,10 @@ def handle_client(skt):
                     print('WARN: Character stats invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                new_character = name, 0x88, attack, defense, regen, 100, 0, 0, char_des_len, char_des
+                # Check if entered JOIN BATTLE flag, if so, set flags appropriately
+                if flags&7 != 0:
+                    new_character = name, lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
+                new_character = name, lurk.ALIVE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
                 add_name(skt, name)
                 add_socket(skt, name)
