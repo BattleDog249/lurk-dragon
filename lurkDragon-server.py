@@ -73,7 +73,9 @@ def send_characters(room_num):
         room_num (int): Room number.
     """
     for socket, name in sockets.items():            # For each connected client
-        for name, stats in characters.items():          # For each 
+        skt = socket
+        player_name = name
+        for player_name, stats in characters.items():          # For each 
             if stats[6] != room_num:
                 continue
             lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
@@ -178,10 +180,13 @@ def handle_client(skt):
             print('DEBUG: Sending updated character after changeroom:', get_character(name))
             lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters with same room number
+            send_characters(new_room_num)
+            '''
             for name, stats in characters.items():
                 if stats[6] != new_room_num:
                     continue
                 lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+            '''
             # Send CONNECTION messages for all connections with current room
             # Maybe there is a more efficient way of doing this?
             for room_num, connection in connections.items():
