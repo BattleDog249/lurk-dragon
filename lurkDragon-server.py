@@ -64,7 +64,7 @@ def get_character(name):
         _type_: _description_
     """
     if name not in characters:
-        print(Fore.RED+f'ERROR: get_character: Cannot find {character} in {characters}!')
+        print(Fore.RED+f'ERROR: get_character: Cannot find {name} in {characters}!')
         return None
     character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
