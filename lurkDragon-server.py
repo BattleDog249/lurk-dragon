@@ -149,10 +149,10 @@ rooms = {
 connections = {
     0: (1,),
     1: (2, 3, 4, 5),
-    2: (6, 7),
-    3: (8, 9),
-    4: (10, 11),
-    5: (12, 13),
+    2: (1, 6, 7),
+    3: (1, 8, 9),
+    4: (1, 10, 11),
+    5: (1, 12, 13),
     6: (2,),
     7: (2, 14, 16),
     8: (3, 18, 22),
@@ -225,8 +225,8 @@ def handle_client(skt):
             if recipient_name not in names:
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
-            lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, sender_name, recipient_name, message))
+            lurk.write(skt, (lurk.ACCEPT, lurk.MESSAGE))
+            lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, recipient_name, sender_name, message))
             continue
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room_num = message
