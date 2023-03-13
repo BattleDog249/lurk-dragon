@@ -285,9 +285,11 @@ def handle_client(skt):
                     monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
                     monster_damage = monster_attack * monster_attack / (monster_attack + monster_defense)
                     player_health -= monster_damage
+                    player_health = round(player_health)
                     print(f'DEBUG: player_health after fight: {player_health}')
                     player_damage = player_attack * player_attack / (player_attack + player_defense)
                     monster_health -= player_damage
+                    monster_health = round(monster_health)
                     print(f'DEBUG: monster_health after fight: {monster_health}')
                     characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
                     characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
