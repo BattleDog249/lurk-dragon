@@ -242,7 +242,6 @@ def handle_client(skt):
                 print('ERROR: Character not started, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            print('DEBUG: connections:', connections)
             print('DEBUG: connections[currentRoomNum]:', connections[old_room_num])
             if new_room_num not in connections[old_room_num]:            # This is giving me issues, needs work
                 print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
@@ -284,7 +283,14 @@ def handle_client(skt):
                     count+=1
                     monster = get_character(name)
                     monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
-                    print(Fore.WHITE+f'DEBUG: Potential monster flags: {monster_flags}')
+                    monster_damage = monster_attack * monster_attack / (monster_attack + monster_defense)
+                    player_health -= monster_damage
+                    player_damage = player_attack * player_attack / (player_attack + player_defense)
+                    monster_health -= player_damage
+                    characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
+                    characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
+                    lurk.write(skt, (lurk.CHARACTER, player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des))
+                    lurk.write(skt, (lurk.CHARACTER, monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des))
                 else:
                     print(Fore.WHITE+f'DEBUG: {name} in room {stats[6]} not a monster!')
             if count == 0:
