@@ -418,10 +418,7 @@ def handle_client(skt):
                 add_socket(skt, name)
                 print('DEBUG: Sending reprised character:', old_character)
                 name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = old_character
-                if flags&7 != 0:
-                    flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
-                else:
-                    flags = lurk.ALIVE | lurk.READY
+                flags = lurk.ALIVE | lurk.READY
                 lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
                 lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
                 # Send MESSAGE to client from narrator here, stating welcome back!
@@ -431,12 +428,8 @@ def handle_client(skt):
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
                 # Check if entered JOIN BATTLE flag, if so, set flags appropriately
-                if flags&7 != 0:    # This doens't work as expected
-                    print(Fore.YELLOW+'WARN: JOIN BATTLE flag detected, setting flags appropriately!')
-                    new_character = name, lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
-                else:
-                    print(Fore.YELLOW+'WARN: JOIN BATTLE missing, setting flags appropriately!')
-                    new_character = name, lurk.ALIVE | lurk.READY, attack, defense, regen, 100, 0, 0, char_des_len, char_des
+                flags = lurk.ALIVE | lurk.READY
+                new_character = name, flags, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
                 add_name(skt, name)
                 add_socket(skt, name)
