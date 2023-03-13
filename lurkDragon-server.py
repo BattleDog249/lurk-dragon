@@ -16,7 +16,7 @@ EXT_SIZE = int(0)
 
 INIT_POINTS = int(100)
 STAT_LIMIT = int(65535)
-GAME_DESCRIPTION = str(r"""Can you conquer the beast?
+GAME_DESCRIPTION = str(r"""Can you conquer the beasts?
     (                    (                                   
     )\ )               ) )\ )                                
 (()/(   (   (    ( /((()/(   (       )  (  (              
@@ -43,11 +43,11 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
-characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 1, 47,
+characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 3, 47,
                              'Dark gray bunny with a red collar, is it a pet?'],
-              'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 3, 13,
-                                'Test Dead Guy'],
-              'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 5, 43,
+              'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 27, 13,
+                                'Pesticide-ridden rotting guy.'],
+              'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 30, 43,
                                  'Some weird guy you should probably destroy.']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
@@ -104,30 +104,90 @@ errors = {
     }
 rooms = {
     100: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
-    0: ('Starting Room', 'Just a room with no connections where players first arrive after first CHARACTER before being moved to starting room after START.'),
-    1: ('Pine Forest', 'Located deep in the forbidden mountain range, there is surprisingly little to see here beyond towering spruce trees and small game.'),
-    2: ('Dark Grove', 'A hallway leading away from the starting room.'),
-    3: ('Hidden Valley', 'Seems to be remnants of a ranch here...'),
-    4: ('Decrepit Mine', 'A dark mineshaft full of cobwebs and dust.'),
-    5: ('Red Barn', 'Simply put, a big red barn.'),
-    6: ('Barn Loft', 'The loft, full things nobody wanted to throw away.'),
-    7: ('Tool Shed', 'A rusted out tin shed in an advanced state of decay.'),
-    8: (),
-    9: (),
-    10: (),
-    11: (),
-    12: (),
-    13: (),
+    0: ('Backrooms', 'You should not be here!'),
+    1: ('Village of Valhalla', 'Home of the mighty hunters, this is the only place to find respite for miles.'),
+    2: ('Great Aster Meadow', 'Green rolling hills full of wildflowers and small game for as far as the eye can see.'),
+    3: ('Ashen Taiga', 'A dark and expansive spruce forest, with a slow climb to higher altitudes in the east.'),
+    4: ('Rainless Fells', 'Endless miles of sun-soaked rock and sand under an endless blue sky, this massive tract of land is hostile to all known life.'),
+    5: ('Sunset Coast', 'Where the setting sun meets the rolling sea, stretching for untold distances to the north and south.'),
+    6: ('Hidden Groves', 'A lively grove of oak trees and song birds, tucked away in a shallow valley.'),
+    7: ('Abandoned Swamps', 'Murky swamps that remained unexplored, for whatever reason.'),
+    8: ('Bloodsoaked Gorge', 'A dangerous beast must live here, considering the gore and remains strewn about.'),
+    9: ('Snowy Mountains', 'The Ashen Taiga gives way to rougher terrain, elevation, and rapidly thinning trees.'),
+    10: ('Scorched Frontier', 'TBW'),
+    11: ('Arid Badlands', 'TBW'),
+    12: ('Open Sea', 'TBW'),
+    13: ('Rugged Coastline', 'TBW'),
+    14: ('Forgotten Bog', 'TBW'),
+    15: ('Misty Temple', 'TPW'),
+    16: ('Sulphur Pools', 'TBW'),
+    17: ('Golden Marshes', 'TBW'),
+    18: ('Sheltered Crevices', 'TBW'),
+    19: ('Dark Cavern', 'TBW'),
+    20: ('Deep Abyss', 'TBW'),
+    21: ('Submerged Cave', 'TBW'),
+    22: ('Raging River', 'TBW'),
+    23: ('Frozen Lake', 'TBW'),
+    24: ('Jagged Peaks', 'TBW'),
+    25: ('Peaceful Promontory', 'TBW'),
+    26: ('Hidden Valley', 'Seems to be remnants of a ranch here...'),
+    27: ('Crop Fields', 'TBW'),
+    28: ('Cliffside Roost', 'TBW'),
+    29: ('Glacial Highlands', 'TBW'),
+    30: ('Red Barn', 'TBW'),
+    31: ('Loft', 'TBW'),
+    32: ('Roof', 'TBW'),
+    33: ('Wintery Thicket', 'TBW'),
+    34: ('Dusty Ruins', 'TBW'),
+    35: ('Smoldering Sands', 'TBW'),
+    36: ('Dire Pits', 'TBW'),
+    37: ('Rayless Depths', 'TBW'),
+    38: ('Korpijnen Shores', 'TBW'),
+    39: ('Hiemal Inlet', 'TBW'),
+    40: ('Remote Estuary', 'TBW'),
 }
 connections = {
     0: (1,),
-    1: (2,),
-    2: (1, 3),
-    3: (2, 4, 5, 7),
-    4: (3,),
-    5: (3, 6),
-    6: (5,),
-    7: (3,)
+    1: (2, 3, 4, 5),
+    2: (6, 7),
+    3: (8, 9),
+    4: (10, 11),
+    5: (12, 13),
+    6: (2,),
+    7: (2, 14, 16),
+    8: (3, 18, 22),
+    9: (3, 23, 26, 29),
+    10: (4, 34),
+    11: (4, 35),
+    12: (5, 37),
+    13: (5, 38, 40),
+    14: (7, 15, 16),
+    15: (14,),
+    16: (7, 14, 17),
+    17: (16,),
+    18: (8, 19),
+    19: (18, 20, 21),
+    20: (19,),
+    21: (19, 22, 23),
+    22: (8,),
+    23: (9, 24),
+    24: (23, 25, 28),
+    25: (24,),
+    26: (9, 27, 30),
+    27: (26, 30),
+    28: (24,),
+    29: (9, 33),
+    30: (26, 27, 31),
+    31: (30, 32),
+    32: (31,),
+    33: (29,),
+    34: (10,),
+    35: (11, 36),
+    36: (35,),
+    37: (12,),
+    38: (13, 39),
+    39: (38,),
+    40: (13,)
 }
 def cleanup_client(skt):
     """Function for cleaning up a disconnected client.
@@ -192,15 +252,8 @@ def handle_client(skt):
             print('DEBUG: Sending updated character after changeroom:', get_character(name))
             lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             # Send CHARACTER messages for all characters in new and old room
-            #send_characters(old_room_num)
             update_characters(name, old_room_num)
             send_characters(new_room_num)
-            '''
-            for name, stats in characters.items():
-                if stats[6] != new_room_num:
-                    continue
-                lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
-            '''
             # Send CONNECTION messages for all connections with current room
             # Maybe there is a more efficient way of doing this?
             for room_num, connection in connections.items():
@@ -265,19 +318,6 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
             send_characters(room)
-            '''
-            for socket in names.values():
-                for name, stats in characters.items():
-                    if stats[6] != room:
-                        continue
-                    lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
-            '''
-            '''
-            for name, stats in characters.items():
-                if stats[6] != room:
-                    continue
-                lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
-            '''
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
