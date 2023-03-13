@@ -334,11 +334,16 @@ def handle_client(skt):
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             print(f'DEBUG: Found characters: {characters.keys()}')
             target = get_character(character_name)
+            if target == None:
+                print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
+                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                continue
             target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
             # Check that target is in same room and its gold != 0
             if player_room != target_room:
                 print(Fore.YELLOW+'WARN: Cannot loot target in different room, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                continue
             player[6] += target[6]
             player_gold += target_gold
             target_gold = 0
