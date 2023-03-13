@@ -278,7 +278,7 @@ def handle_client(skt):
                 if stats[6] != player_room:
                     print(Fore.WHITE+f"DEBUG: {name}'s room {stats[6]} != {player_name}'s room {player_room}, continuing!")
                     continue
-                if stats[0] & (lurk.MONSTER ^ lurk.ALIVE):
+                if stats[0] & (lurk.MONSTER | lurk.ALIVE) and name != player_name:
                     print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
                     count+=1
                     monster = get_character(name)
