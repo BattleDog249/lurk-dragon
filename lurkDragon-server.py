@@ -274,17 +274,22 @@ def handle_client(skt):
             #print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 7!')
             #lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             #continue
+            count = 0
             for name, stats in characters.items():                                        # for each character in room
                 if stats[6] != player_room:
                     print(Fore.WHITE+f"DEBUG: {name}'s room {stats[6]} != {player_name}'s room {player_room}, continuing!")
                     continue
                 if stats[0] & lurk.MONSTER:
-                    print(Fore.WHITE+f'DEBUG: {name} has monster flag?')
+                    print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
+                    count+=1
                     monster = get_character(name)
                     monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
                     print(Fore.WHITE+f'DEBUG: Potential monster flags: {monster_flags}')
                 else:
-                    print(Fore.WHITE+f'DEBUG: {name} in room {stats[6]} not a monster?')
+                    print(Fore.WHITE+f'DEBUG: {name} in room {stats[6]} not a monster!')
+            if count == 0:
+                print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 7!')
+                lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             # If no monsters in current room, send error type 7: no fight
             # Get all monsters in room
             # Potential damage calculation: damage = attack * attack / (attack + defense)
