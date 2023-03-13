@@ -42,7 +42,7 @@ def del_socket(skt):
 
 # Dictionary (Key: Value)
 # Key: Name
-# Value (Tuple): (flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes)
+# Value (list): [flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes]
 characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 3, 47,
                              'Dark gray bunny with a red collar, is it a pet?'],
               'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 27, 13,
@@ -84,7 +84,7 @@ def send_characters(room_num):
 def update_characters(target_name, old_room_num):
     """Used to update all connected clients in old_room_num that name moved to a new room"""
     for key, value in sockets.items():
-        player = get_character(value)        #Character to send updated CHARACTER message to
+        player = get_character(value)
         player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
         if player_room != old_room_num:
             continue
@@ -257,19 +257,31 @@ def handle_client(skt):
             # Send CONNECTION messages for all connections with current room
             # Maybe there is a more efficient way of doing this?
             for room_num, connection in connections.items():
-                print(f'DEBUG: Evaluating key: {room_num}, connection: {connection}')
                 if room_num != new_room_num:
-                    print(f'DEBUG: Key {room_num} is not currentRoom {new_room_num}, continuing')
                     continue
-                print('DEBUG: Found connections:', connections[room_num])
                 for connection in connections[room_num]:
-                    print('DEBUG: Sending CONNECTION with connection:', connection)
                     lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
             continue
         elif message[0] == lurk.FIGHT:
             # Get character info who sent fight message
-            character = get_character(sockets[skt])
-            name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+            player = get_character(sockets[skt])
+            player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
+            if player_room in characters.values():  # If characters exist in current player room?
+                print(f'DEBUG: Detected monsters in room {player_room}?')
+                for name, stats in characters.items():                                        # for each character in room
+                    if stats[6] != player_room:
+                        print(Fore.WHITE+f"DEBUG: {name}'s room {stats[6]} != {player_name}'s room {player_room}, continuing!")
+                        continue
+                    if stats[0] | lurk.MONSTER:
+                        print(Fore.WHITE+'DEBUG: Monster flag detected?')
+                        monster = get_character(name)
+                        monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
+                        print(Fore.WHITE+f'DEBUG: Potential monster flags: {monster_flags}')
+                    else:
+                        print(Fore.WHITE+'DEBUG: Character not a monster?')
+            else:
+                print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 0!')
+                lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             # If no monsters in current room, send error type 7: no fight
             # Get all monsters in room
             # Potential damage calculation: damage = attack * attack / (attack + defense)
@@ -322,13 +334,9 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
             for room_num, connection in connections.items():
-                print(f'DEBUG: Evaluating key: {room_num}, connection: {connection}')
                 if room_num != room:
-                    print(f'DEBUG: Key {room_num} is not currentRoom {room}, continuing')
                     continue
-                print('DEBUG: Found connections:', connections[room_num])
                 for connection in connections[room_num]:
-                    print('DEBUG: Sending CONNECTION with connection:', connection)
                     lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
             continue
         elif message[0] == lurk.ERROR:
