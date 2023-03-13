@@ -266,7 +266,7 @@ def handle_client(skt):
             # Get character info who sent fight message
             player = get_character(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
-            if player_room in characters.values():  # If characters exist in current player room?
+            if player_room in characters.items():  # If characters exist in current player room?
                 print(f'DEBUG: Detected monsters in room {player_room}?')
                 for name, stats in characters.items():                                        # for each character in room
                     if stats[6] != player_room:
@@ -280,7 +280,7 @@ def handle_client(skt):
                     else:
                         print(Fore.WHITE+'DEBUG: Character not a monster?')
             else:
-                print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 0!')
+                print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 7!')
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             # If no monsters in current room, send error type 7: no fight
             # Get all monsters in room
