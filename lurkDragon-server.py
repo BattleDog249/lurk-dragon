@@ -48,7 +48,9 @@ characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 3, 47,
               'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 27, 13,
                                 'Pesticide-ridden rotting guy.'],
               'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 30, 43,
-                                 'Some weird guy you should probably destroy.']}
+                                 'Some weird guy you should probably destroy.'],
+              'Lurk Dragon': [lurk.ALIVE | lurk.MONSTER, 80, 20, 0, 100, 100, 25, 35,
+                              'A terrifying beast, worthy to slay!']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
@@ -269,14 +271,10 @@ def handle_client(skt):
                 continue
             player = get_character(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
-            # If this fails to work by due date, send no monsters in current room.
-            #print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 7!')
-            #lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
-            #continue
             count = 0
-            for name, stats in characters.items():                                        # for each character in room
+            for name, stats in characters.items():
                 if stats[6] != player_room:
-                    print(Fore.WHITE+f"DEBUG: {name}'s room {stats[6]} != {player_name}'s room {player_room}, continuing!")
+                    #print(Fore.WHITE+f"DEBUG: {name}'s room {stats[6]} != {player_name}'s room {player_room}, continuing!")
                     continue
                 if stats[0] == lurk.MONSTER | lurk.ALIVE and name != player_name:
                     print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
@@ -302,7 +300,8 @@ def handle_client(skt):
                     lurk.write(skt, (lurk.CHARACTER, player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des))
                     lurk.write(skt, (lurk.CHARACTER, monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des))
                 else:
-                    print(Fore.WHITE+f'DEBUG: {name} in room {stats[6]} not a monster!')
+                    #print(Fore.WHITE+f'DEBUG: {name} in room {stats[6]} not a monster!')
+                    pass
             if count == 0:
                 print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 7!')
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
@@ -333,6 +332,7 @@ def handle_client(skt):
                 continue
             player = get_character(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
+            print(f'DEBUG: Found characters: {characters.keys()}')
             target = get_character(character_name)
             target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
             # Check that target is in same room and its gold != 0
