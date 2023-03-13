@@ -43,14 +43,26 @@ def del_socket(skt):
 # Dictionary (Key: Value)
 # Key: Name
 # Value (list): [flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes]
-characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 5, 3, 47,
+characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 2, 2, 2, 100, 5, 3, 47,
                              'Dark gray bunny with a red collar, is it a pet?'],
-              'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 27, 13,
+              'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 10, 5, 5, 100, 100, 27, 13,
                                 'Pesticide-ridden rotting guy.'],
-              'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 1, 1, 1, 100, 100, 30, 43,
+              'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 30, 35, 5, 100, 100, 30, 43,
                                  'Some weird guy you should probably destroy.'],
-              'Lurk Dragon': [lurk.ALIVE | lurk.MONSTER, 80, 20, 0, 100, 100, 25, 35,
-                              'A terrifying beast, worthy to slay!']}
+              'Lurk Dragon': [lurk.ALIVE | lurk.MONSTER, 70, 20, 10, 100, 100, 25, 35,
+                              'A terrifying beast, worthy to slay!'],
+              'Sentient Sandstorm': [lurk.ALIVE | lurk.MONSTER, 20, 20, 20, 100, 100, 11, 49,
+                                     'A cloud of dust and sand trying to suffocate you.'],
+              'Giant Sandworm': [lurk.ALIVE | lurk.MONSTER, 50, 25, 20, 100, 100, 35, 49,
+                                     'A foul worm full of teeth with a ravenous hunger.'],
+              'Mudcrabs': [lurk.ALIVE | lurk.MONSTER, 10, 15, 10, 100, 100, 5, 49,
+                                     'Giant crabs with claws that could lop off an arm.'],
+              'Megalodon': [lurk.ALIVE | lurk.MONSTER, 50, 50, 20, 100, 100, 12, 28,
+                                     'This is one massive shark...'],
+              'Rabid Wolf': [lurk.ALIVE | lurk.MONSTER, 15, 15, 20, 100, 100, 2, 46,
+                                     'A gray wolf frothing at the mouth, poor thing!'],
+              'Rattlesnake': [lurk.ALIVE | lurk.MONSTER, 10, 2, 5, 100, 100, 4, 40,
+                                     'A relatively large and loud rattlesnake.']}
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
@@ -323,6 +335,7 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ERROR, 8, len(errors[8]), errors[8]))
             continue
         elif message[0] == lurk.LOOT:
+            # Currently broken
             lurk_type, character_name = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
