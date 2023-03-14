@@ -110,7 +110,7 @@ errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
     2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
-    3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',
+    3: 'ERROR: Bad Monster. Cannot loot a nonexistent, not present, or a living monster.',
     4: 'ERROR: Stat error. Caused by setting inappropriate player stats. Try again!',
     5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
     6: 'ERROR: No target. Attempt to loot nonexistent players, fight players in different rooms, message someone offline, etc.',
@@ -276,7 +276,7 @@ def handle_client(skt):
             continue
         elif message[0] == lurk.FIGHT:
             if skt not in sockets:
-                print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
+                print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
@@ -316,7 +316,7 @@ def handle_client(skt):
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
             if skt not in sockets:
-                print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
+                print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
@@ -329,7 +329,7 @@ def handle_client(skt):
             print(Fore.WHITE+f'DEBUG: handle_client: Type: {lurk_type}')
             print(Fore.WHITE+f'DEBUG: targetName: {character_name}')
             if skt not in sockets:
-                print(Fore.YELLOW+'WARN: No character created yet, sending ERROR code 5!')
+                print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
@@ -345,7 +345,7 @@ def handle_client(skt):
                 continue
             target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
             if target_flags == target_flags | lurk.ALIVE:
-                print(Fore.YELLOW+'WARN: Cannot loot a living target, sending ERROR code 6!')
+                print(Fore.YELLOW+'WARN: Cannot loot a living target, sending ERROR code 3!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
             player_gold += target_gold
@@ -361,7 +361,7 @@ def handle_client(skt):
                 character = get_character(sockets[skt])
                 name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
             except:
-                print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
+                print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             if room == 0:
