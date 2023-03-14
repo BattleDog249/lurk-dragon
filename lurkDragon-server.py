@@ -361,7 +361,7 @@ def handle_client(skt):
             if room == 0:
                 room = 1
             
-            characters.update({name:[lurk.ALIVE | lurk.STARTED | lurk.READY, attack, defense, regen, health, gold, room, char_des_len, char_des]})
+            characters.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
@@ -418,25 +418,21 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Attempting to create character already tied to a socket, sending ERROR code 2!')
                 lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
                 continue
+            if flags == flags | lurk.JOIN_BATTLE:
+                flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+            else:
+                flags = lurk.ALIVE | lurk.READY
             if name not in characters:
                 if attack + defense + regen > INIT_POINTS:
                     print(Fore.YELLOW+'WARN: Character stats invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                if flags == flags | lurk.JOIN_BATTLE:
-                    flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
-                else:
-                    flags = lurk.ALIVE | lurk.READY
                 new_character = name, flags, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
                 print(Fore.YELLOW+f'WARN: Added new character {name}')
             character = get_character(name)
             name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
             print(Fore.YELLOW+f'WARN: Accessing character {name}')
-            if flags == flags | lurk.JOIN_BATTLE:
-                flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
-            else:
-                flags = lurk.ALIVE | lurk.READY
             add_name(skt, name)
             add_socket(skt, name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))

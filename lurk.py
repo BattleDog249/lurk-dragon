@@ -115,7 +115,7 @@ def read(skt):
                 if not lurk_data:
                     print(Fore.RED+'ERROR: recvall: socket.error, returning None!')
                     return None
-                print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
+                #print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
                 message, = struct.unpack(f'<{msg_len}s', lurk_data)
                 return (MESSAGE, msg_len, recipient_name.decode('utf-8', 'ignore'),
                         sender_name.decode('utf-8', 'ignore'), message.decode('utf-8', 'ignore'))
