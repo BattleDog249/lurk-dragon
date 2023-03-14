@@ -215,7 +215,6 @@ def cleanup_client(skt):
         del_socket(skt)
     except Exception as exc:
         print(Fore.YELLOW+'WARN: cleanup_client: Nothing to clean!')
-        raise KeyError from exc
     skt.shutdown(2)
     skt.close()
     print(Fore.WHITE+'INFO: cleanup_client: Finished!')
