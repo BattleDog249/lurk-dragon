@@ -114,7 +114,8 @@ errors = {
     5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
     6: 'ERROR: No target. Sent in response to attempts to loot nonexistent players, fight players in different rooms, etc.',
     7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',
-    8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.'
+    8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.',
+    9: 'ERROR: Monster. Cannot create or reprise a monster character.'
     }
 rooms = {
     100: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
@@ -285,41 +286,33 @@ def handle_client(skt):
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             count = 0
             for name, stats in characters.items():
-                if stats[6] != player_room:
-                    #print(Fore.WHITE+f"DEBUG: {name}'s room {stats[6]} != {player_name}'s room {player_room}, continuing!")
+                if stats[6] != player_room or stats[0] != lurk.MONSTER | lurk.ALIVE or name == player_name:
                     continue
-                if stats[0] == lurk.MONSTER | lurk.ALIVE and name != player_name:
-                    print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
-                    count+=1
-                    monster = get_character(name)
-                    monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
-                    monster_damage = monster_attack * monster_attack / (monster_attack + monster_defense)
-                    player_health -= monster_damage
-                    player_health = round(player_health)
-                    print(f'DEBUG: player_health after fight: {player_health}')
-                    if player_health <= 0:
-                        player_flags = player_flags ^ lurk.ALIVE
-                        player_health = 0
-                    player_damage = player_attack * player_attack / (player_attack + player_defense)
-                    monster_health -= player_damage
-                    monster_health = round(monster_health)
-                    print(f'DEBUG: monster_health after fight: {monster_health}')
-                    if monster_health <= 0:
-                        monster_flags = monster_flags ^ lurk.ALIVE
-                        monster_health = 0
-                    characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
-                    characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
-                    lurk.write(skt, (lurk.CHARACTER, player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des))
-                    lurk.write(skt, (lurk.CHARACTER, monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des))
-                else:
-                    #print(Fore.WHITE+f'DEBUG: {name} in room {stats[6]} not a monster!')
-                    pass
+                print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
+                count+=1
+                monster = get_character(name)
+                monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
+                monster_damage = monster_attack * monster_attack / (monster_attack + monster_defense)
+                player_health -= monster_damage
+                player_health = round(player_health)
+                print(f'DEBUG: player_health after fight: {player_health}')
+                if player_health <= 0:
+                    player_flags ^= lurk.ALIVE
+                    player_health = 0
+                characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
+                player_damage = player_attack * player_attack / (player_attack + player_defense)
+                monster_health -= player_damage
+                monster_health = round(monster_health)
+                print(f'DEBUG: monster_health after fight: {monster_health}')
+                if monster_health <= 0:
+                    monster_flags ^= lurk.ALIVE
+                    monster_health = 0
+                characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
+                lurk.write(skt, (lurk.CHARACTER, player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des))
+                lurk.write(skt, (lurk.CHARACTER, monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des))
             if count == 0:
-                print(Fore.YELLOW+'WARN: No monsters to fight in room, sending ERROR code 7!')
+                print(Fore.YELLOW+'WARN: No monsters found in room, sending ERROR code 7!')
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
-            # If no monsters in current room, send error type 7: no fight
-            # Get all monsters in room
-            # Potential damage calculation: damage = attack * attack / (attack + defense)
             continue
         elif message[0] == lurk.PVPFIGHT:
             lurk_type, character_name = message
@@ -374,7 +367,8 @@ def handle_client(skt):
                 continue
             if room == 0:
                 room = 1
-            characters.update({name:[lurk.ALIVE | lurk.STARTED | lurk.READY, attack, defense, regen, health, gold, room, char_des_len, char_des]})    # Fix hardcoding specific flag
+            
+            characters.update({name:[lurk.ALIVE | lurk.STARTED | lurk.READY, attack, defense, regen, health, gold, room, char_des_len, char_des]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
@@ -416,7 +410,7 @@ def handle_client(skt):
             continue
         elif message[0] == lurk.CHARACTER:
             lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = message
-            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
+            print(Fore.WHITE+f'DEBUG: handle_client: Type: {lurk_type}')
             print('DEBUG: Name:', name)
             print('DEBUG: Flags:', flags)
             print('DEBUG: Attack:', attack)
@@ -432,31 +426,37 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Attempting to create character already tied to a socket, sending ERROR code 2!')
                 lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
                 continue
-            if name in characters:
-                old_character = get_character(name)
-                add_name(skt, name)
-                add_socket(skt, name)
-                print('DEBUG: Sending reprised character:', old_character)
-                name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = old_character
-                flags = lurk.ALIVE | lurk.READY
-                lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-                lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
-                # Send MESSAGE to client from narrator here, stating welcome back!
-            else:
+            if name not in characters:
                 if attack + defense + regen > INIT_POINTS:
-                    print('WARN: Character stats invalid, sending ERROR code 4!')
+                    print(Fore.YELLOW+'WARN: Character stats invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                # Check if entered JOIN BATTLE flag, if so, set flags appropriately
-                flags = lurk.ALIVE | lurk.READY
+                if flags == flags | lurk.MONSTER:
+                    print(Fore.YELLOW+'WARN: Character set monster flag, sending ERROR code 9!')
+                    lurk.write(skt, (lurk.ERROR, 9, len(errors[9]), errors[9]))
+                    continue
+                if flags == flags | lurk.JOIN_BATTLE:
+                    flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+                else:
+                    flags = lurk.ALIVE | lurk.READY
                 new_character = name, flags, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
-                add_name(skt, name)
-                add_socket(skt, name)
-                print('DEBUG: Sending validated character:', new_character)
-                lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-                lurk.write(skt, (lurk.CHARACTER, new_character[0], new_character[1], new_character[2], new_character[3], new_character[4], new_character[5], new_character[6], new_character[7], new_character[8], new_character[9]))
-                # Send MESSAGE to client from narrator here, new player has joined!
+            character = get_character(name)
+            name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+            print(Fore.WHITE+f'DEBUG: Attempting to reprise character {name}')
+            if flags == flags | lurk.MONSTER:
+                print(Fore.YELLOW+'WARN: Cannot reprise a monster, sending ERROR code 9!')
+                lurk.write(skt, (lurk.ERROR, 9, len(errors[9]), errors[9]))
+                continue
+            if flags == flags | lurk.JOIN_BATTLE:
+                flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+            else:
+                flags = lurk.ALIVE | lurk.READY
+            add_name(skt, name)
+            add_socket(skt, name)
+            lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
+            lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
+            # Send MESSAGE to client from narrator here, stating welcome back!
             continue
         elif message[0] == lurk.GAME:
             lurk_type, init_points, stat_limit, game_des_len, game_des = message
