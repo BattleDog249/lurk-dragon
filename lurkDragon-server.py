@@ -329,7 +329,7 @@ def handle_client(skt):
             print(Fore.WHITE+f'DEBUG: handle_client: Type: {lurk_type}')
             print(Fore.WHITE+f'DEBUG: targetName: {character_name}')
             if skt not in sockets:
-                print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
+                print(Fore.YELLOW+'WARN: No character created yet, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
@@ -344,6 +344,10 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
             target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
+            if target_flags == target_flags | lurk.ALIVE:
+                print(Fore.YELLOW+'WARN: Cannot loot a living target, sending ERROR code 6!')
+                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                continue
             player_gold += target_gold
             target_gold = 0
             characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
