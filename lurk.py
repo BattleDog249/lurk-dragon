@@ -227,7 +227,7 @@ def read(skt):
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
                 print('DEBUG: name before formatting:', name)
                 name = name.replace('\x00', '')
-                 print('DEBUG: name after stripping nulls:', name)
+                print('DEBUG: name after stripping nulls:', name)
                 print('DEBUG: name type:', type(name))      # Should be bytes, and it is...
                 return (CHARACTER, name.decode('utf-8'), flags, attack, defense, regen,
                         health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
