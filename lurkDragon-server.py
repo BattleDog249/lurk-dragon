@@ -210,10 +210,13 @@ def cleanup_client(skt):
     Args:
         skt (socket): Client socket.
     """
-    del_name(sockets[skt])
-    del_socket(skt)
+    if sockets[skt] in names:
+        del_name(sockets[skt])
+    if skt in sockets:
+        del_socket(skt)
     skt.shutdown(2)
     skt.close()
+    print(Fore.WHITE+'INFO: cleanup_client: Finished!')
 def handle_client(skt):
     """Function for communicating with individual clients.
 
@@ -223,8 +226,7 @@ def handle_client(skt):
     while True:
         message = lurk.read(skt)
         if not message:
-            print('ERROR: handle_client: read returned None, breaking while loop!')
-            print(Fore.GREEN+'INFO: handle_client: Running cleanup_client!')
+            print(Fore.RED+'ERROR: handle_client: read returned None, breaking while loop!')
             cleanup_client(skt)
             break
         if message[0] == lurk.MESSAGE:
@@ -450,7 +452,7 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.LEAVE:
-            print(Fore.GREEN+'INFO: handle_client: Received LEAVE, running cleanup_client!')
+            print(Fore.GREEN+'INFO: handle_client: Received LEAVE!')
             cleanup_client(skt)
             break
         elif message[0] == lurk.CONNECTION:
