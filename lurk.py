@@ -226,7 +226,7 @@ def read(skt):
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
                 print('DEBUG: name before formatting:', name)
-                name = name.replace('\x00', '')
+                name = name.replace(b'\x00', b'')
                 print('DEBUG: name after stripping nulls:', name)
                 print('DEBUG: name type:', type(name))      # Should be bytes, and it is...
                 return (CHARACTER, name.decode('utf-8'), flags, attack, defense, regen,
