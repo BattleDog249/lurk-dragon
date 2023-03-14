@@ -328,11 +328,13 @@ def handle_client(skt):
             lurk_type, character_name = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: targetName:', character_name)
+            print('DEBUG: targetName type:', type(character_name))
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
+            print('DEBUG: player type:', sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             print(f'DEBUG: Found characters: {characters.keys()}')
             target = get_character(character_name)
