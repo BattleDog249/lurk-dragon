@@ -431,10 +431,6 @@ def handle_client(skt):
                     print(Fore.YELLOW+'WARN: Character stats invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                if flags == flags | lurk.MONSTER:
-                    print(Fore.YELLOW+'WARN: Character set monster flag, sending ERROR code 9!')
-                    lurk.write(skt, (lurk.ERROR, 9, len(errors[9]), errors[9]))
-                    continue
                 if flags == flags | lurk.JOIN_BATTLE:
                     flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
                 else:
@@ -444,10 +440,6 @@ def handle_client(skt):
             character = get_character(name)
             name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
             print(Fore.WHITE+f'DEBUG: Attempting to reprise character {name}')
-            if flags == flags | lurk.MONSTER:
-                print(Fore.YELLOW+'WARN: Cannot reprise a monster, sending ERROR code 9!')
-                lurk.write(skt, (lurk.ERROR, 9, len(errors[9]), errors[9]))
-                continue
             if flags == flags | lurk.JOIN_BATTLE:
                 flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
             else:
