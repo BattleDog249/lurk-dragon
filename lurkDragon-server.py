@@ -112,7 +112,7 @@ errors = {
     3: 'ERROR: Bad Monster. Attempt to loot a nonexistent or not present monster.',
     4: 'ERROR: Stat error. Caused by setting inappropriate player stats. Try again!',
     5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
-    6: 'ERROR: No target. Sent in response to attempts to loot nonexistent players, fight players in different rooms, etc.',
+    6: 'ERROR: No target. Attempt to loot nonexistent players, fight players in different rooms, message someone offline, etc.',
     7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',
     8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.',
     9: 'ERROR: Monster. Cannot create or reprise a monster character.'
@@ -235,9 +235,11 @@ def handle_client(skt):
             print('DEBUG: Sender Name:', sender_name)
             print('DEBUG: Message:', message)
             if skt not in sockets:
+                print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             if recipient_name not in names:
+                print(Fore.YELLOW+f'WARN: Recipient {recipient_name} not online, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
             lurk.write(skt, (lurk.ACCEPT, lurk.MESSAGE))
@@ -254,7 +256,7 @@ def handle_client(skt):
             character = get_character(sockets[skt])
             name, flags, attack, defense, regen, health, gold, old_room_num, char_des_len, char_des = character
             if new_room_num not in connections[old_room_num]:
-                print(Fore.YELLOW+f'WARN: {name} attempting bad move, sending ERROR code 1!')
+                print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code 1!')
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
@@ -302,7 +304,7 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.CHARACTER, player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des))
                 lurk.write(skt, (lurk.CHARACTER, monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des))
             if count == 0:
-                print(Fore.YELLOW+'WARN: No monsters found in room, sending ERROR code 7!')
+                print(Fore.YELLOW+f"WARN: No monsters in {player_name}'s room, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             continue
         elif message[0] == lurk.PVPFIGHT:
