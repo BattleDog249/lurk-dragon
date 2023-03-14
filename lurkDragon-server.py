@@ -233,7 +233,7 @@ def handle_client(skt):
             print('DEBUG: Message Length:', msg_len)
             print('DEBUG: Recipient Name:', recipient_name)
             print('DEBUG: Sender Name:', sender_name)
-            print('DEBUG: Message:', message)
+            #print('DEBUG: Message:', message)
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
@@ -260,7 +260,7 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
-            lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
+            #lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
             lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             update_characters(name, old_room_num)   # Send CHARACTER message to all players in old room
             send_characters(new_room_num)           # Send CHARACTER messages for all characters in new room
