@@ -253,29 +253,20 @@ def handle_client(skt):
                 continue
             character = get_character(sockets[skt])
             name, flags, attack, defense, regen, health, gold, old_room_num, char_des_len, char_des = character
-            if flags != 0x98: # This should be bitewise calculated, to account for monsters, other types, etc. Just check that the flag STARTED is set, really
-                print('ERROR: Character not started, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
-                continue
-            print('DEBUG: connections[currentRoomNum]:', connections[old_room_num])
-            if new_room_num not in connections[old_room_num]:            # This is giving me issues, needs work
-                print('ERROR: Character attempting to move to invalid room, sending ERROR code 1!')
+            if new_room_num not in connections[old_room_num]:
+                print(Fore.YELLOW+f'WARN: {name} attempting bad move, sending ERROR code 1!')
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
-            lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
             characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
-            print('DEBUG: Sending updated character after changeroom:', get_character(name))
+            lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
             lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
-            # Send CHARACTER messages for all characters in new and old room
-            update_characters(name, old_room_num)
-            send_characters(new_room_num)
-            # Send CONNECTION messages for all connections with current room
-            # Maybe there is a more efficient way of doing this?
+            update_characters(name, old_room_num)   # Send CHARACTER message to all players in old room
+            send_characters(new_room_num)           # Send CHARACTER messages for all characters in new room
             for room_num, connection in connections.items():
                 if room_num != new_room_num:
                     continue
                 for connection in connections[room_num]:
-                    lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
+                    lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))   # Send CONNECTION messages for new room
             continue
         elif message[0] == lurk.FIGHT:
             if skt not in sockets:
