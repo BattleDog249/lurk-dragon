@@ -225,7 +225,7 @@ def read(skt):
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
-                name = name.replace('\x00', '')
+                print('DEBUG: name before decode:', name)
                 return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
                         health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
