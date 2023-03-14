@@ -225,9 +225,11 @@ def read(skt):
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
-                print('DEBUG: name before decode:', name)
-                print('DEBUG: name type:', type(name))      # Should be bytes
-                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
+                print('DEBUG: name before formatting:', name)
+                name = name.replace('\x00', '')
+                 print('DEBUG: name after stripping nulls:', name)
+                print('DEBUG: name type:', type(name))      # Should be bytes, and it is...
+                return (CHARACTER, name.decode('utf-8'), flags, attack, defense, regen,
                         health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
