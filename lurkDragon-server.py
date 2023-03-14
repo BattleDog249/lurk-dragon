@@ -75,11 +75,10 @@ def get_character(name):
     Returns:
         _type_: _description_
     """
-    '''
+    name = name.replace('\x00', '')
     if name not in characters.keys():
         print(Fore.RED+f'ERROR: get_character: Cannot find {name} in {characters.keys()}!')
         return None
-    '''
     character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
 def send_characters(room_num):
@@ -336,7 +335,6 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
-            print('DEBUG: player type:', sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             print(f'DEBUG: Found characters: {characters.keys()}')
             target = get_character(character_name)      # This is where things seem to break!
