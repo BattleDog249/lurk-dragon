@@ -75,8 +75,8 @@ def get_character(name):
     Returns:
         _type_: _description_
     """
-    if name not in characters.keys():
-        print(Fore.RED+f'ERROR: get_character: Cannot find {name} in {characters.keys()}!')
+    if name not in characters.items():
+        print(Fore.RED+f'ERROR: get_character: Cannot find {name} in {characters.items()}!')
         return None
     character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
     return character
@@ -337,7 +337,7 @@ def handle_client(skt):
             print('DEBUG: player type:', sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             print(f'DEBUG: Found characters: {characters.keys()}')
-            target = get_character(character_name)
+            target = get_character(character_name)      # This is where things seem to break!
             if target == None:
                 print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
