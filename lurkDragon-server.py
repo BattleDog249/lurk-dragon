@@ -414,7 +414,6 @@ def handle_client(skt):
             print('DEBUG: Room:', room)
             print('DEBUG: charDesLen:', char_des_len)
             print('DEBUG: charDes:', char_des)
-            # Check if player name is already active/online, send error if so
             if name in names:
                 print(Fore.YELLOW+'WARN: Attempting to create character already tied to a socket, sending ERROR code 2!')
                 lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
@@ -430,9 +429,10 @@ def handle_client(skt):
                     flags = lurk.ALIVE | lurk.READY
                 new_character = name, flags, attack, defense, regen, 100, 0, 0, char_des_len, char_des
                 add_character(new_character)
+                print(Fore.YELLOW+f'WARN: Added new character {name}')
             character = get_character(name)
             name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
-            print(Fore.WHITE+f'DEBUG: Attempting to reprise character {name}')
+            print(Fore.YELLOW+f'WARN: Accessing character {name}')
             if flags == flags | lurk.JOIN_BATTLE:
                 flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
             else:
