@@ -325,29 +325,25 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ERROR, 8, len(errors[8]), errors[8]))
             continue
         elif message[0] == lurk.LOOT:
-            # Currently broken
             lurk_type, character_name = message
-            print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
-            print('DEBUG: targetName:', character_name)
-            print('DEBUG: targetName type:', type(character_name))
+            print(Fore.WHITE+f'DEBUG: handle_client: Type: {lurk_type}')
+            print(Fore.WHITE+f'DEBUG: targetName: {character_name}')
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = get_character(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
-            print(f'DEBUG: Found characters: {characters.keys()}')
-            target = get_character(character_name)      # This is where things seem to break!
-            if target == None:
+            if player_flags != player_flags | lurk.STARTED:
+                print(Fore.YELLOW+'WARN: Player flag STARTED not set, sending ERROR code 5!')
+                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                continue
+            target = get_character(character_name)
+            if target == None or target[7] != player_room:
                 print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
             target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
-            # Check that target is in same room and its gold != 0
-            if player_room != target_room:
-                print(Fore.YELLOW+'WARN: Cannot loot target in different room, sending ERROR code 6!')
-                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
-                continue
             player_gold += target_gold
             target_gold = 0
             characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
