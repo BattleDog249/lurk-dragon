@@ -210,10 +210,12 @@ def cleanup_client(skt):
     Args:
         skt (socket): Client socket.
     """
-    if sockets[skt] in names:
+    try:
         del_name(sockets[skt])
-    if skt in sockets:
         del_socket(skt)
+    except Exception as exc:
+        print(Fore.YELLOW+'WARN: cleanup_client: Nothing to clean!')
+        raise KeyError from exc
     skt.shutdown(2)
     skt.close()
     print(Fore.WHITE+'INFO: cleanup_client: Finished!')
