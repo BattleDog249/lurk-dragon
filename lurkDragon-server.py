@@ -130,11 +130,11 @@ rooms = {
     100: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
     0: ('Backrooms', 'You should not be here!'),
     1: ('Village of Valhalla', 'Home of the mighty hunters, this is the only place to find respite for miles.'),
-    2: ('Great Aster Meadow', 'Green rolling hills full of wildflowers and small game for as far as the eye can see.'),
+    2: ('Aster Meadow', 'Green rolling hills full of wildflowers and small game for as far as the eye can see.'),
     3: ('Ashen Taiga', 'A dark and expansive spruce forest, with a slow climb to higher altitudes in the east.'),
     4: ('Rainless Fells', 'Endless miles of sun-soaked rock and sand under an endless blue sky, this massive tract of land is hostile to all known life.'),
     5: ('Sunset Coast', 'Where the setting sun meets the rolling sea, stretching for untold distances to the north and south.'),
-    6: ('Hidden Groves', 'A lively grove of oak trees and song birds, tucked away in a shallow valley.'),
+    6: ('Hidden Groves', 'A lively grove of oak trees and song birds, tucked away in a shallow valley in the Aster meadow.'),
     7: ('Abandoned Swamps', 'Murky swamps that remained unexplored, for whatever reason.'),
     8: ('Bloodsoaked Gorge', 'A dangerous beast must live here, considering the gore and remains strewn about.'),
     9: ('Snowy Mountains', 'The Ashen Taiga gives way to rougher terrain, elevation, and rapidly thinning trees.'),
@@ -377,7 +377,7 @@ def handle_client(skt):
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
-            send_characters(room)
+            send_characters(room)   # Don't think this is working as expected. When joining a game, not sent characters in start room.
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
