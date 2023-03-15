@@ -40,11 +40,19 @@ def add_socket(skt, name):
 def del_socket(skt):
     return sockets.pop(skt)
 
-# Dictionary (Key: Value)
-# Key: Name
-# Value (list): [flags, attack, defense, regen, health, gold, currentRoomNum, charDesLen, charDes]
-characters = {'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 2, 2, 2, 100, 5, 3, 47,
-                             'Dark gray bunny with a red collar, is it a pet?'],
+# Character dictionary containing all monsters and characters in the game.
+#   Key (string): Name
+#   Value (list): [flags, attack, defense, regen, health, gold, room number, description length, description]
+characters = {'Jarl': [lurk.ALIVE, 100, 100, 100, 100, 0, 1, 35,
+                       "The leader of the Valhallian tribe."],
+              'Town Idiot': [lurk.ALIVE, 10, 30, 20, 100, 0, 1, 52,
+                             "The premier village drunk that nobody seems to like."],
+              'Village Guard': [lurk.ALIVE, 50, 40, 10, 100, 50, 1, 49,
+                                "A guard clad in steel armor and carrying a spear."],
+              'Watchman': [lurk.ALIVE, 20, 20, 20, 100, 50, 1, 73,
+                           "A guardian wearing leather and seemingly constantly scanning the horizon."],
+              'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 0, 1, 5, 100, 10, 3, 57,
+                             "A rabbit with gray-blue fur and a red collar with a bell."],
               'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 10, 5, 5, 100, 100, 27, 13,
                                 'Pesticide-ridden rotting guy.'],
               'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 30, 35, 5, 100, 100, 30, 43,
@@ -338,7 +346,7 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             target = get_character(character_name)
-            if target == None or target[7] != player_room:
+            if target is None or target[7] != player_room:
                 print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
