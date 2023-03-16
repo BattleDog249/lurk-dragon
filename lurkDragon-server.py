@@ -31,6 +31,12 @@ GAME_DESCRIPTION_LEN = int(len(GAME_DESCRIPTION))
 
 names = {}
 def add_name(skt, name):
+    """Function for adding a character name to socket pair to the names dictionary.
+
+    Args:
+        skt (socket): Socket associated with a character.
+        name (string): Name of character associated with a socket.
+    """
     names.update({name: skt})
 def del_name(name):
     return names.pop(name)
@@ -116,14 +122,14 @@ def update_characters(target_name, old_room_num):
         lurk.write(key, (lurk.CHARACTER, target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des))
 errors = {
     0: 'ERROR: This message type is not supported!',
-    1: 'ERROR: Bad Room! Attempt to change to an inappropriate room.',
+    1: 'ERROR: Bad Room! Cannot change to requested room.',
     2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
-    3: 'ERROR: Bad Monster. Cannot loot a nonexistent, not present, or a living monster.',
+    3: 'ERROR: Bad Monster. Cannot loot a nonexistent, not present, or living monster.',
     4: 'ERROR: Stat error. Caused by setting inappropriate player stats. Try again!',
     5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
     6: 'ERROR: No target. Attempt to loot nonexistent players, fight players in different rooms, message someone offline, etc.',
-    7: 'ERROR: No fight. Sent if the requested fight cannot happen for other reasons (i.e. no live monsters in room)',
-    8: 'ERROR: No player vs. player combat on the server. Servers do not have to support player-vs-player combat.',
+    7: 'ERROR: No fight. Sent if the requested fight cannot happen for some reason, like no live monsters in room.',
+    8: 'ERROR: Player vs. player combat is not currently supported on this server.',
     9: 'ERROR: Monster. Cannot create or reprise a monster character.'
     }
 rooms = {
@@ -219,10 +225,15 @@ def cleanup_client(skt):
     Args:
         skt (socket): Client socket.
     """
+    if skt in sockets:
+        character = get_character(sockets[skt])
+        flags = character[1]
+        flags ^= lurk.READY | lurk.STARTED  # This needs varification, basically set ready & started flags to 0, keeping all other flags the same.
+        characters.update({character[0]: [flags, character[2], character[3], character[4], character[5], character[6], character[7], character[8]]})
     try:
         del_name(sockets[skt])
         del_socket(skt)
-    except KeyError as exc:
+    except KeyError:
         print(Fore.YELLOW+'WARN: cleanup_client: Nothing to clean!')
     skt.shutdown(2)
     skt.close()
