@@ -226,7 +226,7 @@ def read(skt):
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
                 char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
                 name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
-                return (CHARACTER, name.decode('utf-8'), flags, attack, defense, regen,
+                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
                         health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')

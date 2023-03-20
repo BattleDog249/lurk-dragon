@@ -109,7 +109,10 @@ def send_characters(room_num):
         for name, stats in characters.items():
             if stats[6] != room_num:
                 continue
-            lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+            try:
+                lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+            except IndexError:
+                continue
 def update_characters(target_name, old_room_num):
     """Used to update all connected clients in old_room_num that name moved to a new room"""
     for key, value in sockets.items():
