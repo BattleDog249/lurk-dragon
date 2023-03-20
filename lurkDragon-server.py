@@ -93,7 +93,10 @@ def get_character(name):
     if name not in characters:
         print(Fore.RED+f'ERROR: get_character: Cannot find {name} in {characters.keys()}!')
         return None
-    character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
+    try:
+        character = (name, characters[name][0], characters[name][1], characters[name][2], characters[name][3], characters[name][4], characters[name][5], characters[name][6], characters[name][7], characters[name][8])
+    except IndexError:
+        return character
     return character
 def send_characters(room_num):
     """Function for sending all characters to to all connected clients located in provided room number.
