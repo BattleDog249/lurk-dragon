@@ -101,12 +101,12 @@ def send_characters(room_num):
     Args:
         room_num (int): Room number.
     """
-    for socket, name in sockets.items():
+    for socket, name in sockets.copy().items():
         player = get_character(name)
         player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
         if player_room != room_num:
             continue
-        for name, stats in characters.items():
+        for name, stats in characters.copy().items():
             if stats[6] != room_num:
                 continue
             try:
