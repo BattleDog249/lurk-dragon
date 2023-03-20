@@ -101,7 +101,7 @@ def send_characters(room_num):
     Args:
         room_num (int): Room number.
     """
-    mutex = threading.lock()
+    mutex = threading.Lock()
     mutex.acquire()
     for socket, name in sockets.items():
         player = get_character(name)
