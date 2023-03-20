@@ -101,8 +101,6 @@ def send_characters(room_num):
     Args:
         room_num (int): Room number.
     """
-    mutex = threading.Lock()
-    mutex.acquire()
     for socket, name in sockets.items():
         player = get_character(name)
         player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
@@ -115,7 +113,6 @@ def send_characters(room_num):
                 lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             except IndexError:
                 continue
-    mutex.release()
 def update_characters(target_name, old_room_num):
     """Used to update all connected clients in old_room_num that name moved to a new room"""
     for key, value in sockets.items():
@@ -394,7 +391,10 @@ def handle_client(skt):
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
+            mutex = threading.Lock()
+            mutex.acquire()
             send_characters(room)   # Don't think this is working as expected. When joining a game, not sent characters in start room.
+            mutex.release()
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             # Send CONNECTION messages for all connections with current room
