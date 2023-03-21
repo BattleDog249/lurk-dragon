@@ -50,40 +50,10 @@ def add_socket(skt, name):
 def del_socket(skt):
     return sockets.pop(skt)
 
-
 # Character dictionary containing all monsters and characters in the game.
-#   Key (string): Name
-#   Value (list): [flags, attack, defense, regen, health, gold, room number, description length, description]
-characters = {'Jarl': [lurk.ALIVE, 100, 100, 100, 100, 0, 1, 35,
-                       "The leader of the Valhallian tribe."],
-              'Town Idiot': [lurk.ALIVE, 10, 30, 20, 100, 0, 1, 52,
-                             "The premier village drunk that nobody seems to like."],
-              'Village Guard': [lurk.ALIVE | lurk.JOIN_BATTLE, 50, 40, 10, 100, 50, 1, 49,
-                                "A guard clad in steel armor and carrying a spear."],
-              'Watchman': [lurk.ALIVE | lurk.JOIN_BATTLE, 20, 20, 20, 100, 50, 1, 73,
-                           "A guardian wearing leather and seemingly constantly scanning the horizon."],
-              'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 0, 1, 5, 100, 10, 3, 57,
-                             "A rabbit with gray-blue fur and a red collar with a bell."],
-              'Undead Farmer': [lurk.ALIVE | lurk.MONSTER, 10, 5, 5, 100, 100, 27, 13,
-                                'Pesticide-ridden rotting guy.'],
-              'Barnyard Bucko': [lurk.ALIVE | lurk.MONSTER, 30, 35, 5, 100, 100, 30, 43,
-                                 'Some weird guy you should probably destroy.'],
-              'Lurk Dragon': [lurk.ALIVE | lurk.MONSTER, 70, 20, 10, 100, 100, 25, 35,
-                              'A terrifying beast, worthy to slay!'],
-              'Sentient Sandstorm': [lurk.ALIVE | lurk.MONSTER, 20, 20, 20, 100, 100, 11, 49,
-                                     'A cloud of dust and sand trying to suffocate you.'],
-              'Giant Sandworm': [lurk.ALIVE | lurk.MONSTER, 50, 25, 20, 100, 100, 35, 49,
-                                     'A foul worm full of teeth with a ravenous hunger.'],
-              'Mudcrabs': [lurk.ALIVE | lurk.MONSTER, 10, 15, 10, 100, 100, 5, 49,
-                                     'Giant crabs with claws that could lop off an arm.'],
-              'Megalodon': [lurk.ALIVE | lurk.MONSTER, 50, 50, 20, 100, 100, 12, 28,
-                                     'This is one massive shark...'],
-              'Rabid Wolf': [lurk.ALIVE | lurk.MONSTER, 15, 15, 20, 100, 100, 2, 46,
-                                     'A gray wolf frothing at the mouth, poor thing!'],
-              'Rattlesnake': [lurk.ALIVE | lurk.MONSTER, 10, 2, 5, 100, 100, 4, 40,
-                                     'A relatively large and loud rattlesnake.']}
-characters = {}
-with open('c:/Users/lgray/Lurk/characters.json') as characters_json:
+#   Key (string): UUID
+#   Value (list): [name, flag, attack, defense, regen, health, gold, room number, description length, description]
+with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as characters_json:
     characters_data = json.load(characters_json)
     for character in characters_data:
         character = lurk.Character(uuid=uuid.uuid4(), name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])

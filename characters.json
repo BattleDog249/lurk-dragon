@@ -33,6 +33,17 @@
         "description": "A guard clad in steel armor and carrying a spear."
     },
     {
+        "name": "Watchman",
+        "flag": 192,
+        "attack": 20,
+        "defense": 20,
+        "regen": 20,
+        "health": 100,
+        "gold": 50,
+        "room": 1,
+        "description": "A guardian wearing leather and seemingly constantly scanning the horizon."
+    },
+    {
         "name": "Blue Bunny",
         "flag": 160,
         "attack": 0,
@@ -42,6 +53,28 @@
         "gold": 10,
         "room": 3,
         "description": "A rabbit with gray-blue fur and a red collar with a bell."
+    },
+    {
+        "name": "Undead Farmer",
+        "flag": 160,
+        "attack": 10,
+        "defense": 5,
+        "regen": 5,
+        "health": 100,
+        "gold": 100,
+        "room": 27,
+        "description": "Pesticide-ridden rotting guy."
+    },
+    {
+        "name": "Barnyard Bucko",
+        "flag": 160,
+        "attack": 30,
+        "defense": 35,
+        "regen": 5,
+        "health": 100,
+        "gold": 100,
+        "room": 30,
+        "description": "Some weird guy you should probably destroy."
     },
     {
         "name": "LurkDragon",
@@ -66,7 +99,18 @@
         "description": "Another one?"
     },
     {
-        "name": "Sandworm",
+        "name": "Sentient Sandstorm",
+        "flag": 224,
+        "attack": 20,
+        "defense": 20,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 35,
+        "description": "A cloud of dust and sand trying to suffocate you."
+    },
+    {
+        "name": "Giant Sandworm",
         "flag": 224,
         "attack": 25,
         "defense": 25,
@@ -74,6 +118,50 @@
         "health": 100,
         "gold": 100,
         "room": 5,
-        "description": "A big worm!"
+        "description": "A foul worm full of teeth with a ravenous hunger."
+    },
+    {
+        "name": "Mudcrab",
+        "flag": 224,
+        "attack": 20,
+        "defense": 20,
+        "regen": 10,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description": "Giant crabs with claws that could lop off an arm."
+    },
+    {
+        "name": "Megalodon",
+        "flag": 224,
+        "attack": 50,
+        "defense": 50,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 12,
+        "description": "This is one massive shark..."
+    },
+    {
+        "name": "Rabid Wolf",
+        "flag": 224,
+        "attack": 15,
+        "defense": 15,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 2,
+        "description": "A gray wolf frothing at the mouth, poor thing!"
+    },
+    {
+        "name": "Rattlesnake",
+        "flag": 224,
+        "attack": 15,
+        "defense": 2,
+        "regen": 5,
+        "health": 100,
+        "gold": 100,
+        "room": 4,
+        "description": "A relatively large and loud rattlesnake."
     }
 ]
