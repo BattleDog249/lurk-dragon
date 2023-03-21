@@ -5,8 +5,12 @@
 import socket
 import sys
 import threading
+import uuid
+import json
 
 from colorama import Fore
+from dataclasses import dataclass
+from ctypes import *
 
 import lurk
 
@@ -46,6 +50,7 @@ def add_socket(skt, name):
 def del_socket(skt):
     return sockets.pop(skt)
 
+'''
 # Character dictionary containing all monsters and characters in the game.
 #   Key (string): Name
 #   Value (list): [flags, attack, defense, regen, health, gold, room number, description length, description]
@@ -77,6 +82,32 @@ characters = {'Jarl': [lurk.ALIVE, 100, 100, 100, 100, 0, 1, 35,
                                      'A gray wolf frothing at the mouth, poor thing!'],
               'Rattlesnake': [lurk.ALIVE | lurk.MONSTER, 10, 2, 5, 100, 100, 4, 40,
                                      'A relatively large and loud rattlesnake.']}
+'''
+
+@dataclass
+class Character:
+    """"""
+    uuid: str
+    name: str
+    flag: c_uint8
+    attack: c_uint16
+    defense: c_uint16
+    regen: c_uint16
+    health: c_int16
+    gold: c_uint16
+    room: c_uint16
+    description_len: c_uint16
+    description: str
+    mtype: c_uint8 = 10
+    
+characters = {}
+with open('.\characters.json') as characters_json:
+    characters_data = json.load(characters_json)
+    for item in characters_data:
+        character = Character(uuid=uuid.uuid4(), name=item[0], flag=item[1], attack=item[2], defense=item[3], regen=item[4], health=item[5], gold=item[6], room=item[7], description_len=len(item[8]), description=item[8])
+        characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+
+print(f'DEBUG: IMported characters from json: {characters}')
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
@@ -104,6 +135,10 @@ def send_characters(room_num):
     Args:
         room_num (int): Room number.
     """
+    #players = [name for name in sockets if room_num == characters[name][6]]
+    #sockets = [socket for socket in sockets.keys() if ]
+    #for player in players:
+        #lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
     for socket, name in sockets.copy().items():
         player = get_character(name)
         player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
@@ -116,6 +151,12 @@ def send_characters(room_num):
                 lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             except IndexError:
                 continue
+        #players = [character for character in characters if character[6] == room_num and ]
+        #print(f'DEBUG: players in old room: {players}')
+        #for player in players:
+            #lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+        #for room_num in characters():
+            #print(f'DEBUG: room_num: {room_num} character[6]: {characters[6]}')
 def update_characters(target_name, old_room_num):
     """Used to update all connected clients in old_room_num that name moved to a new room"""
     for key, value in sockets.items():

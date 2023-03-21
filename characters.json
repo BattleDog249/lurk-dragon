@@ -1,0 +1,24 @@
+[
+    {
+        "name": "LurkDragon",
+        "flags": 0,
+        "attack": 60,
+        "defense": 40,
+        "regen": 0,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description":  "A big scary dragon!"
+    },
+    {
+        "name": "Sandworm",
+        "flags": 0,
+        "attack": 25,
+        "defense": 25,
+        "regen": 50,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description":  "A big worm!"
+    }
+]
