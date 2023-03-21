@@ -50,7 +50,7 @@ def add_socket(skt, name):
 def del_socket(skt):
     return sockets.pop(skt)
 
-'''
+
 # Character dictionary containing all monsters and characters in the game.
 #   Key (string): Name
 #   Value (list): [flags, attack, defense, regen, health, gold, room number, description length, description]
@@ -58,9 +58,9 @@ characters = {'Jarl': [lurk.ALIVE, 100, 100, 100, 100, 0, 1, 35,
                        "The leader of the Valhallian tribe."],
               'Town Idiot': [lurk.ALIVE, 10, 30, 20, 100, 0, 1, 52,
                              "The premier village drunk that nobody seems to like."],
-              'Village Guard': [lurk.ALIVE, 50, 40, 10, 100, 50, 1, 49,
+              'Village Guard': [lurk.ALIVE | lurk.JOIN_BATTLE, 50, 40, 10, 100, 50, 1, 49,
                                 "A guard clad in steel armor and carrying a spear."],
-              'Watchman': [lurk.ALIVE, 20, 20, 20, 100, 50, 1, 73,
+              'Watchman': [lurk.ALIVE | lurk.JOIN_BATTLE, 20, 20, 20, 100, 50, 1, 73,
                            "A guardian wearing leather and seemingly constantly scanning the horizon."],
               'Blue Bunny': [lurk.ALIVE | lurk.MONSTER, 0, 1, 5, 100, 10, 3, 57,
                              "A rabbit with gray-blue fur and a red collar with a bell."],
@@ -82,32 +82,23 @@ characters = {'Jarl': [lurk.ALIVE, 100, 100, 100, 100, 0, 1, 35,
                                      'A gray wolf frothing at the mouth, poor thing!'],
               'Rattlesnake': [lurk.ALIVE | lurk.MONSTER, 10, 2, 5, 100, 100, 4, 40,
                                      'A relatively large and loud rattlesnake.']}
-'''
-
-@dataclass
-class Character:
-    """"""
-    uuid: str
-    name: str
-    flag: c_uint8
-    attack: c_uint16
-    defense: c_uint16
-    regen: c_uint16
-    health: c_int16
-    gold: c_uint16
-    room: c_uint16
-    description_len: c_uint16
-    description: str
-    mtype: c_uint8 = 10
-    
 characters = {}
-with open('.\characters.json') as characters_json:
+with open('c:/Users/lgray/Lurk/characters.json') as characters_json:
     characters_data = json.load(characters_json)
-    for item in characters_data:
-        character = Character(uuid=uuid.uuid4(), name=item[0], flag=item[1], attack=item[2], defense=item[3], regen=item[4], health=item[5], gold=item[6], room=item[7], description_len=len(item[8]), description=item[8])
-        characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+    for character in characters_data:
+        character = lurk.Character(uuid=uuid.uuid4(), name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])
+        lurk.Character.characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+        print(f'DEBUG: character as dataclass: {character}')
+print(f'All characters: {lurk.Character.characters}')
+character = lurk.Character.get_characters_with_name('Jarl')
+print(f'character: {character}')
+print(f'DEBUG: {lurk.CHARACTER}, {character[0]}, {character[1]}, {character[2]}, character.defense, character.regen, character.health, character.gold, character.room, character.description_len,  character.description))')
+lurk.Character.get_characters_with_room(1)
+@dataclass
+class Room:
+    """"""
+    room_num: c_uint16
 
-print(f'DEBUG: IMported characters from json: {characters}')
 def add_character(character):
     name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
     characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
@@ -495,21 +486,26 @@ def handle_client(skt):
                 flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
             else:
                 flags = lurk.ALIVE | lurk.READY
-            if name not in characters:
+            if name not in lurk.Character.characters:
                 if attack + defense + regen > INIT_POINTS:
-                    print(Fore.YELLOW+'WARN: Character stats invalid, sending ERROR code 4!')
+                    print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                new_character = name, flags, attack, defense, regen, 100, 0, 0, char_des_len, char_des
-                add_character(new_character)
-                print(Fore.YELLOW+f'WARN: Added new character {name}')
-            character = get_character(name)
+                character = lurk.Character(uuid=uuid.uuid4(), name=name, flag=flags, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=char_des_len, description=char_des)
+                characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+                print(Fore.GREEN+f'INFO: Added new character {character.name} with uuid {character.uuid}')
+            else:
+                characters = lurk.Character.get_characters_with_name(name)
+                
+                for i in characters:
+                    pass
+            character = lurk.Character.get_characters_with_name(name)
             name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
             print(Fore.YELLOW+f'WARN: Accessing character {name}')
             add_name(skt, name)
             add_socket(skt, name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            lurk.write(skt, (lurk.CHARACTER, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des))
+            lurk.write(skt, (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len,  character.description))    # This may be broke
             # Send MESSAGE to client from narrator here, stating welcome back!
             continue
         elif message[0] == lurk.GAME:

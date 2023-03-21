@@ -1,24 +1,79 @@
 [
     {
+        "name": "Jarl",
+        "flag": 128,
+        "attack": 100,
+        "defense": 100,
+        "regen": 100,
+        "health": 100,
+        "gold": 0,
+        "room": 1,
+        "description": "The leader of the Valhallian tribe."
+    },
+    {
+        "name": "Town Idiot",
+        "flag": 128,
+        "attack": 10,
+        "defense": 30,
+        "regen": 20,
+        "health": 100,
+        "gold": 0,
+        "room": 1,
+        "description": "The premier village drunk that nobody seems to like."
+    },
+    {
+        "name": "Village Guard",
+        "flag": 192,
+        "attack": 50,
+        "defense": 40,
+        "regen": 10,
+        "health": 100,
+        "gold": 50,
+        "room": 1,
+        "description": "A guard clad in steel armor and carrying a spear."
+    },
+    {
+        "name": "Blue Bunny",
+        "flag": 160,
+        "attack": 0,
+        "defense": 1,
+        "regen": 5,
+        "health": 100,
+        "gold": 10,
+        "room": 3,
+        "description": "A rabbit with gray-blue fur and a red collar with a bell."
+    },
+    {
         "name": "LurkDragon",
-        "flags": 0,
+        "flag": 224,
         "attack": 60,
         "defense": 40,
         "regen": 0,
         "health": 100,
         "gold": 100,
         "room": 5,
-        "description":  "A big scary dragon!"
+        "description": "A big scary dragon!"
+    },
+    {
+        "name": "LurkDragon",
+        "flag": 224,
+        "attack": 60,
+        "defense": 40,
+        "regen": 0,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description": "Another one?"
     },
     {
         "name": "Sandworm",
-        "flags": 0,
+        "flag": 224,
         "attack": 25,
         "defense": 25,
         "regen": 50,
         "health": 100,
         "gold": 100,
         "room": 5,
-        "description":  "A big worm!"
+        "description": "A big worm!"
     }
 ]

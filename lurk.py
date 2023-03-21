@@ -2,8 +2,10 @@
 """
 #!/usr/bin/env python3
 
+from ctypes import *
 import socket
 import struct
+from dataclasses import dataclass
 
 from colorama import Fore
 
@@ -41,6 +43,34 @@ JOIN_BATTLE = 0x40
 MONSTER = 0x20
 STARTED = 0x10
 READY = 0x08
+
+@dataclass
+class Character:
+    """"""
+    uuid: str
+    name: str
+    flag: c_uint8
+    attack: c_uint16
+    defense: c_uint16
+    regen: c_uint16
+    health: c_int16
+    gold: c_uint16
+    room: c_uint16
+    description_len: c_uint16
+    description: str
+    characters = {}
+    def get_characters_with_name(name):
+        """"""
+        characters = [(uuid, character) for uuid, character in Character.characters.items() if Character.characters[uuid][0] == name]
+        print(f'DEBUG: Character(s) found with name {name}: {characters}')
+        return characters
+        
+    def get_characters_with_room(room):
+        characters = [(uuid, character) for uuid, character in Character.characters.items() if Character.characters[uuid][7] == room]
+        print(f'DEBUG: Character(s) found in room {room}: {characters}')
+        return characters
+        """"""
+        
 
 def recv(skt, size):
     """Receive size amount of bytes from a socket, returning full lurk message
