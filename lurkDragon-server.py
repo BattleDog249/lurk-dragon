@@ -436,42 +436,42 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
         elif message[0] == lurk.CHARACTER:
-            lurk_type, name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = message
+            lurk_type, name, flag, attack, defense, regen, health, gold, room, description_len, description = message
             print(Fore.WHITE+f'DEBUG: handle_client: Type: {lurk_type}')
             print(Fore.WHITE+f'DEBUG: Name: {name}')
-            print(Fore.WHITE+f'DEBUG: Flags: {flags}')
+            print(Fore.WHITE+f'DEBUG: Flags: {flag}')
             print(Fore.WHITE+f'DEBUG: Attack: {attack}')
             print(Fore.WHITE+f'DEBUG: Defense: {defense}')
             print(Fore.WHITE+f'DEBUG: Regen: {regen}')
             print(Fore.WHITE+f'DEBUG: Health: {health}')
             print(Fore.WHITE+f'DEBUG: Gold: {gold}')
             print(Fore.WHITE+f'DEBUG: Room: {room}')
-            print(Fore.WHITE+f'DEBUG: Description Length: {char_des_len}')
-            print(Fore.WHITE+f'DEBUG: Description: {char_des}')
+            print(Fore.WHITE+f'DEBUG: Description Length: {description_len}')
+            print(Fore.WHITE+f'DEBUG: Description: {description}')
             if name in names:
                 print(Fore.YELLOW+'WARN: Attempting to create character already tied to a socket, sending ERROR code 2!')
                 lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
                 continue
-            if flags == flags | lurk.JOIN_BATTLE:
-                flags = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+            if flag == flag | lurk.JOIN_BATTLE:
+                flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
             else:
-                flags = lurk.ALIVE | lurk.READY
+                flag = lurk.ALIVE | lurk.READY
             if name not in lurk.Player.players:
                 if attack + defense + regen > INIT_POINTS:
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code 4!')
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
-                player = lurk.Player(name=name, flag=flags, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=char_des_len, description=char_des)
+                player = lurk.Player(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description)
                 lurk.Player.players.update({player.name: [player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description]})
                 print(Fore.GREEN+f'INFO: Added new character {player.name}')
             player = lurk.Player.get_player_with_name(name)
             print(Fore.WHITE+f'DEBUG: player: {player}')
-            name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = player
+            name, flag, attack, defense, regen, health, gold, room, description_len, description = player
             print(Fore.YELLOW+f'WARN: Accessing player {name}')
             add_name(skt, name)
             add_socket(skt, name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            lurk.write(skt, (lurk.CHARACTER, player.name, player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len,  player.description))
+            lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, room, description_len,  description))
             # Send MESSAGE to client from narrator here, stating welcome back!
             continue
         elif message[0] == lurk.GAME:
