@@ -401,7 +401,7 @@ def handle_client(skt):
             # Send all characters in starting room
             characters = lurk.Character.get_characters_with_room(room)
             for character in characters:
-                print(f'DEBUG: i: {character}, characters: {characters}')
+                print(f'DEBUG: character: {character}, characters: {characters}')
                 lurk.write(skt, (lurk.CHARACTER, character[0], character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8]))
             # Send all players in starting room
             players = lurk.Player.get_players_with_room(room)

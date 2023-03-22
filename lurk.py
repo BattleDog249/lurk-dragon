@@ -62,7 +62,7 @@ class Character:
     characters = {}
     def get_characters_with_name(name):
         """"""
-        characters = [(uuid, character) for uuid, character in Character.characters.items() if Character.characters[uuid][0] == name]
+        characters = [(character) for character in Character.characters if Character.characters[character][0] == name]
         print(f'DEBUG: Character(s) found with name {name}: {characters}')
         return characters
         
