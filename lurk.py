@@ -73,6 +73,36 @@ class Character:
         return characters
 
 @dataclass
+class Player:
+    """"""
+    name: str
+    flag: c_uint8
+    attack: c_uint16
+    defense: c_uint16
+    regen: c_uint16
+    health: c_int16
+    gold: c_uint16
+    room: c_uint16
+    description_len: c_uint16
+    description: str
+    # Key (str): name, Value (list): [flag, attack, defense, regen, health, gold, room, description_len, description]
+    players = {}
+    def get_player_with_name(name):
+        """"""
+        if name in Player.players:
+            print(Fore.GREEN+f'INFO: Requested player {name} found, returning player!')
+            return (name, Player.players[name])
+        else:
+            print(Fore.YELLOW+f'WARN: Requested player {name} not found, returning None!')
+            print(Fore.YELLOW+f'INFO: Current list of players: {Player.players}')
+            return None
+    def get_players_with_room(room):
+        """"""
+        players = [(name, info) for name, info in Player.players.items() if Player.players[name][7] == room]
+        print(Fore.WHITE+f'INFO: Players(s) found in room {room}: {players}')
+        return players
+
+@dataclass
 class Room:
     """"""
     room_number: c_uint16
