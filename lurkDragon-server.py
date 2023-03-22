@@ -62,7 +62,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as c
 print(f'All characters: {lurk.Character.characters}')
 character = lurk.Character.get_characters_with_name('Jarl')
 print(f'character: {character}')
-print(f'DEBUG: {lurk.CHARACTER}, {character[0]}, {character[1]}, {character[2]}, character.defense, character.regen, character.health, character.gold, character.room, character.description_len,  character.description))')
+#print(f'DEBUG: {lurk.CHARACTER}, {character[0]}, {character[1]}, {character[2]}, character.defense, character.regen, character.health, character.gold, character.room, character.description_len,  character.description))')
 lurk.Character.get_characters_with_room(1)
 @dataclass
 class Room:
@@ -290,7 +290,7 @@ def handle_client(skt):
                 print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code 1!')
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
-            characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
+            lurk.Character.characters.update({name: [flags, attack, defense, regen, health, gold, new_room_num, char_des_len, char_des]})
             #lurk.write(skt, (lurk.ACCEPT, lurk.CHANGEROOM))
             lurk.write(skt, (lurk.ROOM, new_room_num, rooms[new_room_num][0], len(rooms[new_room_num][1]), rooms[new_room_num][1]))
             update_characters(name, old_room_num)   # Send CHARACTER message to all players in old room
@@ -323,7 +323,7 @@ def handle_client(skt):
                 if player_health <= 0:
                     player_flags ^= lurk.ALIVE
                     player_health = 0
-                characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
+                lurk.Character.characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
                 player_damage = player_attack * player_attack / (player_attack + player_defense)
                 monster_health -= player_damage
                 monster_health = round(monster_health)
@@ -331,7 +331,7 @@ def handle_client(skt):
                 if monster_health <= 0:
                     monster_flags ^= lurk.ALIVE
                     monster_health = 0
-                characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
+                lurk.Character.characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
                 send_characters(player_room)
             if count == 0:
                 print(Fore.YELLOW+f"WARN: No monsters in {player_name}'s room, sending ERROR code 7!")
@@ -376,8 +376,8 @@ def handle_client(skt):
                 continue
             player_gold += target_gold
             target_gold = 0
-            characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
-            characters.update({target_name: [target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des]})
+            lurk.Character.characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
+            lurk.Character.characters.update({target_name: [target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des]})
             send_characters(player_room)
             continue
         elif message[0] == lurk.START:
@@ -392,7 +392,7 @@ def handle_client(skt):
             if room == 0:
                 room = 1
             
-            characters.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
+            lurk.Character.characters.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
@@ -462,7 +462,7 @@ def handle_client(skt):
                     lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
                     continue
                 character = lurk.Character(uuid=uuid.uuid4(), name=name, flag=flags, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=char_des_len, description=char_des)
-                characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+                lurk.Character.characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
                 print(Fore.GREEN+f'INFO: Added new character {character.name} with uuid {character.uuid}')
             else:
                 characters = lurk.Character.get_characters_with_name(name)

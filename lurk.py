@@ -58,6 +58,7 @@ class Character:
     room: c_uint16
     description_len: c_uint16
     description: str
+    # Key (UUID): UUID, Value (list): [name, flag, attack, defense, regen, health, gold, room, description_len, description]
     characters = {}
     def get_characters_with_name(name):
         """"""
@@ -66,11 +67,34 @@ class Character:
         return characters
         
     def get_characters_with_room(room):
+        """"""
         characters = [(uuid, character) for uuid, character in Character.characters.items() if Character.characters[uuid][7] == room]
         print(f'DEBUG: Character(s) found in room {room}: {characters}')
         return characters
+
+@dataclass
+class Room:
+    """"""
+    room_number: c_uint16
+    room_name: str
+    room_description_len: c_uint16
+    room_description: str
+    connection_number: c_uint16
+    connection_name: str
+    connection_description_len: c_uint16
+    connection_description: str
+    # Key (int): room_number, Value (tuple): (room_name, room_description)
+    rooms = {}
+    # Key (int): connection_number (==room_number), Value (list of tuples): [(room_number, )]
+    connections = {}
+    def get_room(room_number):
         """"""
-        
+        rooms = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
+        print(f'DEBUG: Room(s) found with number {room_number}: {rooms}')
+        return rooms
+    def get_connections(room_number):
+        """"""
+        connections = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
 
 def recv(skt, size):
     """Receive size amount of bytes from a socket, returning full lurk message
