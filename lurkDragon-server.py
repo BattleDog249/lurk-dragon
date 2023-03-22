@@ -465,6 +465,7 @@ def handle_client(skt):
                 lurk.Player.players.update({player.name: [player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description]})
                 print(Fore.GREEN+f'INFO: Added new character {player.name}')
             player = lurk.Player.get_player_with_name(name)
+            print(Fore.WHITE+f'DEBUG: player: {player}')
             name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = player
             print(Fore.YELLOW+f'WARN: Accessing player {name}')
             add_name(skt, name)
