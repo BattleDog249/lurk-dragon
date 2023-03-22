@@ -398,7 +398,7 @@ def handle_client(skt):
             # Send CHARACTER messages for all characters with same room number
             mutex = threading.Lock()
             mutex.acquire()
-            send_characters(room)   # Don't think this is working as expected. When joining a game, not sent characters in start room.
+            #send_characters(room)   # Don't think this is working as expected. When joining a game, not sent characters in start room.
             characters = lurk.Character.get_characters_with_room(room)
             print(f'DEBUG: Characters in room {room}: {characters}')
             for character in characters:
