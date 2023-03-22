@@ -401,12 +401,13 @@ def handle_client(skt):
             # Send all characters in starting room
             characters = lurk.Character.get_characters_with_room(room)
             for character in characters:
-                print(f'DEBUG: character: {character}, characters: {characters}')
+                print(f'DEBUG: Sending character: {character}')
                 lurk.write(skt, (lurk.CHARACTER, character[0], character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9]))
             # Send all players in starting room
             players = lurk.Player.get_players_with_room(room)
-            for i in players:
-                lurk.write(skt, (lurk.CHARACTER, players[i][0], players[i][1], players[i][2], players[i][3], players[i][4], players[i][5], players[i][6], players[i][7], players[i][8]))
+            for player in players:
+                print(f'DEBUG: Sending player: {player}')
+                lurk.write(skt, (lurk.CHARACTER, player[0], player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8]))
             mutex.release()
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
