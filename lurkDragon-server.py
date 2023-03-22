@@ -20,7 +20,7 @@ EXT_SIZE = int(0)
 
 INIT_POINTS = int(100)
 STAT_LIMIT = int(65535)
-GAME_DESCRIPTION = str(r"""Can you conquer the beasts?
+GAME_DESCRIPTION = str(r"""This is a testing branch, and probably broken!
     (                    (                                   
     )\ )               ) )\ )                                
 (()/(   (   (    ( /((()/(   (       )  (  (              
