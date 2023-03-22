@@ -68,7 +68,7 @@ class Character:
         
     def get_characters_with_room(room):
         """"""
-        characters = {(uuid, character) for uuid, character in Character.characters.items() if Character.characters[uuid][7] == room}
+        characters = [(uuid, character) for uuid, character in Character.characters.items() if Character.characters[uuid][7] == room]
         print(f'DEBUG: Character(s) found in room {room}: {characters}')
         return characters
 
