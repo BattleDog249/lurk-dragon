@@ -295,6 +295,8 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ROOM, new_room, rooms[new_room][0], len(rooms[new_room][1]), rooms[new_room][1]))
             # Send updated CHARACTER to player
             lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
+            # Send CONNECTIONs to player
+            # Send updated CHARACTER to all players in both new and old room.
             update_characters(name, old_room)   # Send CHARACTER message to all players in old room
             send_characters(new_room)           # Send CHARACTER messages for all characters in new room
             for room_num, connection in connections.items():
