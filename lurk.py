@@ -91,7 +91,7 @@ class Player:
         """"""
         if name in Player.players:
             print(Fore.GREEN+f'INFO: Requested player {name} found, returning player!')
-            return (name, Player.players[name])
+            return (name, Player.players[name][0:8])
         else:
             print(Fore.YELLOW+f'WARN: Requested player {name} not found, returning None!')
             print(Fore.YELLOW+f'INFO: Current list of players: {Player.players}')
