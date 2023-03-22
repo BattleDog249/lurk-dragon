@@ -309,7 +309,7 @@ def handle_client(skt):
             player = lurk.Character.get_characters_with_name(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             count = 0
-            for name, stats in characters.items():
+            for name, stats in lurk.Character.characters.items():
                 if stats[6] != player_room or stats[0] != lurk.MONSTER | lurk.ALIVE or name == player_name:
                     continue
                 print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
@@ -383,8 +383,8 @@ def handle_client(skt):
         elif message[0] == lurk.START:
             print('DEBUG: Handling START!')
             try:
-                character = lurk.Character.get_characters_with_name(sockets[skt])
-                name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = character
+                player = lurk.Player.get_player_with_name(sockets[skt])
+                name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = player
             except:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
@@ -392,13 +392,17 @@ def handle_client(skt):
             if room == 0:
                 room = 1
             
-            lurk.Character.characters.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
+            lurk.Player.players.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send CHARACTER messages for all characters with same room number
             mutex = threading.Lock()
             mutex.acquire()
             send_characters(room)   # Don't think this is working as expected. When joining a game, not sent characters in start room.
+            characters = lurk.Character.get_characters_with_room(room)
+            print(f'DEBUG: Characters in room {room}: {characters}')
+            for character in characters:
+                lurk.write(skt, (lurk.CHARACTER, ))
             mutex.release()
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
