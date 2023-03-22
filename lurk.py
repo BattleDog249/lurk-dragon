@@ -62,13 +62,13 @@ class Character:
     characters = {}
     def get_characters_with_name(name):
         """"""
-        characters = [(character) for character in Character.characters if Character.characters[character][0] == name]
+        characters = [(character) for character in Character.characters.values() if Character.characters[character][0] == name]
         print(f'DEBUG: Character(s) found with name {name}: {characters}')
         return characters
         
     def get_characters_with_room(room):
         """"""
-        characters = [(character) for character in Character.characters if Character.characters[character][7] == room]
+        characters = [(character) for character in Character.characters.values() if Character.characters[character][7] == room]
         print(f'DEBUG: Character(s) found in room {room}: {characters}')
         return characters
 
