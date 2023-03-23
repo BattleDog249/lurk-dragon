@@ -98,7 +98,7 @@ class Player:
             return None
     def get_players_with_room(room):
         """"""
-        players = [(name, info) for name, info in Player.players.items() if Player.players[name][7] == room]
+        players = [(name, info) for name, info in Player.players.items() if Player.players[name][6] == room]
         print(Fore.WHITE+f'INFO: Players(s) found in room {room}: {players}')
         return players
 
