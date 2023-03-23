@@ -306,8 +306,8 @@ def handle_client(skt):
                     print(f'DEBUG: Player {player} not in old room {old_room}, continuing!')
                     continue
                 lurk.write(name[player[0], (lurk.CHARACTER, )])
-            update_characters(name, old_room)   # Send CHARACTER message to all players in old room
-            send_characters(new_room)           # Send CHARACTER messages for all characters in new room
+            #update_characters(name, old_room)   # Send CHARACTER message to all players in old room
+            #send_characters(new_room)           # Send CHARACTER messages for all characters in new room
             for room_num, connection in connections.items():
                 if room_num != new_room:
                     continue
