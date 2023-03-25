@@ -474,9 +474,13 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
                 continue
             if flag == flag | lurk.JOIN_BATTLE:
+                print('DEBUG: JOIN BATTLE flag set!')
                 flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+                print(f'DEBUG: flag: {flag}')
             else:
+                print('DEBUG: JOIN BATTTLE not set!')
                 flag = lurk.ALIVE | lurk.READY
+                print('DEBUG: flag:', flag)
             if name not in lurk.Player.players:
                 if attack + defense + regen > INIT_POINTS:
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code 4!')
