@@ -282,20 +282,20 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            player = lurk.Player.get_player_with_name(sockets[skt])
+            player = lurk.Character.get_character_with_name(sockets[skt])
             name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
             if new_room not in connections[old_room]:
                 print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code 1!')
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
-            lurk.Player.players.update({name: [flag, attack, defense, regen, health, gold, new_room, description_len, description]})
+            lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, new_room, description_len, description]})
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, new_room, rooms[new_room][0], len(rooms[new_room][1]), rooms[new_room][1]))
             # Send updated CHARACTER to player
             lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             # Send CONNECTIONs to player
             # Send updated CHARACTER to all players in old room.
-            old_players = lurk.Player.get_players_with_room(old_room)
+            old_players = lurk.Character.get_characters_with_room(old_room)
             print(f'DEBUG: Got players in old room {old_room}: {old_players}')
             for player in old_players:
                 print(f'DEBUG: Evaluating player: {player}')
@@ -410,11 +410,11 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             mutex = threading.Lock()
             mutex.acquire()
-            # Send all characters in starting room
+            # Send all characters in room
             characters = lurk.Character.get_characters_with_room(room)
-            for name, stats in characters:
-                print(f'DEBUG: Sending character: {character}')
-                lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
+            for name, stat in characters:
+                print(f'DEBUG: Sending character {name} with stats {stat}')
+                lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
             #current_room = Room.get_rooms_with_room(room)
