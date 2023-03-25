@@ -297,7 +297,7 @@ def handle_client(skt):
             for name, stat in characters:
                 if name in names and name != sockets[skt]:
                     player = lurk.Character.get_character_with_name(name)
-                    lurk.write(names[name], (lurk.CHARACTER, name, player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8], player[9]))
+                    lurk.write(names[name], (lurk.CHARACTER, name, player[1], player[2], player[3], player[4], player[5], player[6], new_room, player[8], player[9]))
                 lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             #update_characters(name, old_room)   # Send CHARACTER message to all players in old room
             #send_characters(new_room)           # Send CHARACTER messages for all characters in new room
