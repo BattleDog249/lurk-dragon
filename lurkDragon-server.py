@@ -285,22 +285,21 @@ def handle_client(skt):
             lurk.write(skt, (lurk.ROOM, new_room, rooms[new_room][0], len(rooms[new_room][1]), rooms[new_room][1]))
             # Send updated CHARACTER to player
             lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
+            # Send all characters in new room to player
+            characters = lurk.Character.get_characters_with_room(new_room)
+            for name, stat in characters:
+                lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             # Send updated CHARACTER to all players in old room that player moved to new room
             characters = lurk.Character.get_characters_with_room(old_room)
             for player_name, stat in characters:
                 if player_name not in names or player_name == sockets[skt]:
                     continue
                 lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
-            # Send all characters in new room to player
-            characters = lurk.Character.get_characters_with_room(new_room)
-            for name, stat in characters:
-                lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             # Send updated character to all players in new room that player moved to new room
             characters = lurk.Character.get_characters_with_room(new_room)
             for player_name, stat in characters:
-                if player_name not in names:
+                if player_name not in names or player_name == sockets[skt]:
                     continue
-                player = lurk.Character.get_character_with_name(player_name)
                 lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             # Send CONNECTIONs to player
             for room_num, connection in connections.items():
