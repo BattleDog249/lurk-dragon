@@ -119,9 +119,9 @@ class Room:
     connections = {}
     def get_room(room_number):
         """"""
-        rooms = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
-        print(f'DEBUG: Room(s) found with number {room_number}: {rooms}')
-        return rooms
+        room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
+        print(f'DEBUG: Room(s) found with number {room_number}: {room}')
+        return room
     def get_connections(room_number):
         """"""
         connections = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]

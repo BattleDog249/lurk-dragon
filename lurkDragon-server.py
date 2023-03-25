@@ -414,9 +414,9 @@ def handle_client(skt):
             mutex.acquire()
             # Send all players in starting room
             players = lurk.Player.get_players_with_room(room)
-            for player in players:
+            for player_name, stat in players.items():
                 print(f'DEBUG: Sending player: {player}')
-                lurk.write(skt, (lurk.CHARACTER, player[0], player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8]))
+                lurk.write(skt, (lurk.CHARACTER, player_name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             # Send all characters in starting room
             characters = lurk.Character.get_characters_with_room(room)
             for character in characters:
@@ -424,6 +424,8 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.CHARACTER, character[0], character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9]))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
+            #current_room = Room.get_rooms_with_room(room)
+            
             for room_num, connection in connections.items():
                 if room_num != room:
                     continue
@@ -470,17 +472,14 @@ def handle_client(skt):
             print(Fore.WHITE+f'DEBUG: Description Length: {description_len}')
             print(Fore.WHITE+f'DEBUG: Description: {description}')
             if name in names:
-                print(Fore.YELLOW+'WARN: Attempting to create character already tied to a socket, sending ERROR code 2!')
-                lurk.write(skt, (lurk.ERROR, 2, len(errors[2]), errors[2]))
+                error_code = 2
+                print(Fore.YELLOW+f'WARN: Attempting to create character already tied to a socket, sending ERROR code {error_code}!')
+                lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
             if flag == flag | lurk.JOIN_BATTLE:
-                print('DEBUG: JOIN BATTLE flag set!')
                 flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
-                print(f'DEBUG: flag: {flag}')
             else:
-                print('DEBUG: JOIN BATTTLE not set!')
                 flag = lurk.ALIVE | lurk.READY
-                print('DEBUG: flag:', flag)
             if name not in lurk.Player.players:
                 if attack + defense + regen > INIT_POINTS:
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code 4!')
