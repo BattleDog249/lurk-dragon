@@ -319,7 +319,7 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            player = lurk.Character.get_characters_with_name(sockets[skt])
+            player = lurk.Character.get_character_with_name(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             count = 0
             for name, stats in lurk.Character.characters.items():
@@ -327,7 +327,7 @@ def handle_client(skt):
                     continue
                 print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
                 count+=1
-                monster = lurk.Character.get_characters_with_name(name)
+                monster = lurk.Character.get_character_with_name(name)
                 monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
                 monster_damage = monster_attack * monster_attack / (monster_attack + monster_defense)
                 player_health -= monster_damage
@@ -358,7 +358,7 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            player = lurk.Character.get_characters_with_name(sockets[skt])
+            player = lurk.Character.get_character_with_name(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             print('ERROR: Server does not currently support PVPFIGHT, sending ERROR code 0!')
             lurk.write(skt, (lurk.ERROR, 8, len(errors[8]), errors[8]))
@@ -371,13 +371,13 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            player = lurk.Character.get_characters_with_name(sockets[skt])
+            player = lurk.Character.get_character_with_name(sockets[skt])
             player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             if player_flags != player_flags | lurk.STARTED:
                 print(Fore.YELLOW+'WARN: Player flag STARTED not set, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            target = lurk.Character.get_characters_with_name(character_name)
+            target = lurk.Character.get_character_with_name(character_name)
             if target is None or target[7] != player_room:
                 print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
@@ -397,7 +397,7 @@ def handle_client(skt):
             print('DEBUG: Handling START!')
             try:
                 player = lurk.Character.get_character_with_name(sockets[skt])
-                name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = player
+                name, flag, attack, defense, regen, health, gold, room, description_len, description = player
             except:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
@@ -405,7 +405,7 @@ def handle_client(skt):
             if room == 0:
                 room = 1
             
-            lurk.Character.characters.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
+            lurk.Character.characters.update({name:[flag | lurk.STARTED, attack, defense, regen, health, gold, room, description_len, description]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send ROOM message
@@ -425,8 +425,6 @@ def handle_client(skt):
                 lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, room, description_len, description))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
-            #current_room = Room.get_rooms_with_room(room)
-            
             for room_num, connection in connections.items():
                 if room_num != room:
                     continue
