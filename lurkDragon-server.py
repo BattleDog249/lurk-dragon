@@ -224,7 +224,7 @@ def cleanup_client(skt):
         skt (socket): Client socket.
     """
     if skt in sockets:
-        character = lurk.Character.get_characters_with_name(sockets[skt])
+        character = lurk.Character.get_character_with_name(sockets[skt])
         flags = character[1]
         flags ^= lurk.READY | lurk.STARTED  # This needs varification, basically set ready & started flags to 0, keeping all other flags the same.
         lurk.Character.characters.update({character[0]: [flags, character[2], character[3], character[4], character[5], character[6], character[7], character[8]]})
@@ -269,15 +269,17 @@ def handle_client(skt):
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room = message
             if skt not in sockets:
-                print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                error_code = 5
+                print(Fore.YELLOW+f'WARN: Player not ready, sending ERROR code {error_code}!')
+                lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
             # Get current player information
             player = lurk.Character.get_character_with_name(sockets[skt])
             name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
             if new_room not in connections[old_room]:
-                print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code 1!')
-                lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
+                error_code = 1
+                print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code {error_code}!')
+                lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
             # Update current player information with new room
             lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, new_room, description_len, description]})
@@ -290,6 +292,7 @@ def handle_client(skt):
             for character_name, stat in characters:
                 lurk.write(skt, (lurk.CHARACTER, character_name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             # Send CONNECTIONs to player
+            # TODO: This is a bit of a hack, but it works for now.
             for room_num, connection in connections.items():
                 if room_num != new_room:
                     continue
@@ -302,7 +305,6 @@ def handle_client(skt):
             for player_name, stat in characters:
                 if player_name not in names or player_name == sockets[skt]:
                     continue
-                print(Fore.WHITE+f'DEBUG: Sending character of {name} to {player_name} in old room number {old_room}')
                 lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             
             # Send updated character to all players in new room that player moved to new room
@@ -310,10 +312,7 @@ def handle_client(skt):
             for player_name, stat in characters:
                 if player_name not in names or player_name == sockets[skt]:
                     continue
-                print(Fore.WHITE+f'DEBUG: Sending character of {name} to {player_name} in new room number {new_room}')
                 lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
-            
-            
             continue
         elif message[0] == lurk.FIGHT:
             if skt not in sockets:
