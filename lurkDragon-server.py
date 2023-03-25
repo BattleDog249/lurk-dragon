@@ -422,7 +422,6 @@ def handle_client(skt):
             for player_name, stat in characters:
                 if player_name not in names or player_name == sockets[skt]:
                     continue
-                player = lurk.Character.get_character_with_name(player_name)
                 lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, room, description_len, description))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
@@ -462,7 +461,7 @@ def handle_client(skt):
             continue
         elif message[0] == lurk.CHARACTER:
             lurk_type, name, flag, attack, defense, regen, health, gold, room, description_len, description = message
-            print(Fore.WHITE+f'DEBUG: handle_client: Type: {lurk_type}')
+            print(Fore.WHITE+f'DEBUG: Type: {lurk_type}')
             print(Fore.WHITE+f'DEBUG: Name: {name}')
             print(Fore.WHITE+f'DEBUG: Flags: {flag}')
             print(Fore.WHITE+f'DEBUG: Attack: {attack}')
