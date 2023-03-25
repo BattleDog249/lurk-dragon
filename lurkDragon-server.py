@@ -274,13 +274,13 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
+            # Get current player information
+            player = lurk.Character.get_character_with_name(sockets[skt])
+            name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
             if new_room not in connections[old_room]:
                 print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code 1!')
                 lurk.write(skt, (lurk.ERROR, 1, len(errors[1]), errors[1]))
                 continue
-            # Get current player information
-            player = lurk.Character.get_character_with_name(sockets[skt])
-            name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
             # Update current player information with new room
             lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, new_room, description_len, description]})
             # Send ROOM to player
