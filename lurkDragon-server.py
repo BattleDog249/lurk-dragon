@@ -289,8 +289,8 @@ def handle_client(skt):
             lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             # Send all characters in new room to player
             characters = lurk.Character.get_characters_with_room(new_room)
-            for name, stat in characters:
-                lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
+            for character_name, stat in characters:
+                lurk.write(skt, (lurk.CHARACTER, character_name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             # Send CONNECTIONs to player
             for room_num, connection in connections.items():
                 if room_num != new_room:
