@@ -268,8 +268,6 @@ def handle_client(skt):
             continue
         elif message[0] == lurk.CHANGEROOM:
             lurk_type, new_room = message
-            print(Fore.WHITE+f'DEBUG: lurk_type: {lurk_type}')
-            print(Fore.WHITE+f'DEBUG: new_room: {new_room}')
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
