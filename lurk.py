@@ -80,27 +80,34 @@ class Character:
 
 @dataclass
 class Room:
-    """"""
-    room_number: c_uint16
-    room_name: str
-    room_description_len: c_uint16
-    room_description: str
-    connection_number: c_uint16
-    connection_name: str
-    connection_description_len: c_uint16
-    connection_description: str
-    # Key (int): room_number, Value (tuple): (room_name, room_description)
+    """ A class that represents a room in the game. This class is used to store information about a room, and to retrieve information about a room.
+    """
+    number: c_uint16
+    name: str
+    description_len: c_uint16
+    description: str
+    # Key (int): number, Value (tuple): (name, room_description)
     rooms = {}
-    # Key (int): connection_number (==room_number), Value (list of tuples): [(room_number, )]
-    connections = {}
     def get_room(room_number):
         """"""
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
         print(f'DEBUG: Room(s) found with number {room_number}: {room}')
         return room
-    def get_connections(room_number):
+
+@dataclass
+class Connection:
+    """"""
+    number: c_uint16
+    name: str
+    description_len: c_uint16
+    description: str
+    # Key (int): number (==room_number), Value (list of tuples): [(room_number, )]
+    connections = {}
+    def get_connection(number):
         """"""
-        connections = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
+        connection = [(number, connection_info) for number, connection_info in Connection.connections.items() if Connection.connections[number] == number]
+        print(f'DEBUG: Connection(s) found with number {number}: {connection}')
+        return connection
 
 def recv(skt, size):
     """ Receives an entire message from the specified socket.
