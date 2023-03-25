@@ -103,7 +103,7 @@ class Room:
         connections = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
 
 def recv(skt, size):
-    """Receive size amount of bytes from a socket, returning full lurk message
+    """ Receives an entire message from the specified socket.
 
     Args:
         skt (socket): Socket to receive from.
@@ -124,7 +124,7 @@ def recv(skt, size):
             return None
     return data
 def send(skt, message):
-    """Sends an entire Lurk message to the specified socket.
+    """ Sends a message to the specified socket.
 
     Args:
         skt (socket): Socket to send Lurk message to.
