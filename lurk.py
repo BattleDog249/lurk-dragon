@@ -46,35 +46,8 @@ READY = 0x08
 
 @dataclass
 class Character:
-    """"""
-    uuid: str
-    name: str
-    flag: c_uint8
-    attack: c_uint16
-    defense: c_uint16
-    regen: c_uint16
-    health: c_int16
-    gold: c_uint16
-    room: c_uint16
-    description_len: c_uint16
-    description: str
-    # Key (UUID): UUID, Value (list): [name, flag, attack, defense, regen, health, gold, room, description_len, description]
-    characters = {}
-    def get_characters_with_name(name):
-        """"""
-        characters = [(character) for character in Character.characters.values() if character[0] == name]
-        print(f'DEBUG: Character(s) found with name {name}: {characters}')
-        return characters
-        
-    def get_characters_with_room(room):
-        """"""
-        characters = [(character) for character in Character.characters.values() if character[7] == room]
-        print(f'DEBUG: Character(s) found in room {room}: {characters}')
-        return characters
-
-@dataclass
-class Player:
-    """"""
+    """ A class that represents a character in the game. This class is used to store information about a character, and to retrieve information about a character.
+    """
     name: str
     flag: c_uint8
     attack: c_uint16
@@ -86,21 +59,28 @@ class Player:
     description_len: c_uint16
     description: str
     # Key (str): name, Value (list): [flag, attack, defense, regen, health, gold, room, description_len, description]
-    players = {}
-    def get_player_with_name(name):
-        """"""
-        if name in Player.players:
-            print(Fore.GREEN+f'INFO: Requested player {name} found, returning player!')
-            return (name, Player.players[name][0], Player.players[name][1], Player.players[name][2], Player.players[name][3], Player.players[name][4], Player.players[name][5], Player.players[name][6], Player.players[name][7], Player.players[name][8])
+    characters = {}
+    def get_character_with_name(name):
+        """ Returns a character with the given name. If the character is not found, returns None.
+        """
+        if name in Character.characters:
+            character = (name, Character.characters[name][0], Character.characters[name][1], Character.characters[name][2], Character.characters[name][3], Character.characters[name][4], Character.characters[name][5], Character.characters[name][6], Character.characters[name][7], Character.characters[name][8])
+            print(Fore.WHITE+f'DEBUG: Character {name} found: {character}')
         else:
-            print(Fore.YELLOW+f'WARN: Requested player {name} not found, returning None!')
-            print(Fore.YELLOW+f'INFO: Current list of players: {Player.players}')
-            return None
-    def get_players_with_room(room):
-        """"""
-        players = [(name, info) for name, info in Player.players.items() if Player.players[name][6] == room]
-        print(Fore.WHITE+f'INFO: Players(s) found in room {room}: {players}')
-        return players
+            character = None
+            print(Fore.RED+f'ERROR: Character {name} not found!')
+        return character
+    
+    def get_characters_with_room(room):
+        """ Returns a list of characters in the given room. If no characters are found, returns None.
+        """
+        if room in Character.characters:
+            characters = ((character) for character in Character.characters if characters[character][6] == room)
+            print(f'DEBUG: Character(s) found in room {room}: {characters}')
+        else:
+            characters = None
+            print(Fore.RED+f'ERROR: No characters found in room {room}!')
+        return characters
 
 @dataclass
 class Room:

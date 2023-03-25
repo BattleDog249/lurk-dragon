@@ -5,7 +5,6 @@
 import socket
 import sys
 import threading
-import uuid
 import json
 
 from colorama import Fore
@@ -56,11 +55,11 @@ def del_socket(skt):
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as characters_json:
     characters_data = json.load(characters_json)
     for character in characters_data:
-        character = lurk.Character(uuid=uuid.uuid4(), name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])
-        lurk.Character.characters.update({character.uuid: [character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+        character = lurk.Character(name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])
+        lurk.Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
         print(f'DEBUG: character as dataclass: {character}')
 print(f'All characters: {lurk.Character.characters}')
-character = lurk.Character.get_characters_with_name('Jarl')
+character = lurk.Character.get_character_with_name('Jarl')
 print(f'character: {character}')
 #print(f'DEBUG: {lurk.CHARACTER}, {character[0]}, {character[1]}, {character[2]}, character.defense, character.regen, character.health, character.gold, character.room, character.description_len,  character.description))')
 lurk.Character.get_characters_with_room(1)
@@ -480,15 +479,16 @@ def handle_client(skt):
                 flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
             else:
                 flag = lurk.ALIVE | lurk.READY
-            if name not in lurk.Player.players:
+            if name not in lurk.Character.characters:
                 if attack + defense + regen > INIT_POINTS:
-                    print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code 4!')
-                    lurk.write(skt, (lurk.ERROR, 4, len(errors[4]), errors[4]))
+                    error_code = 4
+                    print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code {error_code}!')
+                    lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
-                player = lurk.Player(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description)
-                lurk.Player.players.update({player.name: [player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description]})
+                player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description)
+                lurk.Character.characters.update({player.name: [player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description]})
                 print(Fore.GREEN+f'INFO: Added new character {player.name}')
-            player = lurk.Player.get_player_with_name(name)
+            player = lurk.Character.get_character_with_name(name)
             print(Fore.WHITE+f'DEBUG: player: {player}')
             name, flag, attack, defense, regen, health, gold, room, description_len, description = player
             print(Fore.YELLOW+f'WARN: Accessing player {name}')
