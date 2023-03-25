@@ -290,8 +290,9 @@ def handle_client(skt):
             for player_name, stat in characters:
                 if player_name not in names:
                     continue
-                print('DEBUG: Sending CHARACTER message to player:', player_name)
-                lurk.write(names[name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
+                print(f'DEBUG: Notifying player {player_name} that {name} moved to new room {new_room}')
+                print(f'DEBUG: Socket of player {player_name} is {names[player_name]}')
+                lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             # Send all characters in new room to player, and updated character to all players in new room
             characters = lurk.Character.get_characters_with_room(new_room)
             for name, stat in characters:
