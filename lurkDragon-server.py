@@ -394,7 +394,7 @@ def handle_client(skt):
         elif message[0] == lurk.START:
             print('DEBUG: Handling START!')
             try:
-                player = lurk.Player.get_player_with_name(sockets[skt])
+                player = lurk.Character.get_character_with_name(sockets[skt])
                 name, flags, attack, defense, regen, health, gold, room, char_des_len, char_des = player
             except:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
@@ -403,18 +403,13 @@ def handle_client(skt):
             if room == 0:
                 room = 1
             
-            lurk.Player.players.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
+            lurk.Character.characters.update({name:[flags | lurk.STARTED, attack, defense, regen, health, gold, room, char_des_len, char_des]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
             mutex = threading.Lock()
             mutex.acquire()
-            # Send all players in starting room
-            players = lurk.Player.get_players_with_room(room)
-            for player in players:
-                print(f'DEBUG: Sending player: {player}')
-                lurk.write(skt, (lurk.CHARACTER, player, players[player][0], players[player][1], players[player][2], players[player][3], players[player][4], players[player][5], players[player][6], players[player][7], players[player][8]))
             # Send all characters in starting room
             characters = lurk.Character.get_characters_with_room(room)
             for character in characters:
