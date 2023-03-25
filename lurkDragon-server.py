@@ -412,9 +412,9 @@ def handle_client(skt):
             mutex.acquire()
             # Send all characters in starting room
             characters = lurk.Character.get_characters_with_room(room)
-            for character in characters:
+            for name, stats in characters:
                 print(f'DEBUG: Sending character: {character}')
-                lurk.write(skt, (lurk.CHARACTER, character[0], character[1], character[2], character[3], character[4], character[5], character[6], character[7], character[8], character[9]))
+                lurk.write(skt, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
             #current_room = Room.get_rooms_with_room(room)
