@@ -295,15 +295,14 @@ def handle_client(skt):
             lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             # Send CONNECTIONs to player
             # Send updated CHARACTER to all players in old room.
-            old_players = lurk.Character.get_characters_with_room(old_room)
-            print('DEBUG: Got characters in old room:', old_players)
-            for player in old_players:
-                if player[0] not in names:
-                    print(f'DEBUG: Player {player[0]} not in names, continuing')
+            characters = lurk.Character.get_characters_with_room(old_room)
+            print('DEBUG: Got characters in old room:', characters)
+            for character in characters:
+                if character[0] not in names:
+                    print(f'DEBUG: Player {character[0]} not in names, continuing')
                     continue
-                print('DEBUG: Sending CHARACTER message to player:', player[0])
-                lurk.write(names[player[0]], (player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8], player[9], player[10]))
-            print(f'DEBUG: Got players in old room {old_room}: {old_players}')
+                print('DEBUG: Sending CHARACTER message to player:', character[0])
+                lurk.write(names[character[0]], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
             #update_characters(name, old_room)   # Send CHARACTER message to all players in old room
             #send_characters(new_room)           # Send CHARACTER messages for all characters in new room
             for room_num, connection in connections.items():
