@@ -60,7 +60,6 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as c
         print(f'DEBUG: character as dataclass: {character}')
 print(f'All characters: {lurk.Character.characters}')
 character = lurk.Character.get_character_with_name('Jarl')
-print(f'character: {character}')
 #print(f'DEBUG: {lurk.CHARACTER}, {character[0]}, {character[1]}, {character[2]}, character.defense, character.regen, character.health, character.gold, character.room, character.description_len,  character.description))')
 lurk.Character.get_characters_with_room(1)
 @dataclass

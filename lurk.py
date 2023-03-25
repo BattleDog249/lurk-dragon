@@ -74,7 +74,7 @@ class Character:
     def get_characters_with_room(room):
         """ Returns a list of characters in the given room. If no characters are found, returns None.
         """
-        if room in Character.characters:
+        if room in Character.characters.values():
             characters = ((character) for character in Character.characters if characters[character][6] == room)
             print(f'DEBUG: Character(s) found in room {room}: {characters}')
         else:
