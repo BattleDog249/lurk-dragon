@@ -486,6 +486,7 @@ def handle_client(skt):
                     lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
                 #player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=0, room=0, description_len=description_len, description=description)
+                print('DEBUG: Adding new character to characters dictionary with description length', description_len, 'and description', description)
                 lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, room, description_len, description]})
                 print(Fore.GREEN+f'INFO: Added new character {name}')
             print(Fore.WHITE+f'DEBUG: Getting character with name {name}: Stats: {lurk.Character.characters[name]}')
