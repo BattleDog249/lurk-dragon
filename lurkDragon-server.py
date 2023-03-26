@@ -475,6 +475,7 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
             if name in lurk.Character.characters and (lurk.Character.characters[name][0] | lurk.MONSTER or lurk.Character.characters[name][0] ^ lurk.READY):
+                name = ''
                 print(Fore.YELLOW+f'WARN: Character attempted to access NPC/Monster {name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
                 continue
             if name not in lurk.Character.characters:
