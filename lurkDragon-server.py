@@ -485,9 +485,9 @@ def handle_client(skt):
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code {error_code}!')
                     lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
-                player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=0, room=0, description_len=description_len, description=description)
-                lurk.Character.characters.update({player.name: [player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description]})
-                print(Fore.GREEN+f'INFO: Added new character {player.name}')
+                #player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=0, room=0, description_len=description_len, description=description)
+                lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, room, description_len, description]})
+                print(Fore.GREEN+f'INFO: Added new character {name}')
             print(Fore.WHITE+f'DEBUG: Getting character with name {name}: Stats: {lurk.Character.characters[name]}')
             player = lurk.Character.get_character_with_name(name)
             print(Fore.WHITE+f'DEBUG: player: {player}')
