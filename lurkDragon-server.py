@@ -224,10 +224,10 @@ def cleanup_client(skt):
         skt (socket): Client socket.
     """
     if skt in sockets:
-        character = lurk.Character.get_character_with_name(sockets[skt])
-        flags = character[1]
-        flags ^= lurk.READY | lurk.STARTED  # This needs varification, basically set ready & started flags to 0, keeping all other flags the same.
-        lurk.Character.characters.update({character[0]: [flags, character[2], character[3], character[4], character[5], character[6], character[7], character[8]]})
+        player = lurk.Character.get_character_with_name(sockets[skt])
+        name, flag, attack, defense, regen, health, gold, room, description_len, description = player
+        flag ^= lurk.READY | lurk.STARTED  # This needs varification, basically set ready & started flags to 0, keeping all other flags the same.
+        lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, room, description_len, description]})
     try:
         del_name(sockets[skt])
         del_socket(skt)
@@ -485,13 +485,10 @@ def handle_client(skt):
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code {error_code}!')
                     lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
-                #player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=0, room=0, description_len=description_len, description=description)
-                print('DEBUG: Adding new character to characters dictionary with description length', description_len, 'and description', description)
+                player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=0, room=0, description_len=description_len, description=description)
                 lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, room, description_len, description]})
                 print(Fore.GREEN+f'INFO: Added new character {name}')
-            print(Fore.WHITE+f'DEBUG: Getting character with name {name}: Stats: {lurk.Character.characters[name]}')
             player = lurk.Character.get_character_with_name(name)
-            print(Fore.WHITE+f'DEBUG: player: {player}')
             name, flag, attack, defense, regen, health, gold, room, description_len, description = player
             print(Fore.YELLOW+f'WARN: Accessing player {name}')
             add_name(skt, name)
