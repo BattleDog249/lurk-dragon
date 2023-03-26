@@ -477,7 +477,6 @@ def handle_client(skt):
             if name in lurk.Character.characters and (lurk.Character.characters[name][0] | lurk.MONSTER or lurk.Character.characters[name][0] ^ lurk.READY):
                 print(Fore.YELLOW+f'WARN: Character attempted to access NPC/Monster {name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
                 continue
-            health = 100
             if name not in lurk.Character.characters:
                 if attack + defense + regen > INIT_POINTS:
                     error_code = 4
@@ -488,11 +487,12 @@ def handle_client(skt):
                     flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
                 else:
                     flag = lurk.ALIVE | lurk.READY
-                lurk.Character.characters.update({name: [flag, attack, defense, regen, health, 0, 0, description_len, description]})
-                print(Fore.CYAN+f'INFO: Added character {name} to database')
+                lurk.Character.characters.update({name: [flag, attack, defense, regen, 100, 0, 0, len(description), description]})
+                print(Fore.CYAN+f'INFO: Added new character {name} to database')
             player = lurk.Character.get_character_with_name(name)
             name, flag, attack, defense, regen, health, gold, room, description_len, description = player
-            flag = lurk.ALIVE
+            flag = flag | lurk.ALIVE
+            lurk.Character.characters.update({name: [flag, attack, defense, regen, 100, gold, room, len(description), description]})
             print(Fore.CYAN+f'INFO: Accessing character {name} from database')
             add_name(skt, name)
             add_socket(skt, name)
