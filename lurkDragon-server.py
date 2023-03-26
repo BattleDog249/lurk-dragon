@@ -489,6 +489,9 @@ def handle_client(skt):
                 print(Fore.CYAN+f'INFO: Added character {name} to database')
             player = lurk.Character.get_character_with_name(name)
             name, flag, attack, defense, regen, health, gold, room, description_len, description = player
+            if flag ^ lurk.READY | lurk.MONSTER:
+                print('ERROR: Character attempted to access NPC or Monster, continuing!')
+                continue
             print(Fore.CYAN+f'INFO: Accessing character {name} from database')
             add_name(skt, name)
             add_socket(skt, name)
