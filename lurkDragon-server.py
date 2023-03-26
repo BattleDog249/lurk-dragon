@@ -485,12 +485,11 @@ def handle_client(skt):
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code {error_code}!')
                     lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
-                player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=0, room=0, description_len=description_len, description=description)
-                lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, room, description_len, description]})
-                print(Fore.GREEN+f'INFO: Added new character {name}')
+                lurk.Character.characters.update({name: [flag, attack, defense, regen, health, 0, 0, description_len, description]})
+                print(Fore.CYAN+f'INFO: Added character {name} to database')
             player = lurk.Character.get_character_with_name(name)
             name, flag, attack, defense, regen, health, gold, room, description_len, description = player
-            print(Fore.YELLOW+f'WARN: Accessing player {name}')
+            print(Fore.CYAN+f'INFO: Accessing character {name} from database')
             add_name(skt, name)
             add_socket(skt, name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
