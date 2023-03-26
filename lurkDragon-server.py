@@ -474,10 +474,9 @@ def handle_client(skt):
                 print(Fore.YELLOW+f'WARN: Attempting to create character already tied to a socket, sending ERROR code {error_code}!')
                 lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
-            if flag == flag | lurk.JOIN_BATTLE:
-                flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
-            else:
-                flag = lurk.ALIVE | lurk.READY
+            if name in lurk.Character.characters and (lurk.Character.characters[name][0] | lurk.MONSTER or lurk.Character.characters[name][0] ^ lurk.READY):
+                print(Fore.YELLOW+f'WARN: Character attempted to access NPC/Monster {name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
+                continue
             health = 100
             if name not in lurk.Character.characters:
                 if attack + defense + regen > INIT_POINTS:
@@ -485,13 +484,15 @@ def handle_client(skt):
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code {error_code}!')
                     lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
+                if flag | lurk.JOIN_BATTLE:
+                    flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+                else:
+                    flag = lurk.ALIVE | lurk.READY
                 lurk.Character.characters.update({name: [flag, attack, defense, regen, health, 0, 0, description_len, description]})
                 print(Fore.CYAN+f'INFO: Added character {name} to database')
             player = lurk.Character.get_character_with_name(name)
             name, flag, attack, defense, regen, health, gold, room, description_len, description = player
-            if flag | lurk.MONSTER or flag ^ lurk.READY:
-                print('ERROR: Character attempted to access NPC or Monster, continuing!')
-                continue
+            flag = lurk.ALIVE
             print(Fore.CYAN+f'INFO: Accessing character {name} from database')
             add_name(skt, name)
             add_socket(skt, name)
