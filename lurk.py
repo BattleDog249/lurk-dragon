@@ -88,7 +88,8 @@ class Room:
     # Key (int): number, Value (tuple): (name, room_description)
     rooms = {}
     def get_room(room_number):
-        """"""
+        """ Returns a room with the given number. If the room is not found, returns None.
+        """
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
         print(f'DEBUG: Room(s) found with number {room_number}: {room}')
         return room
@@ -109,15 +110,15 @@ class Connection:
         return connection
 
 def recv(skt, size):
-    """ Receives an entire message from the specified socket.
+    """ Receives a message from the specified socket of the specified size and returns it as a bytearray.
 
     Args:
-        skt (socket): Socket to receive from.
-        size (int): Size of message to receive from socket buffer.
+        skt (socket): Socket to receive Lurk message from.
+        size (int): Size of Lurk message to receive.
 
     Returns:
-        bytearray: Raw data received from socket. Will not return partial messages.
-        None: Connection broken.
+        bytearray: Lurk message received from socket.
+        None: If socket.error is raised.
     """
     data = bytearray()
     while len(data) < size:

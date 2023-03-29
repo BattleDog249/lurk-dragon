@@ -8,7 +8,7 @@
         "health": 100,
         "gold": 0,
         "room": 1,
-        "description": "The leader of the Valhallian tribe."
+        "description": "As the leader of the Valhallians, the Jarl is a natural-born leader and a skilled strategist, with a deep understanding of the ways of dragons and the dangers they pose to his people. Despite his tough exterior, the Jarl is known for his compassion and empathy, and will do whatever it takes to protect his village and the people he cares about. He is a respected and revered figure among the dragon hunters, and his unwavering commitment to their cause has earned him the loyalty and admiration of his followers."
     },
     {
         "name": "Town Idiot",
@@ -19,7 +19,7 @@
         "health": 100,
         "gold": 0,
         "room": 1,
-        "description": "The premier village drunk that nobody seems to like."
+        "description": "A pitiful figure, often seen stumbling and slurring his words through the streets of Valhalla. His hair is greasy and unkempt, and his clothes are ragged and torn, as if he has been sleeping in them for days. The smell of alcohol clings to him like a second skin, and his breath reeks of cheap ale and stale tobacco."
     },
     {
         "name": "Village Guard",
@@ -63,7 +63,7 @@
         "health": 100,
         "gold": 100,
         "room": 27,
-        "description": "Pesticide-ridden rotting guy."
+        "description": "A menacing, pesticide-ridden rotting guy, haunting the fields of the Hidden Valley long after his death."
     },
     {
         "name": "Barnyard Bucko",
@@ -118,7 +118,7 @@
         "health": 100,
         "gold": 100,
         "room": 5,
-        "description": "A foul worm full of teeth with a ravenous hunger."
+        "description": "A foul worm full of teeth with a ravenous hunger that dwells deep beneath the arid dunes of the desert."
     },
     {
         "name": "Mudcrab",
