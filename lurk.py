@@ -48,7 +48,7 @@ READY = 0x08
 class Character:
     """ A class that represents a character in the game. This class is used to store information about a character, and to retrieve information about a character.
     """
-    message_type: c_uint8(10)
+    message_type: c_uint8 = 10
     name: str
     flag: c_uint8
     attack: c_uint16
