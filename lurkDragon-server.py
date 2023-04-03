@@ -299,11 +299,11 @@ def handle_client(skt):
                 # Send updated player stats to all other players in room that player is in
                 characters = lurk.Character.get_characters_with_room(player.room)
                 for character in characters:
-                    if character.name not in names or player.name == sockets[skt]:
+                    if character.name not in names:
                         continue
                     lurk.Character.send_character(names[player.name], character)
             if count == 0:
-                print(Fore.YELLOW+f"WARN: No monsters in {player.name}'s room, sending ERROR code 7!")
+                print(Fore.YELLOW+f"WARN: No monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             continue
         elif type(message) is tuple and message[0] == lurk.PVPFIGHT:
