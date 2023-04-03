@@ -464,17 +464,18 @@ def handle_client(skt):
             continue
         elif message[0] == lurk.CHARACTER:
             lurk_type, name, flag, attack, defense, regen, health, gold, room, description_len, description = message
+            player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description)
             print(Fore.WHITE+f'DEBUG: Type: {lurk_type}')
-            print(Fore.WHITE+f'DEBUG: Name: {name}')
-            print(Fore.WHITE+f'DEBUG: Flags: {flag}')
-            print(Fore.WHITE+f'DEBUG: Attack: {attack}')
-            print(Fore.WHITE+f'DEBUG: Defense: {defense}')
-            print(Fore.WHITE+f'DEBUG: Regen: {regen}')
-            print(Fore.WHITE+f'DEBUG: Health: {health}')
-            print(Fore.WHITE+f'DEBUG: Gold: {gold}')
-            print(Fore.WHITE+f'DEBUG: Room: {room}')
-            print(Fore.WHITE+f'DEBUG: Description Length: {description_len}')
-            print(Fore.WHITE+f'DEBUG: Description: {description}')
+            print(Fore.WHITE+f'DEBUG: Name: {player.name}')
+            print(Fore.WHITE+f'DEBUG: Flags: {player.flag}')
+            print(Fore.WHITE+f'DEBUG: Attack: {player.attack}')
+            print(Fore.WHITE+f'DEBUG: Defense: {player.defense}')
+            print(Fore.WHITE+f'DEBUG: Regen: {player.regen}')
+            print(Fore.WHITE+f'DEBUG: Health: {player.health}')
+            print(Fore.WHITE+f'DEBUG: Gold: {player.gold}')
+            print(Fore.WHITE+f'DEBUG: Room: {player.room}')
+            print(Fore.WHITE+f'DEBUG: Description Length: {player.description_len}')
+            print(Fore.WHITE+f'DEBUG: Description: {player.description}')
             if name in names:
                 error_code = 2
                 print(Fore.YELLOW+f'WARN: Attempting to create character already tied to a socket, sending ERROR code {error_code}!')
@@ -496,9 +497,11 @@ def handle_client(skt):
                 lurk.Character.characters.update({name: [flag, attack, defense, regen, 100, 0, 0, len(description), description]})
                 print(Fore.CYAN+f'INFO: Added new character {name} to database')
             player = lurk.Character.get_character_with_name(name)
-            name, flag, attack, defense, regen, health, gold, room, description_len, description = player
-            flag = flag | lurk.ALIVE
-            lurk.Character.characters.update({name: [flag, attack, defense, regen, 100, gold, room, len(description), description]})
+            #name, flag, attack, defense, regen, health, gold, room, description_len, description = player
+            player.flag = player.flag | lurk.ALIVE
+            player.health = 100
+            lurk.Character.update_character(player)
+            #lurk.Character.characters.update({player.name: [flag, attack, defense, regen, 100, gold, room, len(description), description]})
             print(Fore.CYAN+f'INFO: Accessing character {name} from database')
             add_name(skt, name)
             add_socket(skt, name)

@@ -81,6 +81,11 @@ class Character:
         characters = [(name, stat) for name, stat in Character.characters.items() if Character.characters[name][6] == room]
         print(f'DEBUG: Character(s) found in room {room}: {characters}')
         return characters
+    
+    def update_character(character):
+        """ Updates the character with the given name. If the character is not found, adds the character to the list of characters.
+        """
+        Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
 
 @dataclass
 class Room:
@@ -290,16 +295,19 @@ def read(skt):
                     print(Fore.RED+'ERROR: read: socket.error, returning None!')
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_header: {lurk_header}')
-                name, flags, attack, defense, regen, health, gold, room, char_des_len = struct.unpack('<32sB3Hh3H', lurk_header)
-                lurk_data = recv(skt, char_des_len)
+                name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack('<32sB3Hh3H', lurk_header)
+                lurk_data = recv(skt, description_len)
                 if not lurk_data:
                     print(Fore.RED+'ERROR: read: socket.error, returning None!')
                     return None
                 print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
-                char_des, = struct.unpack(f'<{char_des_len}s', lurk_data)
+                description, = struct.unpack(f'<{description_len}s', lurk_data)
                 name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
-                return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
-                        health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
+                character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
+                print(f'DEBUG: Returning character: {character}, Type: {type(character)}')
+                return character
+                #return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
+                        #health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
                 continue
