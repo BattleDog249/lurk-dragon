@@ -113,8 +113,10 @@ class Character:
     def send_character(socket, character):
         """ Packs a character message into bytes with the given character object and sends it to the given socket.
         """
+        if type(socket) is not socket:
+            raise TypeError('socket must be a socket object!')
         if type(character) is not Character:
-            raise TypeError(Fore.RED+'ERROR: character must be a Character object!')
+            raise TypeError('character must be a Character object!')
         packed = struct.pack(f'<B32sB3Hh3H{character.description_len}s', CHARACTER, character.name.encode(), character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description.encode())
         status = send(socket, packed)
         if status != 0:
