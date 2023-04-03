@@ -45,6 +45,10 @@ STARTED = 0x10
 READY = 0x08
 
 @dataclass
+class Start:
+    pass
+
+@dataclass
 class Character:
     """ A class that represents a character in the game. This class is used to store information about a character, and to retrieve information about a character.
     """
