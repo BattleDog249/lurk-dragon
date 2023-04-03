@@ -60,11 +60,11 @@ class Character:
     description: str
     # Key (str): name, Value (list): [flag, attack, defense, regen, health, gold, room, description_len, description]
     characters = {}
-    def get_character_with_name(name):
+    def get_character_with_name(target_name):
         """ Returns a character with the given name. If the character is not found, returns None.
         """
-        character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and name == name]
-        print(f'DEBUG: Character found with name {name}: {character}')
+        character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and target_name == name]
+        print(f'DEBUG: Character found with name {target_name}: {character}')
         '''
         if name in Character.characters:
             character = (name, Character.characters[name][0], Character.characters[name][1], Character.characters[name][2], Character.characters[name][3], Character.characters[name][4], Character.characters[name][5], Character.characters[name][6], Character.characters[name][7], Character.characters[name][8])
