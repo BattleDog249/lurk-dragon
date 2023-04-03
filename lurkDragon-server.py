@@ -58,66 +58,6 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as c
         character = lurk.Character(name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])
         lurk.Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
         print(f'DEBUG: character as dataclass: {character}')
-
-def add_character(character):
-    name, flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des = character
-    lurk.Character.characters.update({name: [flags, attack, defense, regen, health, gold, room_num, char_des_len, char_des]})
-def get_character(name):
-    """Returns tuple of information of character with name.
-
-    Args:
-        name (string): Name of character
-
-    Returns:
-        _type_: _description_
-    """
-    name = name.replace('\x00', '')
-    if name not in lurk.Character.characters:
-        print(Fore.RED+f'ERROR: get_character: Cannot find {name} in {lurk.Character.characters.keys()}!')
-        return None
-    try:
-        character = (name, lurk.Character.characters[name][0], lurk.Character.characters[name][1], lurk.Character.characters[name][2], lurk.Character.characters[name][3], lurk.Character.characters[name][4], lurk.Character.characters[name][5], lurk.Character.characters[name][6], lurk.Character.characters[name][7], lurk.Character.characters[name][8])
-    except IndexError:
-        return character
-    return character
-def send_characters(room_num):
-    """Function for sending all characters to to all connected clients located in provided room number.
-
-    Args:
-        room_num (int): Room number.
-    """
-    #players = [name for name in sockets if room_num == characters[name][6]]
-    #sockets = [socket for socket in sockets.keys() if ]
-    #for player in players:
-        #lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
-    for socket, name in sockets.copy().items():
-        player = get_character(name)
-        player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
-        if player_room != room_num:
-            continue
-        for name, stats in lurk.Character.characters.copy().items():
-            if stats[6] != room_num:
-                continue
-            try:
-                lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
-            except IndexError:
-                continue
-        #players = [character for character in characters if character[6] == room_num and ]
-        #print(f'DEBUG: players in old room: {players}')
-        #for player in players:
-            #lurk.write(socket, (lurk.CHARACTER, name, stats[0], stats[1], stats[2], stats[3], stats[4], stats[5], stats[6], stats[7], stats[8]))
-        #for room_num in characters():
-            #print(f'DEBUG: room_num: {room_num} character[6]: {characters[6]}')
-def update_characters(target_name, old_room_num):
-    """Used to update all connected clients in old_room_num that name moved to a new room"""
-    for key, value in sockets.items():
-        player = get_character(value)
-        player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
-        if player_room != old_room_num:
-            continue
-        target = get_character(target_name)
-        target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
-        lurk.write(key, (lurk.CHARACTER, target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des))
 errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Cannot change to requested room.',
@@ -281,22 +221,25 @@ def handle_client(skt):
                 continue
             # Get current player information
             player = lurk.Character.get_character_with_name(sockets[skt])
-            name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
-            if new_room not in connections[old_room]:
+            #name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
+            if new_room not in connections[player.room]:
                 error_code = 1
                 print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code {error_code}!')
                 lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
+            # Track old room for later
+            old_room = player.room
             # Update current player information with new room
-            lurk.Character.characters.update({name: [flag, attack, defense, regen, health, gold, new_room, description_len, description]})
+            player.room = new_room
+            lurk.Character.update_character(player)
             # Send ROOM to player
-            lurk.write(skt, (lurk.ROOM, new_room, rooms[new_room][0], len(rooms[new_room][1]), rooms[new_room][1]))
+            lurk.write(skt, (lurk.ROOM, player.room, rooms[player.room][0], len(rooms[player.room][1]), rooms[player.room][1]))
             # Send updated CHARACTER to player
-            lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
+            lurk.Character.send_character(skt, player)
             # Send all characters in new room to player
-            characters = lurk.Character.get_characters_with_room(new_room)
-            for character_name, stat in characters:
-                lurk.write(skt, (lurk.CHARACTER, character_name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
+            characters = lurk.Character.get_characters_with_room(player.room)
+            for character in characters:
+                lurk.Character.send_character(skt, character)
             # Send CONNECTIONs to player
             # TODO: This is a bit of a hack, but it works for now.
             for room_num, connection in connections.items():
@@ -308,17 +251,17 @@ def handle_client(skt):
             
             # Send updated CHARACTER to all players in old room that player moved to new room
             characters = lurk.Character.get_characters_with_room(old_room)
-            for player_name, stat in characters:
-                if player_name not in names or player_name == sockets[skt]:
+            for character in characters:
+                if character.name not in names or character.name == sockets[skt]:
                     continue
-                lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
+                lurk.Character.send_character(names[character.name], player)
             
-            # Send updated character to all players in new room that player moved to new room
-            characters = lurk.Character.get_characters_with_room(new_room)
-            for player_name, stat in characters:
-                if player_name not in names or player_name == sockets[skt]:
+            # Send updated character to all players in new room that player entered new room
+            characters = lurk.Character.get_characters_with_room(player.room)
+            for character in characters:
+                if character.name not in names or character.name == sockets[skt]:
                     continue
-                lurk.write(names[player_name], (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, new_room, description_len, description))
+                lurk.Character.send_character(names[character.name], player)
             continue
         elif type(message) is tuple and message[0] == lurk.FIGHT:
             if skt not in sockets:
@@ -326,7 +269,6 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
-            player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
             count = 0
             for name, stats in lurk.Character.characters.items():
                 if stats[6] != player_room or stats[0] != lurk.MONSTER | lurk.ALIVE or name == player_name:
@@ -350,8 +292,14 @@ def handle_client(skt):
                 if monster_health <= 0:
                     monster_flags ^= lurk.ALIVE
                     monster_health = 0
+                lurk.Character.update_character(monster)
                 lurk.Character.characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
-                send_characters(player_room)
+                # Send updated player stats to all other players in room that player is in
+                characters = lurk.Character.get_characters_with_room(player.room)
+                for character in characters:
+                    if character.name not in names or player.name == sockets[skt]:
+                        continue
+                    lurk.Character.send_character(names[player.name], character)
             if count == 0:
                 print(Fore.YELLOW+f"WARN: No monsters in {player_name}'s room, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
@@ -378,26 +326,29 @@ def handle_client(skt):
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
-            player_name, player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des = player
-            if player_flags != player_flags | lurk.STARTED:
+            if player.flag != player.flag | lurk.STARTED:
                 print(Fore.YELLOW+'WARN: Player flag STARTED not set, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
             target = lurk.Character.get_character_with_name(character_name)
-            if target is None or target[7] != player_room:
+            if target is None or target.room != player.room:
                 print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
-            target_name, target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des = target
-            if target_flags == target_flags | lurk.ALIVE:
+            if target.flag == target.flag | lurk.ALIVE:
                 print(Fore.YELLOW+'WARN: Cannot loot a living target, sending ERROR code 3!')
                 lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
                 continue
-            player_gold += target_gold
-            target_gold = 0
-            lurk.Character.characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
-            lurk.Character.characters.update({target_name: [target_flags, target_attack, target_defense, target_regen, target_health, target_gold, target_room, target_char_des_len, target_char_des]})
-            send_characters(player_room)
+            player.gold += target.gold
+            target.gold = 0
+            lurk.Character.update_character(player)
+            lurk.Character.update_character(target)
+            # Send updated player stats to all other players in room that player is in
+            characters = lurk.Character.get_characters_with_room(player.room)
+            for character in characters:
+                if character.name not in names or player.name == sockets[skt]:
+                    continue
+                lurk.Character.send_character(names[player.name], character)
             continue
         elif type(message) is tuple and message[0] == lurk.START:
             try:
@@ -422,14 +373,12 @@ def handle_client(skt):
             for character in characters:
                 print(f'DEBUG: Sending character {character.name} to {player.name}')
                 lurk.Character.send_character(skt, character)
-                #lurk.write(skt, (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
             # Send updated character to all players in room that player joined (except player) the room
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 if character.name not in names or player.name == sockets[skt]:
                     continue
                 lurk.Character.send_character(names[player.name], character)
-                #lurk.write(names[player.name], (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
             for room_num, connection in connections.items():

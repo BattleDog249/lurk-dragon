@@ -90,6 +90,7 @@ class Character:
     
     def recv_character(socket):
         """ Receives a character message from the given socket, and unpacks it into a character object that is returned.
+            UNTESTED AND PROBABLY BROKEN
         """
         try:
             lurk_header = recv(socket, CHARACTER_LEN - 1)
