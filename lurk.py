@@ -9,33 +9,33 @@ from dataclasses import dataclass
 
 from colorama import Fore
 
-MESSAGE = int(1)
+MESSAGE = c_uint8(1)
 MESSAGE_LEN = int(67)
-CHANGEROOM = int(2)
+CHANGEROOM = c_uint8(2)
 CHANGEROOM_LEN = int(3)
-FIGHT = int(3)
+FIGHT = c_uint8(3)
 FIGHT_LEN = int(1)
-PVPFIGHT = int(4)
+PVPFIGHT = c_uint8(4)
 PVPFIGHT_LEN = int(33)
-LOOT = int(5)
+LOOT = c_uint8(5)
 LOOT_LEN = int(33)
-START = int(6)
+START = c_uint8(6)
 START_LEN = int(1)
-ERROR = int(7)
+ERROR = c_uint8(7)
 ERROR_LEN = int(4)
-ACCEPT = int(8)
+ACCEPT = c_uint8(8)
 ACCEPT_LEN = int(2)
-ROOM = int(9)
+ROOM = c_uint8(9)
 ROOM_LEN = int(37)
-CHARACTER = int(10)
+CHARACTER = c_uint8(10)
 CHARACTER_LEN = int(48)
-GAME = int(11)
+GAME = c_uint8(11)
 GAME_LEN = int(7)
-LEAVE = int(12)
+LEAVE = c_uint8(12)
 LEAVE_LEN = int(1)
-CONNECTION = int(13)
+CONNECTION = c_uint8(13)
 CONNECTION_LEN = int(37)
-VERSION = int(14)
+VERSION = c_uint8(14)
 VERSION_LEN = int(5)
 
 ALIVE = 0x80
@@ -58,7 +58,6 @@ class Character:
     room: c_uint16
     description_len: c_uint16
     description: str
-    message_type: c_uint8 = 10
     # Key (str): name, Value (list): [flag, attack, defense, regen, health, gold, room, description_len, description]
     characters = {}
     def get_character_with_name(target_name):

@@ -407,10 +407,11 @@ def handle_client(skt):
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
                 continue
-            if room == 0:
-                room = 1
+            if player.room == 0:
+                player.room = 1
             
-            lurk.Character.characters.update({name:[flag | lurk.STARTED, attack, defense, regen, health, gold, room, description_len, description]})
+            lurk.Character.update_character(player)
+            #lurk.Character.characters.update({name:[flag | lurk.STARTED, attack, defense, regen, health, gold, room, description_len, description]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send ROOM message
@@ -418,7 +419,7 @@ def handle_client(skt):
             mutex = threading.Lock()
             mutex.acquire()
             # Send all characters in room
-            characters = lurk.Character.get_characters_with_room(room)
+            characters = lurk.Character.get_characters_with_room(player.room)
             for name, stat in characters:
                 print(f'DEBUG: Sending character {name} with stats {stat}')
                 lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
@@ -497,7 +498,7 @@ def handle_client(skt):
             add_name(skt, player.name)
             add_socket(skt, player.name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            lurk.write(skt, (player.message_type, player.name, player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description))
+            lurk.write(skt, (lurk.CHARACTER, player.name, player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description))
             # Send MESSAGE to client from narrator here, stating welcome back!
             continue
         elif type(message) is tuple and message[0] == lurk.GAME:
