@@ -462,10 +462,8 @@ def handle_client(skt):
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
             lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
-        elif message[0] == lurk.CHARACTER:
-            lurk_type, name, flag, attack, defense, regen, health, gold, room, description_len, description = message
-            player = lurk.Character(name=name, flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description)
-            print(Fore.WHITE+f'DEBUG: Type: {lurk_type}')
+        elif message is lurk.Character:
+            player = message
             print(Fore.WHITE+f'DEBUG: Name: {player.name}')
             print(Fore.WHITE+f'DEBUG: Flags: {player.flag}')
             print(Fore.WHITE+f'DEBUG: Attack: {player.attack}')
@@ -476,37 +474,39 @@ def handle_client(skt):
             print(Fore.WHITE+f'DEBUG: Room: {player.room}')
             print(Fore.WHITE+f'DEBUG: Description Length: {player.description_len}')
             print(Fore.WHITE+f'DEBUG: Description: {player.description}')
-            if name in names:
+            if player.name in names:
                 error_code = 2
                 print(Fore.YELLOW+f'WARN: Attempting to create character already tied to a socket, sending ERROR code {error_code}!')
                 lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
-            if name in lurk.Character.characters and (lurk.Character.characters[name][0] | lurk.MONSTER or lurk.Character.characters[name][0] ^ lurk.READY):
-                print(Fore.YELLOW+f'WARN: Character attempted to access NPC/Monster {name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
+            if player.name in lurk.Character.characters and (lurk.Character.characters[player.name][0] | lurk.MONSTER or lurk.Character.characters[player.name][0] ^ lurk.READY):
+                print(Fore.YELLOW+f'WARN: Character attempted to access NPC/Monster {player.name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
                 continue
-            if name not in lurk.Character.characters:
-                if attack + defense + regen > INIT_POINTS:
+            if player.name not in lurk.Character.characters:
+                if player.attack + player.defense + player.regen > INIT_POINTS:
                     error_code = 4
                     print(Fore.YELLOW+f'WARN: Character stats from {name} invalid, sending ERROR code {error_code}!')
                     lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                     continue
-                if flag | lurk.JOIN_BATTLE:
-                    flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+                if player.flag | lurk.JOIN_BATTLE:
+                    player.flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
                 else:
-                    flag = lurk.ALIVE | lurk.READY
-                lurk.Character.characters.update({name: [flag, attack, defense, regen, 100, 0, 0, len(description), description]})
-                print(Fore.CYAN+f'INFO: Added new character {name} to database')
-            player = lurk.Character.get_character_with_name(name)
-            #name, flag, attack, defense, regen, health, gold, room, description_len, description = player
+                    player.flag = lurk.ALIVE | lurk.READY
+                player.health = 100
+                player.gold = 0
+                player.room = 0
+                player.description_len = len(player.description)
+                lurk.Character.update_character(player)
+                print(Fore.CYAN+f'INFO: Added new character {player.name} to dictionary')
+            player = lurk.Character.get_character_with_name(player.name)
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
             lurk.Character.update_character(player)
-            #lurk.Character.characters.update({player.name: [flag, attack, defense, regen, 100, gold, room, len(description), description]})
-            print(Fore.CYAN+f'INFO: Accessing character {name} from database')
-            add_name(skt, name)
-            add_socket(skt, name)
+            print(Fore.CYAN+f'INFO: Accessing character {player.name} from database')
+            add_name(skt, player.name)
+            add_socket(skt, player.name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            lurk.write(skt, (lurk.CHARACTER, name, flag, attack, defense, regen, health, gold, room, description_len,  description))
+            lurk.write(skt, (lurk.CHARACTER, player.name, player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description))
             # Send MESSAGE to client from narrator here, stating welcome back!
             continue
         elif message[0] == lurk.GAME:
