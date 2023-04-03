@@ -272,10 +272,10 @@ def handle_client(skt):
             count = 0
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
-                if not (character.flag & lurk.ALIVE and character.flag & lurk.MONSTER):
+                if character.flag != lurk.ALIVE & lurk.MONSTER:
                     print(f'DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag}')
                     continue
-                if not (character.flag & lurk.ALIVE and character.flag & lurk.JOIN_BATTLE and character.flag & lurk.MONSTER):
+                if character.flag != lurk.ALIVE & lurk.JOIN_BATTLE & lurk.MONSTER:
                     print(f'DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag}')
                     continue
                 print(Fore.WHITE+f'DEBUG: {character.name} has monster flag set, flag: {character.flag}')
