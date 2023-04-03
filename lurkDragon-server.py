@@ -273,6 +273,7 @@ def handle_client(skt):
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 if character.flag != lurk.ALIVE & lurk.MONSTER:
+                    print(f'DEBUG: lurk.ALIVE: {lurk.ALIVE} lurk.MONSTER: {lurk.MONSTER}; ALIVE+MONSTER = {lurk.ALIVE+lurk.MONSTER}')
                     continue
                 print(Fore.WHITE+f'DEBUG: {character.name} has monster flag set, flag: {character.flag}')
                 count+=1
