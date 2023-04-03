@@ -462,7 +462,7 @@ def handle_client(skt):
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
             lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
             continue
-        elif message is lurk.Character:
+        elif type(message) is lurk.Character:
             player = message
             print(Fore.WHITE+f'DEBUG: Name: {player.name}')
             print(Fore.WHITE+f'DEBUG: Flags: {player.flag}')
