@@ -420,9 +420,9 @@ def handle_client(skt):
             mutex.acquire()
             # Send all characters in room
             characters = lurk.Character.get_characters_with_room(player.room)
-            for name, stat in characters:
-                print(f'DEBUG: Sending character {name} with stats {stat}')
-                lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
+            for character in characters:
+                print(f'DEBUG: Sending character {character.name} to {player.name}')
+                lurk.write(skt, (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
             # Send updated character to all players in room that player joined (except player) the room
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
