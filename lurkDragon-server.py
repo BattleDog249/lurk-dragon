@@ -303,6 +303,7 @@ def handle_client(skt):
                     if character.name not in names:
                         continue
                     lurk.Character.send_character(names[player.name], player)
+                    lurk.Character.send_character(names[player.name], monster)
             if count == 0:
                 print(Fore.YELLOW+f"WARN: No monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
