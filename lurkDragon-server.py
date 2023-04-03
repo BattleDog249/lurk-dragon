@@ -402,7 +402,7 @@ def handle_client(skt):
         elif type(message) is tuple and message[0] == lurk.START:
             try:
                 player = lurk.Character.get_character_with_name(sockets[skt])
-                name, flag, attack, defense, regen, health, gold, room, description_len, description = player
+                #name, flag, attack, defense, regen, health, gold, room, description_len, description = player
             except:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
                 lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
@@ -415,7 +415,7 @@ def handle_client(skt):
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send ROOM message
-            lurk.write(skt, (lurk.ROOM, room, rooms[room][0], len(rooms[room][1]), rooms[room][1]))
+            lurk.write(skt, (lurk.ROOM, player.room, rooms[player.room][0], len(rooms[player.room][1]), rooms[player.room][1]))
             mutex = threading.Lock()
             mutex.acquire()
             # Send all characters in room
@@ -424,7 +424,7 @@ def handle_client(skt):
                 print(f'DEBUG: Sending character {name} with stats {stat}')
                 lurk.write(skt, (lurk.CHARACTER, name, stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
             # Send updated character to all players in room that player joined (except player) the room
-            characters = lurk.Character.get_characters_with_room(room)
+            characters = lurk.Character.get_characters_with_room(player.room)
             for player_name, stat in characters:
                 if player_name not in names or player_name == sockets[skt]:
                     continue
@@ -432,7 +432,7 @@ def handle_client(skt):
             mutex.release()
             # Send CONNECTION messages for all connections with current room
             for room_num, connection in connections.items():
-                if room_num != room:
+                if room_num != player.room:
                     continue
                 for connection in connections[room_num]:
                     lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
