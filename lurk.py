@@ -120,27 +120,16 @@ class Connection:
         print(f'DEBUG: Connection(s) found with number {number}: {connection}')
         return connection
 
-def recv(skt, size):
-    """ Receives a message from the specified socket of the specified size and returns it as a bytearray.
-
-    Args:
-        skt (socket): Socket to receive Lurk message from.
-        size (int): Size of Lurk message to receive.
-
-    Returns:
-        bytearray: Lurk message received from socket.
-        None: If socket.error is raised.
+def recv(socket, message_length):
+    """ Receives a message of a specified length from the specified socket and returns it.
     """
-    data = bytearray()
-    while len(data) < size:
-        try:
-            packet = skt.recv(size - len(data))
-            if not packet:
-                return None
-            data.extend(packet)
-        except socket.error:
-            return None
-    return data
+    message = b''
+    while len(message) < message_length:
+        chunk = socket.recv(message_length - len(message))
+        if not chunk:
+            raise RuntimeError(Fore.RED+'Socket connection broken!')
+        message += chunk
+    return message
 def send(skt, message):
     """ Sends a message to the specified socket.
 

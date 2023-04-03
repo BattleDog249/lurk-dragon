@@ -409,16 +409,15 @@ def handle_client(skt):
                 continue
             if player.room == 0:
                 player.room = 1
-            
+            player.flag = player.flag | lurk.STARTED
             lurk.Character.update_character(player)
-            #lurk.Character.characters.update({name:[flag | lurk.STARTED, attack, defense, regen, health, gold, room, description_len, description]})
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send ROOM message
             lurk.write(skt, (lurk.ROOM, player.room, rooms[player.room][0], len(rooms[player.room][1]), rooms[player.room][1]))
             mutex = threading.Lock()
             mutex.acquire()
-            # Send all characters in room
+            # Send all characters in room, including player
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f'DEBUG: Sending character {character.name} to {player.name}')
