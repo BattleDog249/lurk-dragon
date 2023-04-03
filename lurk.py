@@ -48,6 +48,7 @@ READY = 0x08
 class Character:
     """ A class that represents a character in the game. This class is used to store information about a character, and to retrieve information about a character.
     """
+    message_type: c_uint8(10)
     name: str
     flag: c_uint8
     attack: c_uint16
@@ -66,19 +67,16 @@ class Character:
         character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and target_name == name]
         character = Character(name=character[0][0], flag=character[0][1][0], attack=character[0][1][1], defense=character[0][1][2], regen=character[0][1][3], health=character[0][1][4], gold=character[0][1][5], room=character[0][1][6], description_len=character[0][1][7], description=character[0][1][8])
         print(f'DEBUG: Character found with name {target_name}: {character}')
-        '''
-        if name in Character.characters:
-            character = (name, Character.characters[name][0], Character.characters[name][1], Character.characters[name][2], Character.characters[name][3], Character.characters[name][4], Character.characters[name][5], Character.characters[name][6], Character.characters[name][7], Character.characters[name][8])
-        else:
-            character = None
-            print(Fore.RED+f'ERROR: Character {name} not found!')
-        '''
         return character
     
     def get_characters_with_room(room):
-        """ Returns a list of characters in the given room. If no characters are found, returns an empty list.
+        """ Returns a list of character objects that are in the given room. If no characters are found, returns an empty list.
         """
-        characters = [(name, stat) for name, stat in Character.characters.items() if Character.characters[name][6] == room]
+        characters_with_room = [(name, stat) for name, stat in Character.characters.items() if Character.characters[name][6] == room]
+        characters = []
+        for character in characters_with_room:
+            character_with_room = Character(name=character[0], flag=character[1][0], attack=character[1][1], defense=character[1][2], regen=character[1][3], health=character[1][4], gold=character[1][5], room=character[1][6], description_len=character[1][7], description=character[1][8])
+            characters.append(character_with_room)
         print(f'DEBUG: Character(s) found in room {room}: {characters}')
         return characters
     
@@ -306,8 +304,6 @@ def read(skt):
                 character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
                 print(f'DEBUG: Returning character: {character}, Type: {type(character)}')
                 return character
-                #return (CHARACTER, name.decode('utf-8', 'ignore'), flags, attack, defense, regen,
-                        #health, gold, room, char_des_len, char_des.decode('utf-8', 'ignore'))
             except struct.error:
                 print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
                 continue
