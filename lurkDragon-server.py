@@ -464,7 +464,6 @@ def handle_client(skt):
             continue
         elif type(message) is lurk.Character:
             print(Fore.WHITE+f'DEBUG: handle_client: Received message: {message}')
-            print(f'DEBUG: socket type: {type(skt)}')
             player = message
             if player.name in names:
                 error_code = 2
@@ -498,7 +497,9 @@ def handle_client(skt):
             add_name(skt, player.name)
             add_socket(skt, player.name)
             lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
-            lurk.write(skt, (lurk.CHARACTER, player.name, player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description))
+            #lurk.write(skt, (lurk.CHARACTER, player.name, player.flag, player.attack, player.defense, player.regen, player.health, player.gold, player.room, player.description_len, player.description))
+            cskt=0
+            lurk.Character.send_character(cskt, player)
             # Send MESSAGE to client from narrator here, stating welcome back!
             continue
         elif type(message) is tuple and message[0] == lurk.GAME:
