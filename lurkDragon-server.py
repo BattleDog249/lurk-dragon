@@ -272,7 +272,7 @@ def handle_client(skt):
             count = 0
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
-                if character.room != player.room or character.flag != lurk.MONSTER & lurk.JOIN_BATTLE | lurk.ALIVE or character.name == player.name:
+                if character.room != player.room or character.flag != lurk.MONSTER | lurk.JOIN_BATTLE | lurk.ALIVE or character.name == player.name:
                     continue
                 print(Fore.WHITE+f'DEBUG: {character.name} has monster flag set, flag: {character.flag}')
                 count+=1
@@ -305,7 +305,7 @@ def handle_client(skt):
                     lurk.Character.send_character(names[player.name], player)
                     lurk.Character.send_character(names[player.name], monster)
             if count == 0:
-                print(Fore.YELLOW+f"WARN: No monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
+                print(Fore.YELLOW+f"WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             continue
         elif type(message) is tuple and message[0] == lurk.PVPFIGHT:
