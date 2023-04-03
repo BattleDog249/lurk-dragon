@@ -297,11 +297,12 @@ def handle_client(skt):
                 lurk.Character.update_character(monster)
                 #lurk.Character.characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
                 # Send updated player stats to all other players in room that player is in
+                # This is currently broken
                 characters = lurk.Character.get_characters_with_room(player.room)
                 for character in characters:
                     if character.name not in names:
                         continue
-                    lurk.Character.send_character(names[player.name], character)
+                    lurk.Character.send_character(names[player.name], player)
             if count == 0:
                 print(Fore.YELLOW+f"WARN: No monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
