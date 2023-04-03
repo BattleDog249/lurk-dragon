@@ -63,11 +63,14 @@ class Character:
     def get_character_with_name(name):
         """ Returns a character with the given name. If the character is not found, returns None.
         """
+        character = (name, Character.characters[name] for name, Character.characters[name] in Character.characters.items() if name in Character.characters)
+        '''
         if name in Character.characters:
             character = (name, Character.characters[name][0], Character.characters[name][1], Character.characters[name][2], Character.characters[name][3], Character.characters[name][4], Character.characters[name][5], Character.characters[name][6], Character.characters[name][7], Character.characters[name][8])
         else:
             character = None
             print(Fore.RED+f'ERROR: Character {name} not found!')
+        '''
         return character
     
     def get_characters_with_room(room):
