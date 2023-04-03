@@ -224,7 +224,7 @@ def handle_client(skt):
             #name, flag, attack, defense, regen, health, gold, old_room, description_len, description = player
             if new_room not in connections[player.room]:
                 error_code = 1
-                print(Fore.YELLOW+f'WARN: {name} attempted bad move, sending ERROR code {error_code}!')
+                print(Fore.YELLOW+f'WARN: {player.name} attempted bad move, sending ERROR code {error_code}!')
                 lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
                 continue
             # Track old room for later
@@ -270,30 +270,32 @@ def handle_client(skt):
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             count = 0
-            for name, stats in lurk.Character.characters.items():
-                if stats[6] != player_room or stats[0] != lurk.MONSTER | lurk.ALIVE or name == player_name:
+            characters = lurk.Character.get_characters_with_room(player.room)
+            for character in characters:
+                if character.room != player.room or character.flag != lurk.MONSTER | lurk.ALIVE or character.name == player.name:
                     continue
-                print(Fore.WHITE+f'DEBUG: {name} has monster flag set, flag: {stats[0]}')
+                print(Fore.WHITE+f'DEBUG: {character.name} has monster flag set, flag: {character.flag}')
                 count+=1
-                monster = lurk.Character.get_character_with_name(name)
-                monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
-                monster_damage = monster_attack * monster_attack / (monster_attack + monster_defense)
-                player_health -= monster_damage
-                player_health = round(player_health)
-                print(f'DEBUG: player_health after fight: {player_health}')
-                if player_health <= 0:
-                    player_flags ^= lurk.ALIVE
-                    player_health = 0
-                lurk.Character.characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
-                player_damage = player_attack * player_attack / (player_attack + player_defense)
-                monster_health -= player_damage
-                monster_health = round(monster_health)
-                print(f'DEBUG: monster_health after fight: {monster_health}')
-                if monster_health <= 0:
-                    monster_flags ^= lurk.ALIVE
-                    monster_health = 0
+                monster = lurk.Character.get_character_with_name(character.name)
+                #monster_name, monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des = monster
+                monster_damage = monster.attack * monster.attack / (monster.attack + monster.defense)
+                player.health -= monster_damage
+                player.health = round(player.health)
+                print(f'DEBUG: player.health after fight: {player.health}')
+                if player.health <= 0:
+                    player.flag ^= lurk.ALIVE
+                    player.health = 0
+                lurk.Character.update_character(player)
+                #lurk.Character.characters.update({player_name: [player_flags, player_attack, player_defense, player_regen, player_health, player_gold, player_room, player_char_des_len, player_char_des]})
+                player_damage = player.attack * player.attack / (player.attack + player.defense)
+                monster.health -= player_damage
+                monster.health = round(monster.health)
+                print(f'DEBUG: monster.health after fight: {monster.health}')
+                if monster.health <= 0:
+                    monster.flag ^= lurk.ALIVE
+                    monster.health = 0
                 lurk.Character.update_character(monster)
-                lurk.Character.characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
+                #lurk.Character.characters.update({monster_name: [monster_flags, monster_attack, monster_defense, monster_regen, monster_health, monster_gold, monster_room, monster_char_des_len, monster_char_des]})
                 # Send updated player stats to all other players in room that player is in
                 characters = lurk.Character.get_characters_with_room(player.room)
                 for character in characters:
@@ -301,7 +303,7 @@ def handle_client(skt):
                         continue
                     lurk.Character.send_character(names[player.name], character)
             if count == 0:
-                print(Fore.YELLOW+f"WARN: No monsters in {player_name}'s room, sending ERROR code 7!")
+                print(Fore.YELLOW+f"WARN: No monsters in {player.name}'s room, sending ERROR code 7!")
                 lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
             continue
         elif type(message) is tuple and message[0] == lurk.PVPFIGHT:
