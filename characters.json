@@ -88,17 +88,6 @@
         "description": "A big scary dragon!"
     },
     {
-        "name": "LurkDragon",
-        "flag": 224,
-        "attack": 60,
-        "defense": 40,
-        "regen": 0,
-        "health": 100,
-        "gold": 100,
-        "room": 5,
-        "description": "Another one?"
-    },
-    {
         "name": "Sentient Sandstorm",
         "flag": 224,
         "attack": 20,
