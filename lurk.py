@@ -87,6 +87,41 @@ class Character:
         """ Updates the character with the given name. If the character is not found, adds the character to the list of characters.
         """
         Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+    
+    def recv_character(socket):
+        """ Receives a character message from the given socket, and unpacks it into a character object that is returned.
+        """
+        try:
+            lurk_header = recv(socket, CHARACTER_LEN - 1)
+            if not lurk_header:
+                print(Fore.RED+'ERROR: read: socket.error, returning None!')
+                return None
+            print(Fore.WHITE+f'DEBUG: read: lurk_header: {lurk_header}')
+            name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack('<32sB3Hh3H', lurk_header)
+            lurk_data = recv(socket, description_len)
+            if not lurk_data:
+                print(Fore.RED+'ERROR: read: socket.error, returning None!')
+                return None
+            print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
+            description, = struct.unpack(f'<{description_len}s', lurk_data)
+            name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
+            character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
+            return character
+        except struct.error:
+            print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
+            return None
+    def send_character(socket, character):
+        """ Packs a character message into bytes with the given character object and sends it to the given socket.
+        """
+        try:
+            packed = struct.pack(f'<B32sB3Hh3H{character.description_len}s', CHARACTER, character.name.encode(), character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description.encode())
+            status = send(socket, packed)
+            if status != 0:
+                print(Fore.RED+'ERROR: write: socket.error, returning None!')
+                return None
+        except Exception as exc:
+            print(Fore.RED+f'ERROR: write: Failed to pack message type {CHARACTER}')
+            raise struct.error from exc
 
 @dataclass
 class Room:
@@ -121,7 +156,7 @@ class Connection:
         return connection
 
 def recv(socket, message_length):
-    """ Receives a message of a specified length from the specified socket and returns it.
+    """ Receives a message of a specified length from the specified socket and returns it in byte format.
     """
     message = b''
     while len(message) < message_length:
