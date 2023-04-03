@@ -274,6 +274,7 @@ def handle_client(skt):
             for character in characters:
                 if character.flag != lurk.MONSTER and lurk.ALIVE:
                     print(f'DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag} lurk.MONSTER | lurk.ALIVE: {lurk.MONSTER | lurk.ALIVE}')
+                    print(f'DEBUG: type(character.flag) = {type(character.flag)}; type(lurk.MONSTER): {type(lurk.MONSTER)}')
                     continue
                 if character.flag != lurk.MONSTER and lurk.JOIN_BATTLE and lurk.ALIVE:
                     print(f'DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag}')
