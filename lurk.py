@@ -113,7 +113,7 @@ class Character:
     def send_character(skt, character):
         """ Packs a character message into bytes with the given character object and sends it to the given socket object.
         """
-        if type(skt) is not socket:
+        if type(skt) is not socket.socket:
             raise TypeError('skt must be a socket object!')
         if type(character) is not Character:
             raise TypeError('character must be a Character object!')
