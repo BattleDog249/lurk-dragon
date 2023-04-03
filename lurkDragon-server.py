@@ -421,13 +421,15 @@ def handle_client(skt):
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f'DEBUG: Sending character {character.name} to {player.name}')
-                lurk.write(skt, (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
+                lurk.Character.send_character(skt, character)
+                #lurk.write(skt, (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
             # Send updated character to all players in room that player joined (except player) the room
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 if character.name not in names or player.name == sockets[skt]:
                     continue
-                lurk.write(names[player.name], (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
+                lurk.Character.send_character(names[player.name], character)
+                #lurk.write(names[player.name], (lurk.CHARACTER, character.name, character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description))
             mutex.release()
             # Send CONNECTION messages for all connections with current room
             for room_num, connection in connections.items():

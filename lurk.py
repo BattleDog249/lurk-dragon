@@ -46,7 +46,7 @@ READY = 0x08
 
 @dataclass
 class Start:
-    pass
+    message_type = int(6)
 
 @dataclass
 class Character:
@@ -110,6 +110,7 @@ class Character:
         except struct.error:
             print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
             return None
+    
     def send_character(skt, character):
         """ Packs a character message into bytes with the given character object and sends it to the given socket object.
         """
