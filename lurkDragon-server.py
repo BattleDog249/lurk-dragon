@@ -56,8 +56,17 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as c
     characters_data = json.load(characters_json)
     for character in characters_data:
         character = lurk.Character(name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])
-        lurk.Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+        lurk.Character.update_character(character)
         print(f'DEBUG: character as dataclass: {character}')
+# Room dictionary containing all rooms in the game.
+#   Key (int): Room Number
+#   Value (list): [name, description_len, description]
+with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r') as rooms_json:
+    rooms_data = json.load(rooms_json)
+    for room in rooms_data:
+        room = lurk.Room(number=room['number'], name=room['name'], description_len=len(room['description']), description=room['description'])
+        lurk.Room.update_room(room)
+        print(f'DEBUG: room as dataclass: {room}')
 errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Cannot change to requested room.',
@@ -70,56 +79,6 @@ errors = {
     8: 'ERROR: Player vs. player combat is not currently supported on this server.',
     9: 'ERROR: Monster. Cannot create or reprise a monster character.'
     }
-rooms = {
-    100: ('Narrator Room', 'Just a room with no connections where the narrator lives.'),
-    0: ('Backrooms', 'You should not be here!'),
-    1: ('Village of Valhalla', 'A rugged and hardy hamlet nestled in the shadow of towering mountains, home to a fearless group of dragon hunters. The air is tinged with the scent of woodsmoke and iron, and the sound of clanging swords and fierce battle cries can be heard echoing through the valley. The villagers here are skilled and battle-hardened, having spent their lives honing their craft and perfecting their dragon-slaying techniques.'),
-    2: ('Aster Meadow', 'Green rolling hills full of wildflowers and small game for as far as the eye can see.'),
-    3: ('Ashen Taiga', 'A dark and expansive spruce forest, with a slow climb to higher altitudes in the east.'),
-    4: ('Rainless Fells', 'Endless miles of sun-soaked rock and sand under an endless blue sky, this massive tract of land is hostile to all known life.'),
-    5: ('Sunset Coast', 'Where the setting sun meets the rolling sea, stretching for untold distances to the north and south.'),
-    6: ('Hidden Groves', 'A lively grove of oak trees and song birds, tucked away in a shallow valley in the Aster meadow.'),
-    7: ('Abandoned Swamps', 'Murky swamps that remained unexplored, for whatever reason.'),
-    8: ('Bloodsoaked Gorge', 'A treacherous and foreboding terrain, where the ground is stained crimson with the blood of battles long past. The walls of the gorge rise high and steep, casting deep shadows that conceal hidden dangers and perils. A dangerous beast must live here, considering the gore and remains strewn about.'),
-    9: ('Snowy Mountains', 'The Ashen Taiga gives way to rougher terrain, elevation, and rapidly thinning trees.'),
-    10: ('Scorched Frontier', '''In the distant, there is a ruined caravan that looks like it is burnt to ashes.
-                                There are a few bodies nearby, as well as some burnt tents. The ground is covered with ash and burnt wood.
-                                It looks like a battle between monsters and humans happened.'''),
-    11: ('Arid Badlands', 'A harsh and barren landscape, where the scorching sun beats down on rugged terrain, dotted with rocky outcroppings and sparse vegetation. The air is dry and the ground is parched, giving the feeling of a world devoid of life and water.'),
-    12: ('Open Sea', '''The open sea gives you a stunning view of the blue ocean, filled with salty waves.
-                        As far as you can see, you can see nothing but the massive, unending mass of water.'''),
-    13: ('Rugged Coastline', '''A steep cliff-side, with massive rocks all over. It looks slippery and very hard to climb. You can hear ocean waves from the crashing rocks.'''),
-    14: ('Forgotten Bog', '''A massive swamp, filled to the brim with thick, slimy moss. The trees are thin, bare, and twisted.
-        It's wet, foggy, and smells of rotting flesh. In the distance, you can see the crumbling ruins of an abandoned temple, overrun and covered by fog.'''),
-    15: ('Misty Temple', '''An ancient temple filled with a strange mist. The walls have ancient writing in an unknown language.
-                            The air in the temple is humid and misty, and the walls smell of mildew.'''),
-    16: ('Sulphur Pools', '''A massive crater, with dark, poisonous liquids. The ground is covered in thick, poisonous sludge, and it smells of sulfur and dead fish.
-                            The area is incredibly dangerous.'''),
-    17: ('Golden Marshes', 'A vast expanse of shimmering grasses and reeds, stretching out as far as the eye can see.'),
-    18: ('Sheltered Crevices', 'A hidden and isolated recess nestled deep within the Bloodsoaked Gorge. Despite the turmoil and danger of the surrounding landscape, the Sheltered Crevice provides a small oasis of calm and respite. The sound of rushing water from a nearby stream provides a calming background noise, and the walls provide protection from the harsh elements and violence outside.'),
-    19: ('Dark Cavern', 'A shadowy and eerie place, where the only light comes from the occasional flicker of a torch or the glow of luminescent fungi clinging to the walls. The air is damp and musty, and the sound of dripping water echoes through the twisting tunnels.'),
-    20: ('Deep Abyss', 'A foreboding and mysterious place, shrouded in darkness and unfathomable depths. The walls of the abyss are jagged and uneven, with strange rock formations and otherworldly creatures lurking in the shadows.'),
-    21: ('Submerged Cave', 'The cave is made up of black rocks, and looks slightly dangerous. The entire cave is flooded.'),
-    22: ('Raging River', "A tumultuous and powerful force of nature, cutting a winding path through the landscape with an unrelenting force. The sound of rushing water fills the air, and the spray from the river's cascading rapids mists the surrounding rocks and trees."),
-    23: ('Frozen Lake', 'A vast expanse of icy blue stretching out to the horizon, surrounded by snow-covered trees and mountains. The air is crisp and biting, and the only sounds are the creaking of the ice and the occasional howl of the wind.'),
-    24: ('Jagged Peaks', 'A rugged and treacherous mountain range where the sharp peaks reach toward the sky like the teeth of a giant beast. The air is thin and crisp, and the wind howls through the jagged crevices.'),
-    25: ('Peaceful Promontory', 'TBW'),
-    26: ('Hidden Valley', "A verdant and lush valley hidden away from the world, where the air is thick with the scent of fresh herbs and the sound of buzzing bees. It's a place where one can feel connected to nature and the beauty of the earth, much like the classic salad dressing that bears its name."),
-    27: ('Crop Fields', 'A picturesque and bountiful expanse of farmland nestled within the Hidden Valley. The fields are lush and green, bursting with an abundance of crops, from tall stalks of corn to rows of plump pumpkins.'),
-    28: ('Cliffside Roost', "A perilous and foreboding location perched on the edge of a sheer cliff, where a fearsome dragon has made its lair. The dragon's presence is felt in the scorch marks on the rock face and the occasional echoing roar that shakes the nearby trees."),
-    29: ('Glacial Highlands', 'A frigid and forbidding landscape where the imposing peaks of glaciers rise above the frozen tundra like jagged teeth. The air is biting cold and thin, and the wind howls through the icy crevices.'),
-    30: ('Red Barn', "A charming and rustic structure nestled within the verdant landscape of the Hidden Valley. The barn's red-painted walls stand out against the sea of green, creating a picturesque scene straight out of a postcard."),
-    31: ('Loft', 'A spacious and airy area located within the Red Barn, accessible by a steep staircase. The loft is filled with the scent of fresh hay and the sound of chirping birds.'),
-    32: ('Roof', 'A flat expanse of weathered shingles located atop the Red Barn, offering an expansive view of the surrounding countryside. From the Roof, one can see the verdant fields of the Hidden Valley stretching out to the horizon, with distant hills and mountains providing a dramatic backdrop.'),
-    33: ('Wintery Thicket', 'A tranquil yet forbidding place where the biting cold of winter has turned the thicket into a snowy wonderland. The trees are bare and the underbrush is buried beneath a blanket of snow, making navigation difficult.'),
-    34: ('Dusty Ruins', 'A desolate place where the remnants of a forgotten civilization lie scattered amidst the shifting sands. The ruins are weathered and worn, their grandeur faded to mere shadows of their former glory.'),
-    35: ('Smoldering Sands', 'A scorching desert expanse where the golden sand dances in the relentless heat, shadows stretch like mountains, and the air is thick with the scent of dry sand and smoke.'),
-    36: ('Dire Pits', 'A gaping chasm of darkness filled with the scent of sulfur and brimstone, where jagged walls and otherworldly sounds create an overwhelming sense of unease.'),
-    37: ('Rayless Depths', 'A dark and eerie underwater expanse where the sunlight never penetrates, leaving only the dim glow of bioluminescent creatures and the faint shimmer of phosphorescent algae.'),
-    38: ('Korpijnen Shores', 'TBW'),
-    39: ('Hiemal Inlet', 'TBW'),
-    40: ('Remote Estuary', 'TBW'),
-}
 connections = {
     0: (1,),
     1: (2, 3, 4, 5),
@@ -233,7 +192,7 @@ def handle_client(skt):
             player.room = new_room
             lurk.Character.update_character(player)
             # Send ROOM to player
-            lurk.write(skt, (lurk.ROOM, player.room, rooms[player.room][0], len(rooms[player.room][1]), rooms[player.room][1]))
+            lurk.write(skt, (lurk.ROOM, player.room, lurk.Room.rooms[player.room][0], len(lurk.Room.rooms[player.room][1]), lurk.Room.rooms[player.room][1]))
             # Send updated CHARACTER to player
             lurk.Character.send_character(skt, player)
             # Send all characters in new room to player
@@ -246,7 +205,7 @@ def handle_client(skt):
                 if room_num != new_room:
                     continue
                 for connection in connections[room_num]:
-                    lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
+                    lurk.write(skt, (lurk.CONNECTION, connection, lurk.Room.rooms[connection][0], len(lurk.Room.rooms[connection][1]), lurk.Room.rooms[connection][1]))
             
             
             # Send updated CHARACTER to all players in old room that player moved to new room
@@ -374,7 +333,7 @@ def handle_client(skt):
             # Send ACCEPT message
             lurk.write(skt, (lurk.ACCEPT, lurk.START))
             # Send ROOM message
-            lurk.write(skt, (lurk.ROOM, player.room, rooms[player.room][0], len(rooms[player.room][1]), rooms[player.room][1]))
+            lurk.write(skt, (lurk.ROOM, player.room, lurk.Room.rooms[player.room][0], len(lurk.Room.rooms[player.room][1]), lurk.Room.rooms[player.room][1]))
             mutex = threading.Lock()
             mutex.acquire()
             # Send all characters in room, including player
@@ -394,7 +353,7 @@ def handle_client(skt):
                 if room_num != player.room:
                     continue
                 for connection in connections[room_num]:
-                    lurk.write(skt, (lurk.CONNECTION, connection, rooms[connection][0], len(rooms[connection][1]), rooms[connection][1]))
+                    lurk.write(skt, (lurk.CONNECTION, connection, lurk.Room.rooms[connection][0], len(lurk.Room.rooms[connection][1]), lurk.Room.rooms[connection][1]))
             continue
         elif type(message) is tuple and message[0] == lurk.ERROR:
             lurk_type, error_code, error_msg_len, error_msg = message

@@ -84,7 +84,7 @@ class Character:
         return characters
     
     def update_character(character):
-        """ Updates the character with the given name. If the character is not found, adds the character to the list of characters.
+        """ Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist.
         """
         Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
     
@@ -135,6 +135,11 @@ class Room:
     description: str
     # Key (int): number, Value (tuple): (name, room_description)
     rooms = {}
+    def update_room(room):
+        """ Updates the room with the given room object in the rooms dictionary, or adds it if it doesn't exist.
+        """
+        Room.rooms.update({room.number: [room.name, room.description_len, room.description]})
+        
     def get_room(room_number):
         """ Returns a room with the given number. If the room is not found, returns None.
         """

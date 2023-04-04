@@ -1,0 +1,207 @@
+[
+    {
+        "number": 0,
+        "name": "Backrooms",
+        "description": "You should not be here!"
+    },
+    {
+        "number": 1,
+        "name": "Village of Valhalla",
+        "description": "A rugged and hardy hamlet nestled in the shadow of towering mountains, home to a fearless group of dragon hunters. The air is tinged with the scent of woodsmoke and iron, and the sound of clanging swords and fierce battle cries can be heard echoing through the valley. The villagers here are skilled and battle-hardened, having spent their lives honing their craft and perfecting their dragon-slaying techniques."
+    },
+    {
+        "number": 2,
+        "name": "Aster Meadow",
+        "description": "Green rolling hills full of wildflowers and small game for as far as the eye can see."
+    },
+    {
+        "number": 3,
+        "name": "Ashen Taiga",
+        "description": "A dark and expansive spruce forest, with a slow climb to higher altitudes in the east."
+    },
+    {
+        "number": 4,
+        "name": "Rainless Fells",
+        "description": "Endless miles of sun-soaked rock and sand under an endless blue sky, this massive tract of land is hostile to all known life."
+    },
+    {
+        "number": 5,
+        "name": "Sunset Coast",
+        "description": "Where the setting sun meets the rolling sea, stretching for untold distances to the north and south."
+    },
+    {
+        "number": 6,
+        "name": "Hidden Groves",
+        "description": "A lively grove of oak trees and song birds, tucked away in a shallow valley in the Aster meadow."
+    },
+    {
+        "number": 7,
+        "name": "Abandoned Swamps",
+        "description": "Murky swamps that remained unexplored, for whatever reason."
+    },
+    {
+        "number": 8,
+        "name": "Bloodsoaked Gorge",
+        "description": "A treacherous and foreboding terrain, where the ground is stained crimson with the blood of battles long past. The walls of the gorge rise high and steep, casting deep shadows that conceal hidden dangers and perils. A dangerous beast must live here, considering the gore and remains strewn about."
+    },
+    {
+        "number": 9,
+        "name": "Snowy Mountains",
+        "description": "The Ashen Taiga gives way to rougher terrain, elevation, and rapidly thinning trees."
+    },
+    {
+        "number": 10,
+        "name": "Scorched Frontier",
+        "description": "In the distant, there is a ruined caravan that looks like it is burnt to ashes. There are a few bodies nearby, as well as some burnt tents. The ground is covered with ash and burnt wood. It looks like a battle between monsters and humans happened."
+    },
+    {
+        "number": 11,
+        "name": "Arid Badlands",
+        "description": "A harsh and barren landscape, where the scorching sun beats down on rugged terrain, dotted with rocky outcroppings and sparse vegetation. The air is dry and the ground is parched, giving the feeling of a world devoid of life and water."
+    },
+    {
+        "number": 12,
+        "name": "Open Sea",
+        "description": "The open sea gives you a stunning view of the blue ocean, filled with salty waves. As far as you can see, you can see nothing but the massive, unending mass of water."
+    },
+    {
+        "number": 13,
+        "name": "Rugged Coastline",
+        "description": "A steep cliff-side, with massive rocks all over. It looks slippery and very hard to climb. You can hear ocean waves from the crashing rocks."
+    },
+    {
+        "number": 14,
+        "name": "Forgotten Bog",
+        "description": "A massive swamp, filled to the brim with thick, slimy moss. The trees are thin, bare, and twisted. It's wet, foggy, and smells of rotting flesh. In the distance, you can see the crumbling ruins of an abandoned temple, overrun and covered by fog."
+    },
+    {
+        "number": 15,
+        "name": "Misty Temple",
+        "description": "An ancient temple filled with a strange mist. The walls have ancient writing in an unknown language. The air in the temple is humid and misty, and the walls smell of mildew."
+    },
+    {
+        "number": 16,
+        "name": "Sulphur Pools",
+        "description": "A massive crater, with dark, poisonous liquids. The ground is covered in thick, poisonous sludge, and it smells of sulfur and dead fish. The area is incredibly dangerous."
+    },
+    {
+        "number": 17,
+        "name": "Golden Marshes",
+        "description": "A vast expanse of shimmering grasses and reeds, stretching out as far as the eye can see."
+    },
+    {
+        "number": 18,
+        "name": "Sheltered Crevices",
+        "description": "A hidden and isolated recess nestled deep within the Bloodsoaked Gorge. Despite the turmoil and danger of the surrounding landscape, the Sheltered Crevice provides a small oasis of calm and respite. The sound of rushing water from a nearby stream provides a calming background noise, and the walls provide protection from the harsh elements and violence outside."
+    },
+    {
+        "number": 19,
+        "name": "Dark Cavern",
+        "description": "A shadowy and eerie place, where the only light comes from the occasional flicker of a torch or the glow of luminescent fungi clinging to the walls. The air is damp and musty, and the sound of dripping water echoes through the twisting tunnels."
+    },
+    {
+        "number": 20,
+        "name": "Deep Abyss",
+        "description": "A foreboding and mysterious place, shrouded in darkness and unfathomable depths. The walls of the abyss are jagged and uneven, with strange rock formations and otherworldly creatures lurking in the shadows."
+    },
+    {
+        "number": 21,
+        "name": "Submerged Cave",
+        "description": "The cave is made up of black rocks, and looks slightly dangerous. The entire cave is flooded."
+    },
+    {
+        "number": 22,
+        "name": "Raging River",
+        "description": "A tumultuous and powerful force of nature, cutting a winding path through the landscape with an unrelenting force. The sound of rushing water fills the air, and the spray from the river's cascading rapids mists the surrounding rocks and trees."
+    },
+    {
+        "number": 23,
+        "name": "Frozen Lake",
+        "description": "A vast expanse of icy blue stretching out to the horizon, surrounded by snow-covered trees and mountains. The air is crisp and biting, and the only sounds are the creaking of the ice and the occasional howl of the wind."
+    },
+    {
+        "number": 24,
+        "name": "Jagged Peaks",
+        "description": "A rugged and treacherous mountain range where the sharp peaks reach toward the sky like the teeth of a giant beast. The air is thin and crisp, and the wind howls through the jagged crevices."
+    },
+    {
+        "number": 25,
+        "name": "Peaceful Promontory",
+        "description": "TBW"
+    },
+    {
+        "number": 26,
+        "name": "Hidden Valley",
+        "description": "A verdant and lush valley hidden away from the world, where the air is thick with the scent of fresh herbs and the sound of buzzing bees. It's a place where one can feel connected to nature and the beauty of the earth, much like the classic salad dressing that bears its name."
+    },
+    {
+        "number": 27,
+        "name": "Crop Fields",
+        "description": "A picturesque and bountiful expanse of farmland nestled within the Hidden Valley. The fields are lush and green, bursting with an abundance of crops, from tall stalks of corn to rows of plump pumpkins."
+    },
+    {
+        "number": 28,
+        "name": "Cliffside Roost",
+        "description": "A perilous and foreboding location perched on the edge of a sheer cliff, where a fearsome dragon has made its lair. The dragon's presence is felt in the scorch marks on the rock face and the occasional echoing roar that shakes the nearby trees."
+    },
+    {
+        "number": 29,
+        "name": "Glacial Highlands",
+        "description": "A frigid and forbidding landscape where the imposing peaks of glaciers rise above the frozen tundra like jagged teeth. The air is biting cold and thin, and the wind howls through the icy crevices."
+    },
+    {
+        "number": 30,
+        "name": "Red Barn",
+        "description": "A charming and rustic structure nestled within the verdant landscape of the Hidden Valley. The barn's red-painted walls stand out against the sea of green, creating a picturesque scene straight out of a postcard."
+    },
+    {
+        "number": 31,
+        "name": "Loft",
+        "description": "A spacious and airy area located within the Red Barn, accessible by a steep staircase. The loft is filled with the scent of fresh hay and the sound of chirping birds."
+    },
+    {
+        "number": 32,
+        "name": "Roof",
+        "description": "A flat expanse of weathered shingles located atop the Red Barn, offering an expansive view of the surrounding countryside. From the Roof, one can see the verdant fields of the Hidden Valley stretching out to the horizon, with distant hills and mountains providing a dramatic backdrop."
+    },
+    {
+        "number": 33,
+        "name": "Wintery Thicket",
+        "description": "A tranquil yet forbidding place where the biting cold of winter has turned the thicket into a snowy wonderland. The trees are bare and the underbrush is buried beneath a blanket of snow, making navigation difficult."
+    },
+    {
+        "number": 34,
+        "name": "Dusty Ruins",
+        "description": "A desolate place where the remnants of a forgotten civilization lie scattered amidst the shifting sands. The ruins are weathered and worn, their grandeur faded to mere shadows of their former glory."
+    },
+    {
+        "number": 35,
+        "name": "Smoldering Sands",
+        "description": "A scorching desert expanse where the golden sand dances in the relentless heat, shadows stretch like mountains, and the air is thick with the scent of dry sand and smoke."
+    },
+    {
+        "number": 36,
+        "name": "Dire Pits",
+        "description": "A gaping chasm of darkness filled with the scent of sulfur and brimstone, where jagged walls and otherworldly sounds create an overwhelming sense of unease."
+    },
+    {
+        "number": 37,
+        "name": "Rayless Depths",
+        "description": "A dark and eerie underwater expanse where the sunlight never penetrates, leaving only the dim glow of bioluminescent creatures and the faint shimmer of phosphorescent algae."
+    },
+    {
+        "number": 38,
+        "name": "Korpijnen Shores",
+        "description": "TBW"
+    },
+    {
+        "number": 39,
+        "name": "Hiemal Inlet",
+        "description": "TBW"
+    },
+    {
+        "number": 40,
+        "name": "Remote Estuary",
+        "description": "TBW"
+    }
+]
