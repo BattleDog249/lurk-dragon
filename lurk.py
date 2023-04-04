@@ -140,12 +140,26 @@ class Room:
         """
         Room.rooms.update({room.number: [room.name, room.description_len, room.description]})
         
-    def get_room(room_number):
+    def get_room(number):
         """ Returns a room with the given number. If the room is not found, returns None.
         """
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
-        print(f'DEBUG: Room(s) found with number {room_number}: {room}')
+        room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2])
+        print(f'DEBUG: Room found with number {room.number}: {room}')
         return room
+    
+    def send_room(skt, room):
+        """ Packs a room message into bytes with the given room object and sends it to the given socket object.
+        """
+        if type(skt) is not socket.socket:
+            raise TypeError('skt must be a socket object!')
+        if type(room) is not Room:
+            raise TypeError('room must be a Room object!')
+        packed = struct.pack(f'<BH32sH{room.description_len}s', ROOM, room.number, room.name.encode(), room.description_len, room.description.encode())
+        status = send(skt, packed)
+        if status != 0:
+            print(Fore.RED+'ERROR: write: socket.error, returning None!')
+            return None
 
 @dataclass
 class Connection:
