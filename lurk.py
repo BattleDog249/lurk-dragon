@@ -143,7 +143,7 @@ class Room:
     def get_room(number):
         """ Returns a room with the given number. If the room is not found, returns None.
         """
-        room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if Room.rooms[room_number] == room_number]
+        room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
         room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2])
         print(f'DEBUG: Room found with number {room.number}: {room}')
         return room
