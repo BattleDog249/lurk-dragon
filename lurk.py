@@ -69,7 +69,6 @@ class Character:
         """
         character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and target_name == name]
         character = Character(name=character[0][0], flag=character[0][1][0], attack=character[0][1][1], defense=character[0][1][2], regen=character[0][1][3], health=character[0][1][4], gold=character[0][1][5], room=character[0][1][6], description_len=character[0][1][7], description=character[0][1][8])
-        print(f'DEBUG: Character found with name {target_name}: {character}')
         return character
     
     def get_characters_with_room(room):
@@ -80,7 +79,6 @@ class Character:
         for character in characters_with_room:
             character_with_room = Character(name=character[0], flag=character[1][0], attack=character[1][1], defense=character[1][2], regen=character[1][3], health=character[1][4], gold=character[1][5], room=character[1][6], description_len=character[1][7], description=character[1][8])
             characters.append(character_with_room)
-        print(f'DEBUG: Character(s) found in room {room}: {characters}')
         return characters
     
     def update_character(character):
@@ -145,7 +143,6 @@ class Room:
         """
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
         room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2])
-        print(f'DEBUG: Room found with number {room.number}: {room}')
         return room
     
     def send_room(skt, room):

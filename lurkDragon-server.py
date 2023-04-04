@@ -57,7 +57,6 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r') as c
     for character in characters_data:
         character = lurk.Character(name=character['name'], flag=character['flag'], attack=character['attack'], defense=character['defense'], regen=character['regen'], health=character['health'], gold=character['gold'], room=character['room'], description_len=len(character['description']), description=character['description'])
         lurk.Character.update_character(character)
-        print(f'DEBUG: character as dataclass: {character}')
 # Room dictionary containing all rooms in the game.
 #   Key (int): Room Number
 #   Value (list): [name, description_len, description]
@@ -66,7 +65,6 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r') as rooms_
     for room in rooms_data:
         room = lurk.Room(number=room['number'], name=room['name'], description_len=len(room['description']), description=room['description'])
         lurk.Room.update_room(room)
-        print(f'DEBUG: room as dataclass: {room}')
 errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Cannot change to requested room.',
