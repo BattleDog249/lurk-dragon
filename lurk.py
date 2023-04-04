@@ -124,6 +124,30 @@ class Character:
             return None
 
 @dataclass
+class Error:
+    """ A class that represents an error message in the game. This class is used to store information about an error, and to retrieve information about an error.
+    """
+    number: c_uint8
+    description_len: c_uint16
+    description: str
+    errors = {}
+    def send_error(skt, code):
+        """ Retrieves the error message with the given code from the errors dictionary, packs it into bytes, and sends it to the given socket object.
+        """
+        if type(skt) is not socket.socket:
+            raise TypeError('skt must be a socket object!')
+        if type(code) is not int:
+            raise TypeError('code must be an int object!')
+        if code not in Error.errors:
+            raise ValueError('code must be a valid error code!')
+        error = Error(number=code, description_len=Error.errors[code][0], description=Error.errors[code][1])
+        packed = struct.pack(f'<B3H{error.description_len}s', ERROR, error.number, error.description_len, error.description.encode())
+        status = send(skt, packed)
+        if status != 0:
+            print(Fore.RED+'ERROR: write: socket.error, returning None!')
+            return None
+
+@dataclass
 class Room:
     """ A class that represents a room in the game. This class is used to store information about a room, and to retrieve information about a room.
     """
@@ -131,7 +155,7 @@ class Room:
     name: str
     description_len: c_uint16
     description: str
-    # Key (int): number, Value (tuple): (name, room_description)
+    # Key (int): number, Value (tuple): (name, description_len, description)
     rooms = {}
     def update_room(room):
         """ Updates the room with the given room object in the rooms dictionary, or adds it if it doesn't exist.
@@ -169,7 +193,7 @@ class Connection:
     connections = {}
     def get_connection(number):
         """"""
-        connection = [(number, connection_info) for number, connection_info in Connection.connections.items() if Connection.connections[number] == number]
+        connection = [(room_number, connection_info) for room_number, connection_info in Connection.connections.items() if number in Connection.connections and Connection.connections[number] == number]
         print(f'DEBUG: Connection(s) found with number {number}: {connection}')
         return connection
 

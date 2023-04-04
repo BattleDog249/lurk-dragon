@@ -1,0 +1,42 @@
+[
+    {
+        "number": 0,
+        "message": "ERROR: This message type is not supported!"
+    },
+    {
+        "number": 1,
+        "message": "ERROR: Bad Room! Cannot change to requested room."
+    },
+    {
+        "number": 2,
+        "message": "ERROR: Player Exists. Attempt to create a player that already exists."
+    },
+    {
+        "number": 3,
+        "message": "ERROR: Bad Monster. Cannot loot a nonexistent, not present, or living monster."
+    },
+    {
+        "number": 4,
+        "message": "ERROR: Stat error. Caused by setting inappropriate player stats. Try again!"
+    },
+    {
+        "number": 5,
+        "message": "ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER."
+    },
+    {
+        "number": 6,
+        "message": "ERROR: No target. Attempt to loot nonexistent players, fight players in different rooms, message someone offline, etc."
+    },
+    {
+        "number": 7,
+        "message": "ERROR: No fight. Sent if the requested fight cannot happen for some reason, like no live monsters in room."
+    },
+    {
+        "number": 8,
+        "message": "ERROR: Player vs. player combat is not currently supported on this server."
+    },
+    {
+        "number": 9,
+        "message": "ERROR: Monster. Cannot create or reprise a monster character."
+    }
+]
