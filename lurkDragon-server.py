@@ -335,7 +335,7 @@ def handle_client(skt):
             # Send ROOM message
             #lurk.write(skt, (lurk.ROOM, player.room, lurk.Room.rooms[player.room][0], len(lurk.Room.rooms[player.room][1]), lurk.Room.rooms[player.room][1]))
             room = lurk.Room.get_room(player.room)
-            lurk.Room.send_room(room)
+            lurk.Room.send_room(skt, room)
             mutex = threading.Lock()
             mutex.acquire()
             # Send all characters in room, including player
