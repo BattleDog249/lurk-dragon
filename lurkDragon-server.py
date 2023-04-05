@@ -1,5 +1,4 @@
-"""Logan's LURK Server
-"""
+"""Logan's LURK Server"""
 #!/usr/bin/env python3
 
 import json
@@ -32,21 +31,17 @@ GAME_DESCRIPTION_LEN = int(len(GAME_DESCRIPTION))
 
 names = {}
 def add_name(skt, name):
-    """Function for adding a character name: socket pair to the names dictionary.
-    """
+    """Function for adding a character name: socket pair to the names dictionary."""
     names.update({name: skt})
 def del_name(name):
-    """ Function for deleting a character name: socket pair from the names dictionary.
-    """
+    """Function for deleting a character name: socket pair from the names dictionary."""
     return names.pop(name)
 sockets = {}
 def add_socket(skt, name):
-    """Function for adding a socket: name pair to the sockets dictionary.
-    """
+    """Function for adding a socket: name pair to the sockets dictionary."""
     sockets.update({skt: name})
 def del_socket(skt):
-    """ Function for deleting a socket: name pair from the sockets dictionary.
-    """
+    """Function for deleting a socket: name pair from the sockets dictionary."""
     return sockets.pop(skt)
 
 # Character dictionary containing all monsters and characters in the game.
@@ -121,11 +116,7 @@ connections = {
     40: (13,)
 }
 def cleanup_client(skt):
-    """Function for cleaning up a disconnected client.
-
-    Args:
-        skt (socket): Client socket.
-    """
+    """Function for cleaning up a disconnected client."""
     if skt in sockets:
         player = lurk.Character.get_character_with_name(sockets[skt])
         player.flag ^= lurk.READY | lurk.STARTED  # This needs varification, basically set ready & started flags to 0, keeping all other flags the same.
@@ -139,11 +130,7 @@ def cleanup_client(skt):
     skt.close()
     print(Fore.WHITE+'INFO: cleanup_client: Finished!')
 def handle_client(skt):
-    """ Thread function for handling a client.
-
-    Args:
-        skt (socket): Client socket.
-    """
+    """Thread function for handling a client."""
     while True:
         message = lurk.read(skt)
         if not message:
