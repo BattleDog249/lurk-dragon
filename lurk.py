@@ -2,9 +2,10 @@
 """
 #!/usr/bin/env python3
 
-from ctypes import *
 import socket
 import struct
+
+from ctypes import c_uint8, c_uint16, c_int16
 from dataclasses import dataclass
 
 from colorama import Fore
@@ -45,10 +46,6 @@ STARTED = 0b00010000
 READY = 0b00001000
 
 @dataclass
-class Start:
-    message_type = int(6)
-
-@dataclass
 class Character:
     """ A class that represents a character in the game. This class is used to store information about a character, and to retrieve information about a character.
     """
@@ -70,7 +67,6 @@ class Character:
         character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and target_name == name]
         character = Character(name=character[0][0], flag=character[0][1][0], attack=character[0][1][1], defense=character[0][1][2], regen=character[0][1][3], health=character[0][1][4], gold=character[0][1][5], room=character[0][1][6], description_len=character[0][1][7], description=character[0][1][8])
         return character
-    
     def get_characters_with_room(room):
         """ Returns a list of character objects that are in the given room. If no characters are found, returns an empty list.
         """
@@ -80,12 +76,10 @@ class Character:
             character_with_room = Character(name=character[0], flag=character[1][0], attack=character[1][1], defense=character[1][2], regen=character[1][3], health=character[1][4], gold=character[1][5], room=character[1][6], description_len=character[1][7], description=character[1][8])
             characters.append(character_with_room)
         return characters
-    
     def update_character(character):
         """ Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist.
         """
         Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
-    
     def recv_character(socket):
         """ Receives a character message from the given socket, and unpacks it into a character object that is returned.
             UNTESTED AND PROBABLY BROKEN
@@ -109,19 +103,19 @@ class Character:
         except struct.error:
             print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
             return None
-    
     def send_character(skt, character):
         """ Packs a character message into bytes with the given character object and sends it to the given socket object.
         """
-        if type(skt) is not socket.socket:
+        if not isinstance(skt, socket.socket):
             raise TypeError('skt must be a socket object!')
-        if type(character) is not Character:
+        if not isinstance(character, Character):
             raise TypeError('character must be a Character object!')
         packed = struct.pack(f'<B32sB3Hh3H{character.description_len}s', CHARACTER, character.name.encode(), character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description.encode())
         status = send(skt, packed)
         if status != 0:
             print(Fore.RED+'ERROR: write: socket.error, returning None!')
             return None
+        return status
 
 @dataclass
 class Error:
@@ -134,9 +128,9 @@ class Error:
     def send_error(skt, code):
         """ Retrieves the error message with the given code from the errors dictionary, packs it into bytes, and sends it to the given socket object.
         """
-        if type(skt) is not socket.socket:
+        if not isinstance(skt, socket.socket):
             raise TypeError('skt must be a socket object!')
-        if type(code) is not int:
+        if not isinstance(code, int):
             raise TypeError('code must be an int object!')
         if code not in Error.errors:
             raise ValueError('code must be a valid error code!')
@@ -146,6 +140,7 @@ class Error:
         if status != 0:
             print(Fore.RED+'ERROR: write: socket.error, returning None!')
             return None
+        return status
 
 @dataclass
 class Room:
@@ -161,30 +156,30 @@ class Room:
         """ Updates the room with the given room object in the rooms dictionary, or adds it if it doesn't exist.
         """
         Room.rooms.update({room.number: [room.name, room.description_len, room.description]})
-        
     def get_room(number):
         """ Returns a room with the given number. If the room is not found, returns None.
         """
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
         room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2])
         return room
-    
     def send_room(skt, room):
         """ Packs a room message into bytes with the given room object and sends it to the given socket object.
         """
-        if type(skt) is not socket.socket:
+        if not isinstance(skt, socket.socket):
             raise TypeError('skt must be a socket object!')
-        if type(room) is not Room:
+        if not isinstance(room, Room):
             raise TypeError('room must be a Room object!')
         packed = struct.pack(f'<BH32sH{room.description_len}s', ROOM, room.number, room.name.encode(), room.description_len, room.description.encode())
         status = send(skt, packed)
         if status != 0:
             print(Fore.RED+'ERROR: write: socket.error, returning None!')
             return None
+        return status
 
 @dataclass
 class Connection:
-    """"""
+    """ A class that represents a connection in the game. This class is used to store information about a connection, and to retrieve information about a connection.
+    """
     number: c_uint16
     name: str
     description_len: c_uint16
@@ -192,7 +187,8 @@ class Connection:
     # Key (int): number (==room_number), Value (list of tuples): [(room_number, )]
     connections = {}
     def get_connection(number):
-        """"""
+        """ Returns a connection with the given number. If the connection is not found, returns None.
+        """
         connection = [(room_number, connection_info) for room_number, connection_info in Connection.connections.items() if number in Connection.connections and Connection.connections[number] == number]
         print(f'DEBUG: Connection(s) found with number {number}: {connection}')
         return connection
@@ -588,7 +584,7 @@ def write(skt, lurk_message):
             raise struct.error from exc
     else:
         print(Fore.YELLOW+f'WARN: write: Invalid message passed to write: {lurk_message}')
-        print(Fore.RED+f'WARN: write: Sending invalid message to socket, hope you are debugging!')
+        print(Fore.RED+'WARN: write: Sending invalid message to socket, hope you are debugging!')
         status = send(skt, lurk_message)
         if status != 0:
             print(Fore.RED+'ERROR: write: socket.error, returning None!')
