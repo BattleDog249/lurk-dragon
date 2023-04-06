@@ -133,12 +133,15 @@ def handle_client(skt):
     """Thread function for handling a client."""
     while True:
         #message = lurk.read(skt)
-        lurk_type = skt.recv(1)
-        print('DEBUG: lurk_type:', lurk_type)
+        lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
             print(Fore.RED+'ERROR: handle_client: lurk.recv returned None, breaking while loop!')
             cleanup_client(skt)
             break
+        lurk_type, = struct.unpack('<B', lurk_type)
+        if lurk_type < 1 or lurk_type > 14:
+            print(Fore.RED+f'ERROR: read: {lurk_type} not a valid lurk message type!')
+            continue
         if lurk_type == lurk.MESSAGE:
             lurk_type, msg_len, recipient_name, sender_name, message = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
