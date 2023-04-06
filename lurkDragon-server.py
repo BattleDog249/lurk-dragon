@@ -134,6 +134,7 @@ def handle_client(skt):
     while True:
         #message = lurk.read(skt)
         lurk_type = skt.recv(1)
+        print('DEBUG: lurk_type:', lurk_type)
         if not lurk_type:
             print(Fore.RED+'ERROR: handle_client: lurk.recv returned None, breaking while loop!')
             cleanup_client(skt)
