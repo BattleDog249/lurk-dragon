@@ -312,7 +312,7 @@ class Character:
         name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
         character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
         return character
-def send_character(skt, character):
+    def send_character(skt, character):
         """Packs a character message into bytes with the given character object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the character parameter is not a Character object."""
         if not isinstance(skt, socket.socket):
             raise TypeError("Provided skt parameter must be a socket object!")
