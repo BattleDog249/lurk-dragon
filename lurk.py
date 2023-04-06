@@ -215,7 +215,7 @@ class Room:
     rooms = {}
     def update_room(room):
         """Updates the room with the given room object in the rooms dictionary, or adds it if it doesn't exist."""
-        Room.rooms.update({room.number: [room.name, room.description_len, room.description]})
+        Room.rooms.update({room.number: [room.name, room.description_len, room.description, room.connections]})
     def get_room(number):
         """Returns a room with the given number. If the room is not found, returns None."""
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
