@@ -99,8 +99,19 @@ class Loot:
     target_name: str
     lurk_type: c_uint8 = LOOT
     def recv_loot(skt):
-        """"""
-        pass
+        """Receives a loot message from the given socket, and unpacks it into a loot object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        loot_header = recv(skt, LOOT_LEN - 1)
+        if not loot_header:
+            print(Fore.RED+"ERROR: recv_loot: Socket connection broken, returning None!")
+            return None
+        try:
+            target_name, = struct.unpack('<32s', loot_header)
+        except struct.error:
+            raise struct.error("Failed to unpack loot_header!")
+        loot = Loot(target_name=target_name.decode())
+        return loot
     def send_loot(skt, loot):
         """"""
         pass
@@ -119,6 +130,7 @@ class Start:
         if bytes_sent != len(packed):
             print(Fore.RED+f'ERROR: send_start: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!')
             return None
+        print(Fore.WHITE+f'DEBUG: send_start: Sent {bytes_sent} byte START!')
         return bytes_sent
 
 @dataclass
@@ -127,7 +139,30 @@ class Error:
     number: c_uint8
     description_len: c_uint16
     description: str
+    lurk_type: c_uint8 = ERROR
     errors = {}
+    def recv_error(skt):
+        """Receives an error message from the given socket, and unpacks it into a error object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        error_header = recv(skt, ERROR_LEN - 1)
+        if not error_header:
+            print(Fore.RED+"ERROR: recv_error: Socket connection broken, returning None!")
+            return None
+        try:
+            number, description_len = struct.unpack('<BH', error_header)
+        except struct.error:
+            raise struct.error("Failed to unpack error_header!")
+        room_data = recv(skt, description_len)
+        if not room_data:
+            print(Fore.RED+"ERROR: recv_error: Socket connection broken, returning None!")
+            return None
+        try:
+            description, = struct.unpack(f'<{description_len}s', room_data)
+        except struct.error:
+            raise struct.error("Failed to unpack error_data!")
+        error = Error(number=number, description_len=description_len, description=description.decode())
+        return error
     def send_error(skt, code):
         """Retrieves the error message with the given code from the errors dictionary, packs it into bytes, and sends it to the given socket object."""
         if not isinstance(skt, socket.socket):
@@ -137,13 +172,13 @@ class Error:
         if code not in Error.errors:
             raise ValueError('code must be a valid error code!')
         error = Error(number=code, description_len=Error.errors[code][0], description=Error.errors[code][1])
-        packed = struct.pack(f'<B3H{error.description_len}s', ERROR, error.number, error.description_len, error.description.encode())
-        status = send(skt, packed)
-        if status != 0:
-            print(Fore.RED+'ERROR: write: socket.error, returning None!')
+        packed = struct.pack(f'<B3H{error.description_len}s', error.lurk_type, error.number, error.description_len, error.description.encode())
+        bytes_sent = send(skt, packed)
+        if bytes_sent != len(packed):
+            print(Fore.RED+f"ERROR: send_error: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
-        return status
-
+        print(Fore.WHITE+f'DEBUG: send_error: Sent {bytes_sent} byte ERROR!')
+        return bytes_sent
 @dataclass
 class Accept:
     """A class that represents an accept message in the game. This class is used to store information about an accept message, and to retrieve information about an accept message."""
@@ -164,6 +199,7 @@ class Accept:
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_accept: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
+        print(Fore.WHITE+f'DEBUG: send_accept: Sent {bytes_sent} byte ACCEPT!')
         return bytes_sent
 
 @dataclass
@@ -184,9 +220,28 @@ class Room:
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
         room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2])
         return room
-    def recv_room():
-        """"""
-        pass
+    def recv_room(skt):
+        """Receives a room message from the given socket, and unpacks it into a room object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        room_header = recv(skt, ROOM_LEN - 1)
+        if not room_header:
+            print(Fore.RED+"ERROR: recv_room: Socket connection broken, returning None!")
+            return None
+        try:
+            number, name, description_len = struct.unpack('<H32sH', room_header)
+        except struct.error:
+            raise struct.error("Failed to unpack room_header!")
+        room_data = recv(skt, description_len)
+        if not room_data:
+            print(Fore.RED+"ERROR: recv_room: Socket connection broken, returning None!")
+            return None
+        try:
+            description, = struct.unpack(f'<{description_len}s', room_data)
+        except struct.error:
+            raise struct.error("Failed to unpack room_data!")
+        room = Room(number=number, name=name.decode(), description_len=description_len, description=description.decode())
+        return room
     def send_room(skt, room):
         """Packs a room message into bytes with the given room object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the room parameter is not a Room object."""
         if not isinstance(skt, socket.socket):
@@ -198,6 +253,7 @@ class Room:
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_room: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
+        print(Fore.WHITE+f'DEBUG: send_room: Sent {bytes_sent} byte ROOM!')
         return bytes_sent
 
 @dataclass
@@ -233,28 +289,30 @@ class Character:
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
         Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
-    def recv_character(socket):
-        """Receives a character message from the given socket, and unpacks it into a character object that is returned."""
-        try:
-            lurk_header = recv(socket, CHARACTER_LEN - 1)
-            if not lurk_header:
-                print(Fore.RED+'ERROR: read: socket.error, returning None!')
-                return None
-            print(Fore.WHITE+f'DEBUG: read: lurk_header: {lurk_header}')
-            name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack(Character.struct_format, lurk_header)
-            lurk_data = recv(socket, description_len)
-            if not lurk_data:
-                print(Fore.RED+'ERROR: read: socket.error, returning None!')
-                return None
-            print(Fore.WHITE+f'DEBUG: read: lurk_data: {lurk_data}')
-            description, = struct.unpack(f'<{description_len}s', lurk_data)
-            name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
-            character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
-            return character
-        except struct.error:
-            print(Fore.RED+'ERROR: read: Failed to unpack lurk_header/data!')
+    def recv_character(skt):
+        """Receives a character message from the given socket, and unpacks it into a character object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        character_header = recv(skt, CHARACTER_LEN - 1)
+        if not character_header:
+            print(Fore.RED+"ERROR: recv_character: Socket connection broken, returning None!")
             return None
-    def send_character(skt, character):
+        try:
+            name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack(Character.struct_format, character_header)
+        except struct.error:
+            raise struct.error("Failed to unpack character_header!")
+        character_data = recv(skt, description_len)
+        if not character_data:
+            print(Fore.RED+"ERROR: recv_character: Socket connection broken, returning None!")
+            return None
+        try:
+            description, = struct.unpack(f'<{description_len}s', character_data)
+        except struct.error:
+            raise struct.error("Failed to unpack character_data!")
+        name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
+        character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
+        return character
+def send_character(skt, character):
         """Packs a character message into bytes with the given character object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the character parameter is not a Character object."""
         if not isinstance(skt, socket.socket):
             raise TypeError("Provided skt parameter must be a socket object!")
@@ -265,6 +323,7 @@ class Character:
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_character: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
+        print(Fore.WHITE+f'DEBUG: send_character: Sent {bytes_sent} byte CHARACTER!')
         return bytes_sent
 
 @dataclass
@@ -276,8 +335,27 @@ class Game:
     description: str
     lurk_type: c_uint8 = 11
     def recv_game(skt):
-        """"""
-        pass
+        """Receives a game message from the given socket, and unpacks it into a game object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        game_header = recv(skt, CONNECTION_LEN - 1)
+        if not game_header:
+            print(Fore.RED+"ERROR: recv_game: Socket connection broken, returning None!")
+            return None
+        try:
+            init_points, stat_limit, description_len = struct.unpack('<3H', game_header)
+        except struct.error:
+            raise struct.error("Failed to unpack game_header!")
+        game_data = recv(skt, description_len)
+        if not game_data:
+            print(Fore.RED+"ERROR: recv_game: Socket connection broken, returning None!")
+            return None
+        try:
+            description, = struct.unpack(f'<{description_len}s', game_data)
+        except struct.error:
+            raise struct.error("Failed to unpack game_data!")
+        game = Game(init_points=init_points,stat_limit=stat_limit, description_len=description_len, description=description.decode('utf-8', 'ignore'))
+        return game
     def send_game(skt, game):
         """Packs a game message into bytes with the given game object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the game parameter is not a Game object."""
         if not isinstance(skt, socket.socket):
@@ -297,9 +375,6 @@ class Leave:
     """A class that represents a leave in the game. This class is used to store information about a leave, and to retrieve information about a leave."""
     lurk_type: c_uint8 = LEAVE
     struct_format: str = '<B'
-    def recv_leave(skt):
-        """"""
-        pass
     def send_leave(skt):
         """Packs a leave message into bytes and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object."""
         if not isinstance(skt, socket.socket):
@@ -309,6 +384,7 @@ class Leave:
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_leave: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
+        print(Fore.WHITE+f'DEBUG: send_leave: Sent {bytes_sent} byte LEAVE!')
         return bytes_sent
 
 @dataclass
@@ -327,11 +403,40 @@ class Connection:
         print(f'DEBUG: Connection(s) found with number {number}: {connection}')
         return connection
     def recv_connection(skt):
-        """"""
-        pass
+        """Receives a connection message from the given socket, and unpacks it into a connection object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        connection_header = recv(skt, CONNECTION_LEN - 1)
+        if not connection_header:
+            print(Fore.RED+"ERROR: recv_connection: Socket connection broken, returning None!")
+            return None
+        try:
+            number, name, description_len = struct.unpack('<H32sH', connection_header)
+        except struct.error:
+            raise struct.error("Failed to unpack connection_header!")
+        connection_data = recv(skt, description_len)
+        if not connection_data:
+            print(Fore.RED+"ERROR: recv_connection: Socket connection broken, returning None!")
+            return None
+        try:
+            description, = struct.unpack(f'<{description_len}s', connection_data)
+        except struct.error:
+            raise struct.error("Failed to unpack connection_data!")
+        connection = Connection(number=number, name=name.decode('utf-8', 'ignore'), description_len=description_len, description=description.decode('utf-8', 'ignore'))
+        return connection
     def send_connection(skt, connection):
-        """Packs a Connection message into bytes with the given connection object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the connection parameter is not a Connection object."""
-        pass
+        """Packs a connection message into bytes with the given connection object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the connection parameter is not a Connection object."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        if not isinstance(connection, Connection):
+            raise TypeError("Provided connection parameter must be a Connection object!")
+        packed = struct.pack(f'<BH32sH{connection.description_len}s', connection.lurk_type,  connection.number, connection.name.encode(), connection.description_len, connection.description.encode())
+        bytes_sent = send(skt, packed)
+        if bytes_sent != len(packed):
+            print(Fore.RED+f"ERROR: send_connection: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
+            return None
+        print(Fore.WHITE+f'DEBUG: send_connection: Sent {bytes_sent} byte CONNECTION!')
+        return bytes_sent
 
 @dataclass
 class Version:
