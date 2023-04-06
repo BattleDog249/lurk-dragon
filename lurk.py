@@ -209,6 +209,7 @@ class Room:
     name: str
     description_len: c_uint16
     description: str
+    connections: list
     lurk_type: c_uint8 = ROOM
     # Key (int): number, Value (tuple): (name, description_len, description)
     rooms = {}
@@ -395,14 +396,26 @@ class Connection:
     description_len: c_uint16
     description: str
     lurk_type: c_uint8 = CONNECTION
-    # Key (int): number (==room_number), Value (list of tuples): [(room_number, )]
-    connections = {}
-    def get_connection(number):
-        """Returns a connection with the given number. If the connection is not found, returns None."""
-        connection = [(room_number, connection_info) for room_number, connection_info in Connection.connections.items() if number in Connection.connections and Connection.connections[number] == number]
-        connection = Connection(number=connection[0], name=connection[0][0], description_len=connection[0][1], description=connection[0][2])
-        print(f'DEBUG: Connection(s) found with number {number}: {connection}')
-        return connection
+    def get_connections_with_room(number):
+        """Returns a list of connections that are connected to the given room number."""
+        connections = Room.get_room(number).connections
+        connections_to_return = []
+        for connection in connections:
+            connection = Room.get_room(connection)
+            connections_to_return.append(connection)
+        print(Fore.WHITE+f'DEBUG: Connection(s) to room {number}: {connections_to_return}')
+        return connections_to_return
+    def send_connections_with_room(skt, number):
+        """"""
+        connections = Room.get_room(number).connections
+        connections_list = []
+        for connection in connections:
+            connection = Room.get_room(connection)
+            connections_list.append(connection)
+        for room in connections_list:
+            print(Fore.WHITE+f'DEBUG: Sending connection to room {room.name} to client')
+            bytes_sent = Room.send_room(skt, room)
+        return bytes_sent
     def recv_connection(skt):
         """Receives a connection message from the given socket, and unpacks it into a connection object that is returned, or None if an error occurred."""
         if not isinstance(skt, socket.socket):

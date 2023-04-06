@@ -58,7 +58,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', enco
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding='utf-8') as rooms_json:
     game_map = json.load(rooms_json)
     for location in game_map:
-        location = lurk.Room(number=location['number'], name=location['name'], description_len=len(location['description']), description=location['description'])
+        location = lurk.Room(number=location['number'], name=location['name'], description_len=len(location['description']), description=location['description'], connections=location['connections'])
         lurk.Room.update_room(location)
 errors = {
     0: 'ERROR: This message type is not supported!',
