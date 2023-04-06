@@ -330,7 +330,9 @@ def handle_client(skt):
                 if room_num != player.room:
                     continue
                 for connection in connections:
-                    lurk.write(skt, (lurk.CONNECTION, connection, lurk.Room.rooms[connection][1], lurk.Room.rooms[connection][2], lurk.Room.rooms[connection][3]))
+                    connection = lurk.Connection.get_connection(connection)
+                    lurk.Connection.send_connection(skt, connection)
+                    #lurk.write(skt, (lurk.CONNECTION, connection, lurk.Room.rooms[connection][1], lurk.Room.rooms[connection][2], lurk.Room.rooms[connection][3]))
             continue
         elif lurk_type == lurk.ERROR:
             lurk_type, error_code, error_msg_len, error_msg = message
