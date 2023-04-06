@@ -68,61 +68,6 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\errors.json', 'r', encoding
     for error in errors_list:
         error = lurk.Error(code=error['number'], description_len=len(error['message']), description=error['message'])
         lurk.Error.update_error(error)
-errors = {
-    0: 'ERROR: This message type is not supported!',
-    1: 'ERROR: Bad Room! Cannot change to requested room.',
-    2: 'ERROR: Player Exists. Attempt to create a player that already exists.',
-    3: 'ERROR: Bad Monster. Cannot loot a nonexistent, not present, or living monster.',
-    4: 'ERROR: Stat error. Caused by setting inappropriate player stats. Try again!',
-    5: 'ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER.',
-    6: 'ERROR: No target. Attempt to loot nonexistent players, fight players in different rooms, message someone offline, etc.',
-    7: 'ERROR: No fight. Sent if the requested fight cannot happen for some reason, like no live monsters in room.',
-    8: 'ERROR: Player vs. player combat is not currently supported on this server.',
-    9: 'ERROR: Monster. Cannot create or reprise a monster character.'
-    }
-connections = {
-    0: (1,),
-    1: (2, 3, 4, 5),
-    2: (1, 6, 7),
-    3: (1, 8, 9),
-    4: (1, 10, 11),
-    5: (1, 12, 13),
-    6: (2,),
-    7: (2, 14, 16),
-    8: (3, 18, 22),
-    9: (3, 23, 26, 29),
-    10: (4, 34),
-    11: (4, 35),
-    12: (5, 37),
-    13: (5, 38, 40),
-    14: (7, 15, 16),
-    15: (14,),
-    16: (7, 14, 17),
-    17: (16,),
-    18: (8, 19),
-    19: (18, 20, 21),
-    20: (19,),
-    21: (19, 22, 23),
-    22: (8,),
-    23: (9, 24),
-    24: (23, 25, 28),
-    25: (24,),
-    26: (9, 27, 30),
-    27: (26, 30),
-    28: (24,),
-    29: (9, 33),
-    30: (26, 27, 31),
-    31: (30, 32),
-    32: (31,),
-    33: (29,),
-    34: (10,),
-    35: (11, 36),
-    36: (35,),
-    37: (12,),
-    38: (13, 39),
-    39: (38,),
-    40: (13,)
-}
 def cleanup_client(skt):
     """Function for cleaning up a disconnected client."""
     if skt in sockets:
