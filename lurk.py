@@ -64,8 +64,19 @@ class Changeroom:
     target_room: c_uint16
     lurk_type: c_uint8 = CHANGEROOM
     def recv_changeroom(skt):
-        """"""
-        pass
+        """Receives a changeroom message from the given socket, and unpacks it into a changeroom object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        changeroom_header = recv(skt, CHANGEROOM_LEN - 1)
+        if not changeroom_header:
+            print(Fore.RED+"ERROR: recv_changeroom: Socket connection broken, returning None!")
+            return None
+        try:
+            number, = struct.unpack('<H', changeroom_header)
+        except struct.error:
+            raise struct.error("Failed to unpack changeroom_header!")
+        changeroom = Changeroom(target_room=number)
+        return changeroom
     def send_changeroom(skt, changeroom):
         """"""
         pass

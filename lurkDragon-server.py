@@ -160,7 +160,7 @@ def handle_client(skt):
             lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, recipient_name, sender_name, message))
             continue
         elif lurk_type == lurk.CHANGEROOM:
-            lurk_type, new_room = message
+            changeroom = lurk.Changeroom.recv_changeroom(skt)
             if skt not in sockets:
                 error_code = 5
                 print(Fore.YELLOW+f'WARN: Player not ready, sending ERROR code {error_code}!')
@@ -168,7 +168,7 @@ def handle_client(skt):
                 continue
             # Get current player information
             player = lurk.Character.get_character_with_name(sockets[skt])
-            if new_room not in connections[player.room]:
+            if changeroom.target_room not in connections[player.room]:
                 error_code = 1
                 print(Fore.YELLOW+f'WARN: {player.name} attempted bad move, sending ERROR code {error_code}!')
                 lurk.Error.send_error(skt, error_code)
@@ -176,7 +176,7 @@ def handle_client(skt):
             # Track old room for later
             old_room = player.room
             # Update current player information with new room
-            player.room = new_room
+            player.room = changeroom.target_room
             lurk.Character.update_character(player)
             # Send ROOM to player
             lurk.write(skt, (lurk.ROOM, player.room, lurk.Room.rooms[player.room][0], len(lurk.Room.rooms[player.room][1]), lurk.Room.rooms[player.room][1]))
@@ -186,13 +186,8 @@ def handle_client(skt):
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 lurk.Character.send_character(skt, character)
-            # Send CONNECTIONs to player
-            # TODO: This is a bit of a hack, but it works for now.
-            for room_num, connection in connections.items():
-                if room_num != new_room:
-                    continue
-                for connection in connections:
-                    lurk.write(skt, (lurk.CONNECTION, connection, lurk.Room.rooms[connection][0], len(lurk.Room.rooms[connection][1]), lurk.Room.rooms[connection][1]))
+            # Send CONNECTION messages for all connections with new room to player
+            lurk.Connection.send_connections_with_room(skt, player.room)
             # Send updated CHARACTER to all players in old room that player moved to new room
             characters = lurk.Character.get_characters_with_room(old_room)
             for character in characters:
@@ -310,7 +305,7 @@ def handle_client(skt):
             player.flag = player.flag | lurk.STARTED
             lurk.Character.update_character(player)
             # Send ACCEPT message
-            lurk.write(skt, (lurk.ACCEPT, lurk.START))
+            lurk.Accept.send_accept(skt, lurk.START)
             # Send ROOM message
             room = lurk.Room.get_room(player.room)
             lurk.Room.send_room(skt, room)
