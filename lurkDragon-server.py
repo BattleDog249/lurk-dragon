@@ -54,7 +54,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', enco
         lurk.Character.update_character(npc)
 # Room dictionary containing all rooms in the game.
 #   Key (int): Room Number
-#   Value (list): [name, description_len, description]
+#   Value (list): [name, description_len, description, connections]
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding='utf-8') as rooms_json:
     game_map = json.load(rooms_json)
     for location in game_map:

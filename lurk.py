@@ -225,7 +225,7 @@ class Room:
     description: str
     connections: list
     lurk_type: c_uint8 = ROOM
-    # Key (int): number, Value (tuple): (name, description_len, description)
+    # Key (int): number, Value (tuple): (name, description_len, description, connections)
     rooms = {}
     def update_room(room):
         """Updates the room with the given room object in the rooms dictionary, or adds it if it doesn't exist."""
@@ -233,7 +233,7 @@ class Room:
     def get_room(number):
         """Returns a room with the given number. If the room is not found, returns None."""
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
-        room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2], connections=room[0][1][3])
+        room = Room(number=room[0], name=room[0][0], description_len=room[0][1], description=room[0][2], connections=room[0][3])
         return room
     def recv_room(skt):
         """Receives a room message from the given socket, and unpacks it into a room object that is returned, or None if an error occurred."""
