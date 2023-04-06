@@ -51,26 +51,75 @@ class Message:
     recipient: str
     sender: str
     message: str
+    def recv_message(skt):
+        """"""
+        pass
+    def send_message(skt, message):
+        """"""
+        pass
 
 @dataclass
 class Changeroom:
     """A class that represents a changeroom message in the game. This class is used to store information about a changeroom message, and to retrieve information about a changeroom message."""
+    target_room: c_uint16
+    lurk_type: c_uint8 = CHANGEROOM
+    def recv_changeroom(skt):
+        """"""
+        pass
+    def send_changeroom(skt, changeroom):
+        """"""
+        pass
 
 @dataclass
 class Fight:
     """A class that represents a fight message in the game. This class is used to store information about a fight message, and to retrieve information about a fight message."""
+    lurk_type: c_uint8 = FIGHT
+    def recv_fight(skt):
+        """"""
+        pass
+    def send_fight(skt):
+        """"""
+        pass
 
 @dataclass
 class Pvpfight:
     """A class that represents a pvpfight message in the game. This class is used to store information about a pvpfight message, and to retrieve information about a pvpfight message."""
+    target_name: str
+    lurk_type: c_uint8 = PVPFIGHT
+    def recv_pvpfight(skt):
+        """"""
+        pass
+    def send_pvpfight(skt, pvpfight):
+        """"""
+        pass
 
 @dataclass
 class Loot:
     """A class that represents a loot message in the game. This class is used to store information about a loot message, and to retrieve information about a loot message."""
+    target_name: str
+    lurk_type: c_uint8 = LOOT
+    def recv_loot(skt):
+        """"""
+        pass
+    def send_loot(skt, loot):
+        """"""
+        pass
 
 @dataclass
 class Start:
     """A class that represents a start message in the game. This class is used to store information about a start message, and to retrieve information about a start message."""
+    lurk_type: c_uint8 = START
+    def send_start(skt):
+        """Packs a start message into bytes and sends it to the given socket object."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError('skt must be a socket object!')
+        start = Start()
+        packed = struct.pack(f'<B', start.lurk_type)
+        bytes_sent = send(skt, packed)
+        if bytes_sent != len(packed):
+            print(Fore.RED+f'ERROR: send_start: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!')
+            return None
+        return bytes_sent
 
 @dataclass
 class Error:
@@ -100,6 +149,9 @@ class Accept:
     """A class that represents an accept message in the game. This class is used to store information about an accept message, and to retrieve information about an accept message."""
     accept_type: c_uint8
     lurk_type: c_uint8 = ACCEPT
+    def recv_accept():
+        """"""
+        pass
     def send_accept(skt, code):
         """Packs an accept message with the given code that corresponds to the accepted lurk type into bytes and sends it to the given socket object."""
         if not isinstance(skt, socket.socket):
@@ -132,6 +184,9 @@ class Room:
         room = [(room_number, room_info) for room_number, room_info in Room.rooms.items() if number in Room.rooms and number == room_number]
         room = Room(number=room[0][0], name=room[0][1][0], description_len=room[0][1][1], description=room[0][1][2])
         return room
+    def recv_room():
+        """"""
+        pass
     def send_room(skt, room):
         """Packs a room message into bytes with the given room object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the room parameter is not a Room object."""
         if not isinstance(skt, socket.socket):
@@ -222,6 +277,7 @@ class Game:
     lurk_type: c_uint8 = 11
     def recv_game(skt):
         """"""
+        pass
     def send_game(skt, game):
         """Packs a game message into bytes with the given game object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the game parameter is not a Game object."""
         if not isinstance(skt, socket.socket):
@@ -243,6 +299,7 @@ class Leave:
     struct_format: str = '<B'
     def recv_leave(skt):
         """"""
+        pass
     def send_leave(skt):
         """Packs a leave message into bytes and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object."""
         if not isinstance(skt, socket.socket):
@@ -271,8 +328,10 @@ class Connection:
         return connection
     def recv_connection(skt):
         """"""
+        pass
     def send_connection(skt, connection):
         """Packs a Connection message into bytes with the given connection object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the connection parameter is not a Connection object."""
+        pass
 
 @dataclass
 class Version:

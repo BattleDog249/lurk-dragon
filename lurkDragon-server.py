@@ -132,9 +132,10 @@ def cleanup_client(skt):
 def handle_client(skt):
     """Thread function for handling a client."""
     while True:
-        message = lurk.read(skt)
-        if not message:
-            print(Fore.RED+'ERROR: handle_client: read returned None, breaking while loop!')
+        #message = lurk.read(skt)
+        lurk_type = lurk.recv(skt, 1)
+        if not lurk_type:
+            print(Fore.RED+'ERROR: handle_client: lurk.recv returned None, breaking while loop!')
             cleanup_client(skt)
             break
         if isinstance(message, tuple) and message[0] == lurk.MESSAGE:
@@ -146,13 +147,13 @@ def handle_client(skt):
             #print('DEBUG: Message:', message)
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Player not ready, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                lurk.Error.send_error(skt, 5)
                 continue
             if recipient_name not in names:
                 print(Fore.YELLOW+f'WARN: Recipient {recipient_name} not online, sending ERROR code 6!')
-                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                lurk.Error.send_error(skt, 6)
                 continue
-            lurk.write(skt, (lurk.ACCEPT, lurk.MESSAGE))
+            lurk.Accept.send_accept(skt, lurk.MESSAGE)
             lurk.write(names[recipient_name], (lurk.MESSAGE, msg_len, recipient_name, sender_name, message))
             continue
         elif isinstance(message, tuple) and message[0] == lurk.CHANGEROOM:
@@ -160,14 +161,14 @@ def handle_client(skt):
             if skt not in sockets:
                 error_code = 5
                 print(Fore.YELLOW+f'WARN: Player not ready, sending ERROR code {error_code}!')
-                lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
+                lurk.Error.send_error(skt, error_code)
                 continue
             # Get current player information
             player = lurk.Character.get_character_with_name(sockets[skt])
             if new_room not in connections[player.room]:
                 error_code = 1
                 print(Fore.YELLOW+f'WARN: {player.name} attempted bad move, sending ERROR code {error_code}!')
-                lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
+                lurk.Error.send_error(skt, error_code)
                 continue
             # Track old room for later
             old_room = player.room
@@ -247,7 +248,7 @@ def handle_client(skt):
                     lurk.Character.send_character(names[player.name], monster)
             if count == 0:
                 print(Fore.YELLOW+f"WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
-                lurk.write(skt, (lurk.ERROR, 7, len(errors[7]), errors[7]))
+                lurk.Error.send_error(skt, 7)
             continue
         elif isinstance(message, tuple) and message[0] == lurk.PVPFIGHT:
             lurk_type, character_name = message
@@ -255,7 +256,7 @@ def handle_client(skt):
             print('DEBUG: targetName:', character_name)
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                lurk.Error.send_error(skt, 5)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             print(Fore.YELLOW+'WARN: Server does not currently support PVPFIGHT, sending ERROR code 8!')
@@ -267,21 +268,21 @@ def handle_client(skt):
             print(Fore.WHITE+f'DEBUG: targetName: {character_name}')
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                lurk.Error.send_error(skt, 5)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             if player.flag != player.flag | lurk.STARTED:
                 print(Fore.YELLOW+'WARN: Player flag STARTED not set, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                lurk.Error.send_error(skt, 5)
                 continue
             target = lurk.Character.get_character_with_name(character_name)
             if target is None or target.room != player.room:
                 print(Fore.YELLOW+'WARN: Cannot loot nonexistent target, sending ERROR code 6!')
-                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                lurk.Error.send_error(skt, 6)
                 continue
             if target.flag == target.flag | lurk.ALIVE:
                 print(Fore.YELLOW+'WARN: Cannot loot a living target, sending ERROR code 3!')
-                lurk.write(skt, (lurk.ERROR, 6, len(errors[6]), errors[6]))
+                lurk.Error.send_error(skt, 6)
                 continue
             player.gold += target.gold
             target.gold = 0
@@ -294,12 +295,12 @@ def handle_client(skt):
                     continue
                 lurk.Character.send_character(names[player.name], character)
             continue
-        elif isinstance(message, tuple) and message[0] == lurk.START:
+        elif lurk_type == lurk.START:
             try:
                 player = lurk.Character.get_character_with_name(sockets[skt])
             except:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                lurk.Error.send_error(skt, 5)
                 continue
             if player.room == 0:
                 player.room = 1
@@ -335,14 +336,14 @@ def handle_client(skt):
             print('DEBUG: errMsgLen:', error_msg_len)
             print('DEBUG: errMsg:', error_msg)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
+            lurk.Error.send_error(skt, 0)
             continue
         elif isinstance(message, tuple) and message[0] == lurk.ACCEPT:
             lurk_type, accepted_msg = message
             print(Fore.WHITE+'DEBUG: handle_client: Type:', lurk_type)
             print('DEBUG: acceptedMsg:', accepted_msg)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
+            lurk.Error.send_error(skt, 0)
             continue
         elif isinstance(message, tuple) and message[0] == lurk.ROOM:
             lurk_type, room_num, room_name, room_des_len, room_des = message
@@ -352,11 +353,11 @@ def handle_client(skt):
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
+            lurk.Error.send_error(skt, 0)
             continue
-        elif isinstance(message, lurk.Character):
-            print(Fore.WHITE+f'DEBUG: handle_client: Received message: {message}')
-            player = message
+        elif lurk_type == lurk.CHARACTER:
+            print(Fore.WHITE+f'DEBUG: handle_client: Received lurk_type {lurk_type} from {names[skt]}!')
+            player = lurk.Character.recv_character(skt)
             if player.name in names:
                 error_code = 2
                 print(Fore.YELLOW+f'WARN: Attempting to create character already tied to a socket, sending ERROR code {error_code}!')
