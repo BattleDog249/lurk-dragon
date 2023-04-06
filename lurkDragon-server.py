@@ -64,7 +64,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding=
 #   Key (int): Error Code
 #   Value (list): [description_len, description]
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\errors.json', 'r', encoding='utf-8') as errors_json:
-    errors_list = json.load(rooms_json)
+    errors_list = json.load(errors_json)
     for error in errors_list:
         error = lurk.Error(code=error['number'], description_len=len(error['message']), description=error['message'])
         lurk.Error.update_error(error)
