@@ -360,7 +360,7 @@ def handle_client(skt):
             if player.name in names:
                 error_code = 2
                 print(Fore.YELLOW+f'WARN: Attempting to create character already tied to a socket, sending ERROR code {error_code}!')
-                lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
+                lurk.Error.send_error(skt, error_code)
                 continue
             if player.name in lurk.Character.characters and (player.flag | lurk.MONSTER or player.flag ^ lurk.READY):
                 print(Fore.YELLOW+f'WARN: Character attempted to access NPC/Monster {player.name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
@@ -369,7 +369,7 @@ def handle_client(skt):
                 if player.attack + player.defense + player.regen > INIT_POINTS:
                     error_code = 4
                     print(Fore.YELLOW+f'WARN: Character stats from {player.name} invalid, sending ERROR code {error_code}!')
-                    lurk.write(skt, (lurk.ERROR, error_code, len(errors[error_code]), errors[error_code]))
+                    lurk.Error.send_error(skt, error_code)
                     continue
                 if player.flag | lurk.JOIN_BATTLE:
                     player.flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
@@ -388,7 +388,7 @@ def handle_client(skt):
             print(Fore.CYAN+f'INFO: Accessing character {player.name} from database')
             add_name(skt, player.name)
             add_socket(skt, player.name)
-            lurk.write(skt, (lurk.ACCEPT, lurk.CHARACTER))
+            lurk.Accept.send_accept(skt, lurk.CHARACTER)
             lurk.Character.send_character(skt, player)
             # Send MESSAGE to client from narrator here, stating welcome back!
             continue
@@ -400,7 +400,8 @@ def handle_client(skt):
             print('DEBUG: gameDesLen:', game_des_len)
             print('DEBUG: gameDes:', game_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
+            lurk.Error.send_error(skt, 0)
+            
             continue
         elif isinstance(message, tuple) and message[0] == lurk.LEAVE:
             print(Fore.GREEN+'INFO: handle_client: Received LEAVE!')
@@ -414,7 +415,7 @@ def handle_client(skt):
             print('DEBUG: roomDesLen:', room_des_len)
             print('DEBUG: roomDes:', room_des)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
+            lurk.Error.send_error(skt, 0)
             continue
         elif isinstance(message, tuple) and message[0] == lurk.VERSION:
             lurk_type, major, minor, extension_len = message
@@ -423,7 +424,7 @@ def handle_client(skt):
             print('DEBUG: minor:', minor)
             print('DEBUG: extSize:', extension_len)
             print('ERROR: Server does not support receiving this message, sending ERROR code 0!')
-            lurk.write(skt, (lurk.ERROR, 0, len(errors[0]), errors[0]))
+            lurk.Error.send_error(skt, 0)
             continue
         else:
             print('DEBUG: message[0] not a valid LURK type?')
@@ -447,8 +448,8 @@ server_skt.listen()
 print(Fore.WHITE+f'INFO: Listening on address: {ADDRESS}, {port}')
 while True:
     client_skt, client_addr = server_skt.accept()
-    version = (lurk.VERSION, MAJOR, MINOR, EXT_SIZE)
-    lurk.write(client_skt, version)
-    game = (lurk.GAME, INIT_POINTS, STAT_LIMIT, GAME_DESCRIPTION_LEN, GAME_DESCRIPTION)
-    lurk.write(client_skt, game)
+    version = lurk.Version(major=MAJOR, minor=MINOR)
+    lurk.Version.send_version(client_skt, version)
+    game = lurk.Game(initial_points=INIT_POINTS, stat_limit=STAT_LIMIT, description_len=len(GAME_DESCRIPTION), description=GAME_DESCRIPTION)
+    lurk.Game.send_game(client_skt, game)
     threading.Thread(target=handle_client, args=(client_skt,), daemon=True).start()

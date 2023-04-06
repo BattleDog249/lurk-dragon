@@ -98,6 +98,21 @@ class Error:
 @dataclass
 class Accept:
     """A class that represents an accept message in the game. This class is used to store information about an accept message, and to retrieve information about an accept message."""
+    accept_type: c_uint8
+    lurk_type: c_uint8 = ACCEPT
+    def send_accept(skt, code):
+        """Packs an accept message with the given code that corresponds to the accepted lurk type into bytes and sends it to the given socket object."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("skt must be a socket object!")
+        if not isinstance(code, int):
+            raise TypeError("code must be an int object!")
+        accept = Accept(accept_type=code)
+        packed = struct.pack(f'<2B', accept.lurk_type, accept.code)
+        bytes_sent = send(skt, packed)
+        if bytes_sent != len(packed):
+            print(Fore.RED+f"ERROR: send_accept: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
+            return None
+        return bytes_sent
 
 @dataclass
 class Room:
