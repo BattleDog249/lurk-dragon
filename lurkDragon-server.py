@@ -133,7 +133,7 @@ def handle_client(skt):
     """Thread function for handling a client."""
     while True:
         #message = lurk.read(skt)
-        lurk_type = lurk.recv(skt, 1)
+        lurk_type = lurk.recv(skt, 1).decode('utf-8')
         if not lurk_type:
             print(Fore.RED+'ERROR: handle_client: lurk.recv returned None, breaking while loop!')
             cleanup_client(skt)
