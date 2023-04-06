@@ -121,7 +121,8 @@ def handle_client(skt):
                 continue
             # Get current player information
             player = lurk.Character.get_character_with_name(sockets[skt])
-            if changeroom.target_room not in connections[player.room]:
+            room = lurk.Room.get_room(player.room)
+            if changeroom.target_room not in room.connections:
                 error_code = 1
                 print(Fore.YELLOW+f'WARN: {player.name} attempted bad move, sending ERROR code {error_code}!')
                 lurk.Error.send_error(skt, error_code)
@@ -132,7 +133,6 @@ def handle_client(skt):
             player.room = changeroom.target_room
             lurk.Character.update_character(player)
             # Send ROOM to player
-            room = lurk.Room.get_room(player.room)
             lurk.Room.send_room(skt, room)
             # Send updated CHARACTER to player
             lurk.Character.send_character(skt, player)
@@ -158,7 +158,7 @@ def handle_client(skt):
         elif lurk_type == lurk.FIGHT:
             if skt not in sockets:
                 print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
-                lurk.write(skt, (lurk.ERROR, 5, len(errors[5]), errors[5]))
+                lurk.Error.send_error(skt, 5)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             count = 0
