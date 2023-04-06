@@ -138,7 +138,7 @@ def handle_client(skt):
             print(Fore.RED+'ERROR: handle_client: lurk.recv returned None, breaking while loop!')
             cleanup_client(skt)
             break
-        lurk_type, = struct.unpack('<B', lurk_type)
+        lurk_type = int.from_bytes(lurk_type, byteorder='little')
         if lurk_type < 1 or lurk_type > 14:
             print(Fore.RED+f'ERROR: read: {lurk_type} not a valid lurk message type!')
             continue
