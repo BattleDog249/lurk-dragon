@@ -107,7 +107,7 @@ class Accept:
         if not isinstance(code, int):
             raise TypeError("code must be an int object!")
         accept = Accept(accept_type=code)
-        packed = struct.pack(f'<2B', accept.lurk_type, accept.code)
+        packed = struct.pack(f'<2B', accept.lurk_type, accept.accept_type)
         bytes_sent = send(skt, packed)
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_accept: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
@@ -233,6 +233,7 @@ class Game:
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_game: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
+        print(Fore.WHITE+f'DEBUG: send_game: Sent {bytes_sent} byte GAME!')
         return bytes_sent
 
 @dataclass
@@ -307,6 +308,7 @@ class Version:
         if bytes_sent != len(packed):
             print(Fore.RED+f"ERROR: send_version: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
+        print(Fore.WHITE+f'DEBUG: send_version: Sent {bytes_sent} byte VERSION!')
         return bytes_sent
 
 def recv(socket, message_length):
