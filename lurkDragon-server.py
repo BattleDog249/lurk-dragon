@@ -60,6 +60,14 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding=
     for location in game_map:
         location = lurk.Room(number=location['number'], name=location['name'], description_len=len(location['description']), description=location['description'], connections=location['connections'])
         lurk.Room.update_room(location)
+# Error dictionary containing all errors in the game.
+#   Key (int): Error Code
+#   Value (list): [description_len, description]
+with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\errors.json', 'r', encoding='utf-8') as errors_json:
+    errors_list = json.load(rooms_json)
+    for error in errors_list:
+        error = lurk.Error(code=error['number'], description_len=len(error['message']), description=error['message'])
+        lurk.Error.update_error(error)
 errors = {
     0: 'ERROR: This message type is not supported!',
     1: 'ERROR: Bad Room! Cannot change to requested room.',
