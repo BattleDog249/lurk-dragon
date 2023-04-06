@@ -360,7 +360,6 @@ def handle_client(skt):
             lurk.Error.send_error(skt, 0)
             continue
         elif lurk_type == lurk.CHARACTER:
-            print(Fore.WHITE+f'DEBUG: handle_client: Received lurk_type {lurk_type} from {names[skt]}!')
             player = lurk.Character.recv_character(skt)
             if player.name in names:
                 error_code = 2
