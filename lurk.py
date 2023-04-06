@@ -400,7 +400,7 @@ class Connection:
     def get_connection(number):
         """Returns a connection with the given number. If the connection is not found, returns None."""
         connection = [(room_number, connection_info) for room_number, connection_info in Connection.connections.items() if number in Connection.connections and Connection.connections[number] == number]
-        connection = Connection(number=number, name=connection[0][1], description_len=connection[0][2], description=connection[0][3])
+        connection = Connection(number=connection[0], name=connection[0][0], description_len=connection[0][1], description=connection[0][2])
         print(f'DEBUG: Connection(s) found with number {number}: {connection}')
         return connection
     def recv_connection(skt):
