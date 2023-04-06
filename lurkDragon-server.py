@@ -326,6 +326,8 @@ def handle_client(skt):
                     continue
                 lurk.Character.send_character(names[player.name], character)
             # Send CONNECTION messages for all connections with current room
+            lurk.Connection.send_connections_with_room(skt, player.room)
+            '''
             for room_num, connection in connections.items():
                 if room_num != player.room:
                     continue
@@ -333,6 +335,7 @@ def handle_client(skt):
                     connection = lurk.Connection.get_connection(connection)
                     lurk.Connection.send_connection(skt, connection)
                     #lurk.write(skt, (lurk.CONNECTION, connection, lurk.Room.rooms[connection][1], lurk.Room.rooms[connection][2], lurk.Room.rooms[connection][3]))
+            '''
             continue
         elif lurk_type == lurk.ERROR:
             lurk_type, error_code, error_msg_len, error_msg = message
