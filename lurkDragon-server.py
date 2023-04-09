@@ -127,22 +127,25 @@ def handle_client(skt):
             # Send updated CHARACTER to player
             lurk.Character.send_character(skt, player)
             # Send all characters in new room to player
+            # And send updated character to all players in new room that player entered new room
             characters = lurk.Character.get_characters_with_room(player.room)
+            print(f"DEBUG: Characters in new room: {characters}")
             for character in characters:
+                print(f"DEBUG: Sending character {character.name} to {sockets[skt]}")
                 lurk.Character.send_character(skt, character)
+                if character.name not in names or character.name == sockets[skt]:
+                    continue
+                lurk.Character.send_character(names[character.name], player)
             # Send CONNECTION messages for all connections with new room to player
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send updated CHARACTER to all players in old room that player moved to new room
             characters = lurk.Character.get_characters_with_room(old_room)
+            print(f"DEBUG: Characters in old room: {characters}")
             for character in characters:
                 if character.name not in names or character.name == sockets[skt]:
+                    print(f"DEBUG: Character {character.name} not in names or character.name == sockets[skt], continuing...")
                     continue
-                lurk.Character.send_character(names[character.name], player)
-            # Send updated character to all players in new room that player entered new room
-            characters = lurk.Character.get_characters_with_room(player.room)
-            for character in characters:
-                if character.name not in names or character.name == sockets[skt]:
-                    continue
+                print(f"DEBUG: Sending character {player.name} to {names[character.name]}")
                 lurk.Character.send_character(names[character.name], player)
         elif lurk_type == lurk.FIGHT:
             if skt not in sockets:
