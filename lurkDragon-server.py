@@ -44,7 +44,7 @@ def del_socket(skt):
     """Function for deleting a socket: name pair from the sockets dictionary."""
     return sockets.pop(skt)
 
-# Character dictionary containing all monsters and characters in the game.
+# Populate character dictionary containing all monsters and characters in the game.
 #   Key (string): UUID
 #   Value (list): [name, flag, attack, defense, regen, health, gold, room number, description length, description]
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', encoding='utf-8') as characters_json:
@@ -52,7 +52,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', enco
     for npc in characters_data:
         npc = lurk.Character(name=npc['name'], flag=npc['flag'], attack=npc['attack'], defense=npc['defense'], regen=npc['regen'], health=npc['health'], gold=npc['gold'], room=npc['room'], description_len=len(npc['description']), description=npc['description'])
         lurk.Character.update_character(npc)
-# Room dictionary containing all rooms in the game.
+# Populate room dictionary containing all rooms in the game.
 #   Key (int): Room Number
 #   Value (list): [name, description_len, description, connections]
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding='utf-8') as rooms_json:
@@ -60,7 +60,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding=
     for location in game_map:
         location = lurk.Room(number=location['number'], name=location['name'], description_len=len(location['description']), description=location['description'], connections=location['connections'])
         lurk.Room.update_room(location)
-# Error dictionary containing all errors in the game.
+# Populate error dictionary containing all errors in the game.
 #   Key (int): Error Code
 #   Value (list): [description_len, description]
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\errors.json', 'r', encoding='utf-8') as errors_json:

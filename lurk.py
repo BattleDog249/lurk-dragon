@@ -111,8 +111,8 @@ class Changeroom:
             return None
         try:
             number, = struct.unpack('<H', changeroom_header)
-        except struct.error:
-            raise struct.error("Failed to unpack changeroom_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack changeroom_header!") from exc
         changeroom = Changeroom(target_room=number)
         return changeroom
     def send_changeroom(skt, changeroom):
@@ -192,7 +192,7 @@ class Error:
     errors = {}
     def update_error(error):
         """Updates the error with the given error object in the errors dictionary, or adds it if it doesn't exist."""
-        Room.rooms.update({error.number: [error.description_len, error.description]})
+        Error.errors.update({error.number: [error.description_len, error.description]})
     def recv_error(skt):
         """Receives an error message from the given socket, and unpacks it into a error object that is returned, or None if an error occurred."""
         if not isinstance(skt, socket.socket):
