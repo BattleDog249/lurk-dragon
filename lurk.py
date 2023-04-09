@@ -9,34 +9,34 @@ from dataclasses import dataclass
 
 from colorama import Fore
 
-MESSAGE = int(1)
-MESSAGE_LEN = int(67)
-CHANGEROOM = int(2)
-CHANGEROOM_LEN = int(3)
-FIGHT = int(3)
-FIGHT_LEN = int(1)
-PVPFIGHT = int(4)
-PVPFIGHT_LEN = int(33)
-LOOT = int(5)
-LOOT_LEN = int(33)
-START = int(6)
-START_LEN = int(1)
-ERROR = int(7)
-ERROR_LEN = int(4)
-ACCEPT = int(8)
-ACCEPT_LEN = int(2)
-ROOM = int(9)
-ROOM_LEN = int(37)
-CHARACTER = int(10)
-CHARACTER_LEN = int(48)
-GAME = int(11)
-GAME_LEN = int(7)
-LEAVE = int(12)
-LEAVE_LEN = int(1)
-CONNECTION = int(13)
-CONNECTION_LEN = int(37)
-VERSION = int(14)
-VERSION_LEN = int(5)
+MESSAGE = 1
+MESSAGE_LEN = 67
+CHANGEROOM = 2
+CHANGEROOM_LEN = 3
+FIGHT = 3
+FIGHT_LEN = 1
+PVPFIGHT = 4
+PVPFIGHT_LEN = 33
+LOOT = 5
+LOOT_LEN = 33
+START = 6
+START_LEN = 1
+ERROR = 7
+ERROR_LEN = 4
+ACCEPT = 8
+ACCEPT_LEN = 2
+ROOM = 9
+ROOM_LEN = 37
+CHARACTER = 10
+CHARACTER_LEN = 48
+GAME = 11
+GAME_LEN = 7
+LEAVE = 12
+LEAVE_LEN = 1
+CONNECTION = 13
+CONNECTION_LEN = 37
+VERSION = 14
+VERSION_LEN = 5
 
 ALIVE = 0b10000000
 JOIN_BATTLE = 0b01000000
@@ -45,18 +45,56 @@ STARTED = 0b00010000
 READY = 0b00001000
 
 @dataclass
+class Client:
+    pass
+
+@dataclass
+class Server:
+    pass
+
+@dataclass
 class Message:
     """A class that represents a message in the game. This class is used to store information about a message, and to retrieve information about a message."""
     message_len: c_uint16
     recipient: str
     sender: str
     message: str
+    lurk_type: c_uint8 = MESSAGE
     def recv_message(skt):
-        """"""
-        pass
+        """Receives a message message from the given socket, and unpacks it into a message object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        message_header = recv(skt, MESSAGE_LEN - 1)
+        if not message_header:
+            print(f"{Fore.RED}ERROR: recv_message: Socket connection broken, returning None!")
+            return None
+        try:
+            message_len, recipient, sender = struct.unpack('<H32s32s', message_header)
+        except struct.error as exc:
+            raise struct.error("Failed to unpack message_header!") from exc
+        message_data = recv(skt, message_len)
+        if not message_data:
+            print(f"{Fore.RED}ERROR: recv_message: Socket connection broken, returning None!")
+            return None
+        try:
+            message, = struct.unpack(f'<{message_len}s', message_data)
+        except struct.error as exc:
+            raise struct.error("Failed to unpack message_data!") from exc
+        message = Message(message_len=message_len, recipient=recipient, sender=sender, message=message)
+        return message
     def send_message(skt, message):
-        """"""
-        pass
+        """Packs a message message into bytes with the given message object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the message parameter is not a Message object."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        if not isinstance(message, Connection):
+            raise TypeError("Provided message parameter must be a Message object!")
+        packed = struct.pack(f'<BH32s32s{message.message_len}s', message.lurk_type, message.message_len, message.recipient.encode(), message.sender.encode(), message.message.encode())
+        bytes_sent = send(skt, packed)
+        if bytes_sent != len(packed):
+            print(f"{Fore.RED}ERROR: send_message: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
+            return None
+        print(f'{Fore.WHITE}DEBUG: send_message: Sent {bytes_sent} byte MESSAGE!')
+        return bytes_sent
 
 @dataclass
 class Changeroom:
@@ -507,10 +545,10 @@ def recv(socket, message_length):
     """Receives a message of a specified length from the specified socket and returns it in byte format."""
     message = b''
     while len(message) < message_length:
-        chunk = socket.recv(message_length - len(message))
-        if not chunk:
-            raise RuntimeError(Fore.RED+"Socket connection broken!")
-        message += chunk
+        if chunk := socket.recv(message_length - len(message)):
+            message += chunk
+        else:
+            raise RuntimeError(f"{Fore.RED}Socket connection broken!")
     return message
 def send(skt, message):
     """Sends a packed bytes message to the specified socket."""
