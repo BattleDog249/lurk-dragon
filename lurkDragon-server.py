@@ -145,7 +145,7 @@ def handle_client(skt):
                 if character.name not in names or character.name == sockets[skt]:
                     print(f"DEBUG: Character {character.name} not in names or character.name == sockets[skt], continuing...")
                     continue
-                print(f"DEBUG: Sending character {player.name} to {names[character.name]}")
+                print(f"DEBUG: Sending character {player.name} to {character.name}")
                 lurk.Character.send_character(names[character.name], player)
         elif lurk_type == lurk.FIGHT:
             if skt not in sockets:
