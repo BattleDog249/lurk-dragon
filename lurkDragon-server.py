@@ -193,9 +193,11 @@ def handle_client(skt):
                 # Send updated player and monster stats to all players in current room
                 # This is currently broken
                 characters = lurk.Character.get_characters_with_room(player.room)
+                lurk.Character.send_character(skt, player)
+                lurk.Character.send_character(skt, character)
                 print(f"DEBUG: Sending updated player and monster stats to all players in current room: {characters}")
                 for character in characters:
-                    if character.name not in names:
+                    if character.name not in names or character.name == player.name:
                         continue
                     print(f"DEBUG: Sending character {player.name} to {character.name}")
                     lurk.Character.send_character(names[character.name], player)
