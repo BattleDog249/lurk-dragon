@@ -115,6 +115,7 @@ def handle_client(skt):
             #lock = threading.Lock()
             #lock.acquire()
             changeroom = lurk.Changeroom.recv_changeroom(skt)
+            print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
             if changeroom is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
@@ -123,20 +124,22 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Player not ready, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            room = lurk.Room.get_room(player.room)
+            old_room = lurk.Room.get_room(player.room)
             if changeroom.target_room not in room.connections:
                 print(f"{Fore.YELLOW}WARN: {player.name} attempted bad move, sending ERROR code 1!")
                 lurk.Error.send_error(skt, 1)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             old_room = player.room
+            print(f"DEBUG: Old room: {old_room}")
             print(f"DEBUG: Setting player room to {changeroom.target_room}")
             player.room = changeroom.target_room
             print(f"DEBUG: player.room = {player.room}")
             print("DEBUG: Updating character in database...")
             lurk.Character.update_character(player)
-            # Send ROOM to player
-            lurk.Room.send_room(skt, room)
+            new_room = lurk.Room.get_room(player.room)
+            # Send new ROOM to player
+            lurk.Room.send_room(skt, new_room)
             # Send updated CHARACTER to player
             lurk.Character.send_character(skt, player)
             # Send all characters in new room to player
