@@ -190,18 +190,19 @@ def handle_client(skt):
                     character.flag ^= lurk.ALIVE
                     character.health = 0
                 lurk.Character.update_character(character)
-                characters = lurk.Character.get_characters_with_room(player.room)
+                other_players = lurk.Character.get_characters_with_room(player.room)
                 lurk.Character.send_character(skt, player)
                 lurk.Character.send_character(skt, character)
                 # Send updated player and monster stats to all other players in current room
-                # Potentially broken, needs testing
-                for character in characters:
-                    if character.name not in names or character.name == sockets[skt]:
+                # Broken, needs testing
+                for other_player in other_players:
+                    if other_player.name not in names or other_player.name == sockets[skt]:
+                        print(f"DEBUG: {other_player.name} is not a player, continuing...")
                         continue
-                    print(f"DEBUG: Sending character {player.name} to {character.name}")
-                    lurk.Character.send_character(names[character.name], player)
-                    print(f"DEBUG: Sending character {character.name} to {character.name}")
-                    lurk.Character.send_character(names[character.name], character)
+                    print(f"DEBUG: Sending character {player.name} to {other_player.name}")
+                    lurk.Character.send_character(names[other_player.name], player)
+                    print(f"DEBUG: Sending character {character.name} to {other_player.name}")
+                    lurk.Character.send_character(names[other_player.name], character)
             if count == 0:
                 print(f"{Fore.YELLOW}WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.Error.send_error(skt, 7)
