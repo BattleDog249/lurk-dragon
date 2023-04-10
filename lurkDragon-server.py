@@ -167,9 +167,8 @@ def handle_client(skt):
             count = 0
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
-                if character.flag != character.flag | lurk.MONSTER & lurk.ALIVE:
-                    print(f"{Fore.WHITE}DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag} lurk.MONSTER | lurk.ALIVE: {lurk.MONSTER | lurk.ALIVE}")
-                    print(f"{Fore.WHITE}DEBUG: type(character.flag) = {type(character.flag)}; type(lurk.MONSTER): {type(lurk.MONSTER)}")
+                if (character.flag != character.flag | lurk.MONSTER & lurk.ALIVE) or character.name == player.name:
+                    print(f"{Fore.WHITE}DEBUG: Character {character.name} not a living monster (160), flag: {character.flag}")
                     continue
                 print(f"{Fore.WHITE}DEBUG: {character.name} has monster flag set, flag: {character.flag}")
                 count+=1
