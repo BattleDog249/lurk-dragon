@@ -466,7 +466,8 @@ class Connection:
             connections_list.append(connection)
         for room in connections_list:
             print(Fore.WHITE+f'DEBUG: send_connections_with_room: Sending connection {room.name} to client')
-            bytes_sent = Connection.send_connection(skt, room)
+            connection = Connection(number=room.number, name=room.name, description_len=room.description_len, description=room.description)
+            bytes_sent = Connection.send_connection(skt, connection)
         return bytes_sent
     def recv_connection(skt):
         """Receives a connection message from the given socket, and unpacks it into a connection object that is returned, or None if an error occurred."""
