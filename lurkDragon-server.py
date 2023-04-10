@@ -106,7 +106,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 5)
                 continue
             if message.recipient not in names:
-                print(f"{Fore.YELLOW}WARN: Recipient {message.recipient} not online, sending ERROR code 6!")
+                print(f"{Fore.YELLOW}WARN: Message recipient {message.recipient} not online, sending ERROR code 6 to {sockets[skt]}!")
                 lurk.Error.send_error(skt, 6)
                 continue
             lurk.Accept.send_accept(skt, message.lurk_type)
