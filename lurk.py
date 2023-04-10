@@ -80,8 +80,8 @@ class Message:
             message, = struct.unpack(f'<{message_len}s', message_data)
         except struct.error as exc:
             raise struct.error("Failed to unpack message_data!") from exc
-        recipient = recipient.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
-        message = Message(message_len=message_len, recipient=recipient, sender=sender, message=message)
+        #recipient = recipient.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
+        message = Message(message_len=message_len, recipient=recipient.decode(), sender=sender.decode(), message=message.decode())
         return message
     def send_message(skt, message):
         """Packs a message message into bytes with the given message object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the message parameter is not a Message object."""
