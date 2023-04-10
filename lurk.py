@@ -157,8 +157,8 @@ class Loot:
             return None
         try:
             target_name, = struct.unpack('<32s', loot_header)
-        except struct.error:
-            raise struct.error("Failed to unpack loot_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack loot_header!") from exc
         loot = Loot(target_name=target_name.decode())
         return loot
     def send_loot(skt, loot):
@@ -203,16 +203,16 @@ class Error:
             return None
         try:
             number, description_len = struct.unpack('<BH', error_header)
-        except struct.error:
-            raise struct.error("Failed to unpack error_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack error_header!") from exc
         room_data = recv(skt, description_len)
         if not room_data:
             print(Fore.RED+"ERROR: recv_error: Socket connection broken, returning None!")
             return None
         try:
             description, = struct.unpack(f'<{description_len}s', room_data)
-        except struct.error:
-            raise struct.error("Failed to unpack error_data!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack error_data!") from exc
         error = Error(number=number, description_len=description_len, description=description.decode())
         return error
     def send_error(skt, code):
@@ -283,16 +283,16 @@ class Room:
             return None
         try:
             number, name, description_len = struct.unpack('<H32sH', room_header)
-        except struct.error:
-            raise struct.error("Failed to unpack room_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack room_header!") from exc
         room_data = recv(skt, description_len)
         if not room_data:
             print(Fore.RED+"ERROR: recv_room: Socket connection broken, returning None!")
             return None
         try:
             description, = struct.unpack(f'<{description_len}s', room_data)
-        except struct.error:
-            raise struct.error("Failed to unpack room_data!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack room_data!") from exc
         room = Room(number=number, name=name.decode(), description_len=description_len, description=description.decode())
         return room
     def send_room(skt, room):
@@ -331,6 +331,7 @@ class Character:
         for character in Character.characters:
             if Character.characters[character].name == target_name:
                 character_with_name = Character.characters[character]
+        print(f"{Fore.WHITE}DEBUG: get_character_with_name: Returning character {character_with_name}")
         return character_with_name
     def get_characters_with_room(room):
         """Returns a list of character objects that are in the given room. If no characters are found, returns an empty list."""
@@ -352,17 +353,17 @@ class Character:
             return None
         try:
             name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack('<32sB3Hh3H', character_header)
-        except struct.error:
-            raise struct.error("Failed to unpack character_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack character_header!") from exc
         character_data = recv(skt, description_len)
         if not character_data:
             print(Fore.RED+"ERROR: recv_character: Socket connection broken, returning None!")
             return None
         try:
             description, = struct.unpack(f'<{description_len}s', character_data)
-        except struct.error:
-            raise struct.error("Failed to unpack character_data!")
-        character = Character(name=name.decode(), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode())
+        except struct.error as exc:
+            raise struct.error("Failed to unpack character_data!") from exc
+        character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
         return character
     def send_character(skt, character):
         """Packs a character message into bytes with the given character object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the character parameter is not a Character object."""
@@ -396,16 +397,16 @@ class Game:
             return None
         try:
             init_points, stat_limit, description_len = struct.unpack('<3H', game_header)
-        except struct.error:
-            raise struct.error("Failed to unpack game_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack game_header!") from exc
         game_data = recv(skt, description_len)
         if not game_data:
             print(Fore.RED+"ERROR: recv_game: Socket connection broken, returning None!")
             return None
         try:
             description, = struct.unpack(f'<{description_len}s', game_data)
-        except struct.error:
-            raise struct.error("Failed to unpack game_data!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack game_data!") from exc
         game = Game(init_points=init_points,stat_limit=stat_limit, description_len=description_len, description=description.decode())
         return game
     def send_game(skt, game):
@@ -478,16 +479,16 @@ class Connection:
             return None
         try:
             number, name, description_len = struct.unpack('<H32sH', connection_header)
-        except struct.error:
-            raise struct.error("Failed to unpack connection_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack connection_header!") from exc
         connection_data = recv(skt, description_len)
         if not connection_data:
             print(Fore.RED+"ERROR: recv_connection: Socket connection broken, returning None!")
             return None
         try:
             description, = struct.unpack(f'<{description_len}s', connection_data)
-        except struct.error:
-            raise struct.error("Failed to unpack connection_data!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack connection_data!") from exc
         connection = Connection(number=number, name=name.decode(), description_len=description_len, description=description.decode())
         return connection
     def send_connection(skt, connection):
@@ -523,8 +524,8 @@ class Version:
             return None
         try:
             major, minor, extensions_len = struct.unpack(Version.struct_format, version_header)
-        except struct.error:
-            raise struct.error("Failed to unpack version_header!")
+        except struct.error as exc:
+            raise struct.error("Failed to unpack version_header!") from exc
         version = Version(major=major, minor=minor, extensions_len=extensions_len)
         return version
     def send_version(skt, version):

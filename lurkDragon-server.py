@@ -87,7 +87,7 @@ def handle_client(skt):
     while True:
         lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
-            print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
+            print(f"{Fore.YELLOW}WARN: Client disconnected while waiting for a lurk message!")
             cleanup_client(skt)
             break
         lurk_type = int.from_bytes(lurk_type, byteorder='little')
