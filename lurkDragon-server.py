@@ -97,6 +97,10 @@ def handle_client(skt):
             continue
         if lurk_type == lurk.MESSAGE:
             message = lurk.Message.recv_message(skt)
+            if message is None:
+                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
+                cleanup_client(skt)
+                break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Player not ready, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
@@ -109,6 +113,10 @@ def handle_client(skt):
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
             changeroom = lurk.Changeroom.recv_changeroom(skt)
+            if changeroom is None:
+                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
+                cleanup_client(skt)
+                break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Player not ready, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
@@ -160,9 +168,6 @@ def handle_client(skt):
                     print(f"{Fore.WHITE}DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag} lurk.MONSTER | lurk.ALIVE: {lurk.MONSTER | lurk.ALIVE}")
                     print(f"{Fore.WHITE}DEBUG: type(character.flag) = {type(character.flag)}; type(lurk.MONSTER): {type(lurk.MONSTER)}")
                     continue
-                if character.flag != lurk.MONSTER and lurk.JOIN_BATTLE and lurk.ALIVE:
-                    print(f"{Fore.WHITE}DEBUG: Character {character.name} not alive or not monster, skipping: {character.flag}")
-                    continue
                 print(f"{Fore.WHITE}DEBUG: {character.name} has monster flag set, flag: {character.flag}")
                 count+=1
                 monster = lurk.Character.get_character_with_name(character.name)
@@ -195,6 +200,10 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 7)
         elif lurk_type == lurk.PVPFIGHT:
             pvpfight = lurk.Pvpfight.recv_pvpfight(skt)
+            if pvpfight is None:
+                print(f"{Fore.YELLOW}WARN: Socket connection broken during recv_pvpfight, cleaning up!")
+                cleanup_client(skt)
+                break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
@@ -210,7 +219,7 @@ def handle_client(skt):
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             if player.flag != player.flag | lurk.STARTED:
-                print(Fore.YELLOW+'WARN: Player flag STARTED not set, sending ERROR code 5!')
+                print(f"{Fore.YELLOW}WARN: Player flag STARTED not set, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             target = lurk.Character.get_character_with_name(character_name)
@@ -236,7 +245,7 @@ def handle_client(skt):
             try:
                 player = lurk.Character.get_character_with_name(sockets[skt])
             except:
-                print(Fore.YELLOW+'WARN: Character not yet created, sending ERROR code 5!')
+                print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             if player.room == 0:
@@ -251,7 +260,7 @@ def handle_client(skt):
             # Send all characters in room, including player
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
-                print(f'DEBUG: Sending character {character.name} to {player.name}')
+                print(f"DEBUG: Sending character {character.name} to {player.name}")
                 lurk.Character.send_character(skt, character)
             # Send updated character to all players in room that player joined (except player) the room
             characters = lurk.Character.get_characters_with_room(player.room)
@@ -262,26 +271,30 @@ def handle_client(skt):
             # Send CONNECTION messages for all connections with current room
             lurk.Connection.send_connections_with_room(skt, player.room)
         elif lurk_type == lurk.ERROR:
-            print(f'{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.ACCEPT:
-            print(f'{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.ROOM:
-            print(f'{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.CHARACTER:
             player = lurk.Character.recv_character(skt)
+            if player is None:
+                print(f"{Fore.YELLOW}WARN: Socket connection broken during recv_character, cleaning up!")
+                cleanup_client(skt)
+                break
             if player.name in names:
-                print(f'{Fore.YELLOW}WARN: Socket attempting to access active player {player.name}, sending ERROR code 2!')
+                print(f"{Fore.YELLOW}WARN: Socket attempting to access active player {player.name}, sending ERROR code 2!")
                 lurk.Error.send_error(skt, 2)
                 continue
             if player.name in lurk.Character.characters and (player.flag | lurk.MONSTER or player.flag ^ lurk.READY):
-                print(f'{Fore.YELLOW}WARN: Character attempted to access NPC/Monster {player.name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!')
+                print(f"{Fore.YELLOW}WARN: Character attempted to access NPC/Monster {player.name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!")
                 continue
             if player.name not in lurk.Character.characters:
                 if player.attack + player.defense + player.regen > INIT_POINTS:
-                    print(f'{Fore.YELLOW}WARN: Character stats from {player.name} invalid, sending ERROR code 4!')
+                    print(f"{Fore.YELLOW}WARN: Character stats from {player.name} invalid, sending ERROR code 4!")
                     lurk.Error.send_error(skt, 4)
                     continue
                 if player.flag | lurk.JOIN_BATTLE:
@@ -292,10 +305,10 @@ def handle_client(skt):
                 player.gold = 0
                 player.room = 0
                 player.description_len = len(player.description)
-                print(f'{Fore.CYAN}INFO: Adding new character {player.name} to database')
+                print(f"{Fore.CYAN}INFO: Adding new character {player.name} to database")
                 lurk.Character.update_character(player)
             player = lurk.Character.get_character_with_name(player.name)
-            print(f'{Fore.CYAN}INFO: Accessing character {player.name} from database')
+            print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
             lurk.Character.update_character(player)
@@ -305,25 +318,25 @@ def handle_client(skt):
             lurk.Character.send_character(skt, player)
             # Send MESSAGE to client from narrator here, stating welcome back!
         elif lurk_type == lurk.GAME:
-            print(f'{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.LEAVE:
-            print(f'{Fore.CYAN}INFO: Received LEAVE, cleaning up client and closing socket!')
+            print(f"{Fore.CYAN}INFO: Received LEAVE, cleaning up client and closing socket!")
             cleanup_client(skt)
             break
         elif lurk_type == lurk.CONNECTION:
-            print(f'{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.VERSION:
-            print(f'{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         else:
-            print(f'{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!')
+            print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
 # Establish IPv4 TCP socket
 server_skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if server_skt == -1:
-    print(f'{Fore.RED}ERROR: Server socket creation error, stopping!')
+    print(f"{Fore.RED}ERROR: Server socket creation error, stopping!")
     sys.exit(0)
 # Assigned range: 5010 - 5014
 ADDRESS = '0.0.0.0'
@@ -333,10 +346,10 @@ for port in PORTS:
         server_skt.bind((ADDRESS, port))
         break
     except OSError:
-        print(f'{Fore.CYAN}WARN: Port {port} unavailable!')
+        print(f"{Fore.CYAN}WARN: Port {port} unavailable!")
         continue
 server_skt.listen()
-print(f'{Fore.WHITE}INFO: Listening on address: {ADDRESS}, {port}')
+print(f"{Fore.WHITE}INFO: Listening on address: {ADDRESS}, {port}")
 while True:
     client_skt, client_addr = server_skt.accept()
     version = lurk.Version(major=MAJOR, minor=MINOR)

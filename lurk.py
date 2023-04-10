@@ -548,7 +548,8 @@ def recv(socket, message_length):
         if chunk := socket.recv(message_length - len(message)):
             message += chunk
         else:
-            raise RuntimeError(f"{Fore.RED}Socket connection broken!")
+            print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
+            return None
     return message
 def send(skt, message):
     """Sends a packed bytes message to the specified socket."""
