@@ -44,6 +44,28 @@ MONSTER = 0b00100000
 STARTED = 0b00010000
 READY = 0b00001000
 
+def recv(socket, message_length):
+    """Receives a message of a specified length from the specified socket and returns it in byte format."""
+    message = b''
+    while len(message) < message_length:
+        if chunk := socket.recv(message_length - len(message)):
+            message += chunk
+        else:
+            print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
+            return None
+    return message
+
+def send(skt, message):
+    """Sends a packed bytes message to the specified socket."""
+    total_sent = 0
+    message_length = len(message)
+    while total_sent < message_length:
+        sent = skt.send(message[total_sent:])
+        if sent == 0:
+            break
+        total_sent += sent
+    return total_sent
+
 @dataclass
 class Client:
     pass
@@ -540,24 +562,3 @@ class Version:
             return None
         print(Fore.WHITE+f'DEBUG: send_version: Sent {bytes_sent} byte VERSION!')
         return bytes_sent
-
-def recv(socket, message_length):
-    """Receives a message of a specified length from the specified socket and returns it in byte format."""
-    message = b''
-    while len(message) < message_length:
-        if chunk := socket.recv(message_length - len(message)):
-            message += chunk
-        else:
-            print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
-            return None
-    return message
-def send(skt, message):
-    """Sends a packed bytes message to the specified socket."""
-    total_sent = 0
-    message_length = len(message)
-    while total_sent < message_length:
-        sent = skt.send(message[total_sent:])
-        if sent == 0:
-            break
-        total_sent += sent
-    return total_sent
