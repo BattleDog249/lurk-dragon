@@ -329,6 +329,8 @@ class Character:
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
         character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and target_name == name]
+        print(f"DEBUG: get_character_with_name: character = {character}")
+        print(f"DEBUG: Attempting to create character object with name {character[0][0]}")
         character = Character(name=character[0][0], flag=character[0][1][0], attack=character[0][1][1], defense=character[0][1][2], regen=character[0][1][3], health=character[0][1][4], gold=character[0][1][5], room=character[0][1][6], description_len=character[0][1][7], description=character[0][1][8])
         return character
     def get_characters_with_room(room):
