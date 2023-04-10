@@ -78,7 +78,7 @@ def cleanup_client(skt):
         del_name(sockets[skt])
         del_socket(skt)
     except KeyError:
-        print(f"{Fore.YELLOW}WARN: cleanup_client: Nothing to clean!")
+        print(f"{Fore.YELLOW}WARN: cleanup_client: Client was not associated with a character, nothing to delete!")
     skt.shutdown(2)
     skt.close()
     print(f"{Fore.GREEN}INFO: cleanup_client: Finished!")
