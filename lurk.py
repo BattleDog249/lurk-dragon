@@ -328,7 +328,7 @@ class Character:
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
-        character_with_name = Character(character for character in Character.characters if Character.characters[character].name == target_name)
+        character_with_name = [Character(character) for character in Character.characters if Character.characters[character].name == target_name]
             #character_with_name = Character.characters[character]
         return character_with_name
     def get_characters_with_room(room):
