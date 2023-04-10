@@ -86,7 +86,7 @@ class Message:
         """Packs a message message into bytes with the given message object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the message parameter is not a Message object."""
         if not isinstance(skt, socket.socket):
             raise TypeError("Provided skt parameter must be a socket object!")
-        if not isinstance(message, Connection):
+        if not isinstance(message, Message):
             raise TypeError("Provided message parameter must be a Message object!")
         packed = struct.pack(f'<BH32s32s{message.message_len}s', message.lurk_type, message.message_len, message.recipient.encode(), message.sender.encode(), message.message.encode())
         bytes_sent = send(skt, packed)
