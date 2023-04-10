@@ -264,17 +264,14 @@ def handle_client(skt):
             # Send ROOM message
             room = lurk.Room.get_room(player.room)
             lurk.Room.send_room(skt, room)
-            # Send all characters in room, including player
+            # Send all characters in room to player, including player, and send player to all active players in room
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f"DEBUG: Sending character {character.name} to {player.name}")
                 lurk.Character.send_character(skt, character)
-            # Send updated character to all players in room that player joined (except player) the room
-            characters = lurk.Character.get_characters_with_room(player.room)
-            for character in characters:
-                if character.name not in names or player.name == sockets[skt]:
+                if character.name not in names or character.name == sockets[skt]:
                     continue
-                lurk.Character.send_character(names[player.name], character)
+                lurk.Character.send_character(names[character.name], player)
             # Send CONNECTION messages for all connections with current room
             lurk.Connection.send_connections_with_room(skt, player.room)
         elif lurk_type == lurk.ERROR:
