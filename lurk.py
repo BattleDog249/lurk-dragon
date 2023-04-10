@@ -323,11 +323,11 @@ class Character:
     description_len: c_uint16
     description: str
     lurk_type: c_uint8 = 10
-    struct_format: str = '<32sB3Hh3H'
     # Key (str): character.name, Value (Character): Character(name, flag, attack, defense, regen, health, gold, room, description_len, description...)
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
+        character_with_name = None
         for character in Character.characters:
             if Character.characters[character].name == target_name:
                 character_with_name = Character.characters[character]
@@ -351,7 +351,7 @@ class Character:
             print(Fore.RED+"ERROR: recv_character: Socket connection broken, returning None!")
             return None
         try:
-            name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack(Character.struct_format, character_header)
+            name, flag, attack, defense, regen, health, gold, room, description_len = struct.unpack('<32sB3Hh3H', character_header)
         except struct.error:
             raise struct.error("Failed to unpack character_header!")
         character_data = recv(skt, description_len)
@@ -362,7 +362,6 @@ class Character:
             description, = struct.unpack(f'<{description_len}s', character_data)
         except struct.error:
             raise struct.error("Failed to unpack character_data!")
-        #name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
         character = Character(name=name.decode(), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode())
         return character
     def send_character(skt, character):
