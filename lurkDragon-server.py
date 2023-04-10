@@ -106,12 +106,11 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 5)
                 continue
             if message.recipient not in names:
-                print(f"{Fore.WHITE}DEBUG: names = {names}")
                 print(f"{Fore.YELLOW}WARN: Recipient {message.recipient} not online, sending ERROR code 6!")
                 lurk.Error.send_error(skt, 6)
                 continue
             lurk.Accept.send_accept(skt, message.lurk_type)
-            print(f"DEBUG: Sending MESSAGE: {message} to {message.recipient} at socket: {names[message.recipient]}")
+            print(f"DEBUG: Sending message {message.message} from {message.sender} to {message.recipient}")
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
             #lock = threading.Lock()
