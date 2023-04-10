@@ -337,6 +337,7 @@ class Character:
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
         Character.characters.update({character.name: character})
+        print("DEBUG: characters dictionary: ", Character.characters)
     def recv_character(skt):
         """Receives a character message from the given socket, and unpacks it into a character object that is returned, or None if an error occurred."""
         if not isinstance(skt, socket.socket):
