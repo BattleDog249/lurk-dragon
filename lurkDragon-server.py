@@ -130,7 +130,10 @@ def handle_client(skt):
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             old_room = player.room
+            print(f"DEBUG: Setting player room to {changeroom.target_room}")
             player.room = changeroom.target_room
+            print(f"DEBUG: player.room = {player.room}")
+            print("DEBUG: Updating character in database...")
             lurk.Character.update_character(player)
             # Send ROOM to player
             lurk.Room.send_room(skt, room)
@@ -150,12 +153,10 @@ def handle_client(skt):
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send updated CHARACTER to all players in old room that player moved to new room
             characters = lurk.Character.get_characters_with_room(old_room)
-            print(f"DEBUG: Characters in old room: {characters}")
             for character in characters:
                 if character.name not in names or character.name == sockets[skt]:
-                    print(f"DEBUG: Character {character.name} not in names or character.name == sockets[skt], continuing...")
                     continue
-                print(f"DEBUG: Sending character {player.name} to {character.name}")
+                print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
                 lurk.Character.send_character(names[character.name], player)
             #lock.release()
         elif lurk_type == lurk.FIGHT:
@@ -267,10 +268,11 @@ def handle_client(skt):
             # Send all characters in room to player, including player, and send player to all active players in room
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
-                print(f"DEBUG: Sending character {character.name} to {player.name}")
+                print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {player.name}")
                 lurk.Character.send_character(skt, character)
                 if character.name not in names or character.name == sockets[skt]:
                     continue
+                print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
                 lurk.Character.send_character(names[character.name], player)
             # Send CONNECTION messages for all connections with current room
             lurk.Connection.send_connections_with_room(skt, player.room)
