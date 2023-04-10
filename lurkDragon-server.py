@@ -112,8 +112,8 @@ def handle_client(skt):
             lurk.Accept.send_accept(skt, lurk.MESSAGE)
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
-            lock = threading.Lock()
-            lock.acquire()
+            #lock = threading.Lock()
+            #lock.acquire()
             changeroom = lurk.Changeroom.recv_changeroom(skt)
             if changeroom is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
@@ -157,7 +157,7 @@ def handle_client(skt):
                     continue
                 print(f"DEBUG: Sending character {player.name} to {character.name}")
                 lurk.Character.send_character(names[character.name], player)
-            lock.release()
+            #lock.release()
         elif lurk_type == lurk.FIGHT:
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
