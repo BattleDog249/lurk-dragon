@@ -201,7 +201,7 @@ def handle_client(skt):
         elif lurk_type == lurk.PVPFIGHT:
             pvpfight = lurk.Pvpfight.recv_pvpfight(skt)
             if pvpfight is None:
-                print(f"{Fore.YELLOW}WARN: Socket connection broken during recv_pvpfight, cleaning up!")
+                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
                 break
             if skt not in sockets:
@@ -212,7 +212,12 @@ def handle_client(skt):
             print(f"{Fore.YELLOW}WARN: Server does not currently support PVPFIGHT, sending ERROR code 8!")
             lurk.Error.send_error(skt, 8)
         elif lurk_type == lurk.LOOT:
-            lurk_type, character_name = message
+            loot = lurk.Loot.recv_loot(skt)
+            print(f"{Fore.WHITE}DEBUG: Received LOOT: {loot}")
+            if loot is None:
+                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
+                cleanup_client(skt)
+                break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
@@ -222,7 +227,7 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Player flag STARTED not set, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            target = lurk.Character.get_character_with_name(character_name)
+            target = lurk.Character.get_character_with_name(loot.target_name)
             if target is None or target.room != player.room:
                 print(f"{Fore.YELLOW}WARN: Cannot loot nonexistent target, sending ERROR code 6!")
                 lurk.Error.send_error(skt, 6)
@@ -242,6 +247,7 @@ def handle_client(skt):
                     continue
                 lurk.Character.send_character(names[player.name], character)
         elif lurk_type == lurk.START:
+            print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
             try:
                 player = lurk.Character.get_character_with_name(sockets[skt])
             except:
@@ -281,8 +287,9 @@ def handle_client(skt):
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.CHARACTER:
             player = lurk.Character.recv_character(skt)
+            print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
             if player is None:
-                print(f"{Fore.YELLOW}WARN: Socket connection broken during recv_character, cleaning up!")
+                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
                 break
             if player.name in names:
