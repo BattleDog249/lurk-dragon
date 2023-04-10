@@ -334,7 +334,10 @@ class Character:
         return character_with_name
     def get_characters_with_room(room):
         """Returns a list of character objects that are in the given room. If no characters are found, returns an empty list."""
-        characters_with_room = [character for character in Character.characters if Character.characters[character].room == room]
+        characters_with_room = []
+        for character in Character.characters:
+            if Character.characters[character].room == room:
+                characters_with_room.append(Character.characters[character])
         return characters_with_room
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
