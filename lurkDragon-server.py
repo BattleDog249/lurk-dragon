@@ -190,14 +190,13 @@ def handle_client(skt):
                     character.flag ^= lurk.ALIVE
                     character.health = 0
                 lurk.Character.update_character(character)
-                # Send updated player and monster stats to all players in current room
-                # This is currently broken
                 characters = lurk.Character.get_characters_with_room(player.room)
                 lurk.Character.send_character(skt, player)
                 lurk.Character.send_character(skt, character)
-                print(f"DEBUG: Sending updated player and monster stats to all players in current room: {characters}")
+                # Send updated player and monster stats to all other players in current room
+                # Potentially broken, needs testing
                 for character in characters:
-                    if character.name not in names or character.name == player.name:
+                    if character.name not in names or character.name == sockets[skt]:
                         continue
                     print(f"DEBUG: Sending character {player.name} to {character.name}")
                     lurk.Character.send_character(names[character.name], player)
