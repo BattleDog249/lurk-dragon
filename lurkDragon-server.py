@@ -81,13 +81,13 @@ def cleanup_client(skt):
         print(f"{Fore.YELLOW}WARN: cleanup_client: Nothing to clean!")
     skt.shutdown(2)
     skt.close()
-    print(f"{Fore.WHITE}INFO: cleanup_client: Finished!")
+    print(f"{Fore.GREEN}INFO: cleanup_client: Finished!")
 def handle_client(skt):
     """Thread function for handling a client."""
     while True:
         lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
-            print(f"{Fore.RED}ERROR: handle_client: lurk.recv returned None, breaking while loop!")
+            print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
             cleanup_client(skt)
             break
         lurk_type = int.from_bytes(lurk_type, byteorder='little')
@@ -296,9 +296,6 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Socket attempting to access active player {player.name}, sending ERROR code 2!")
                 lurk.Error.send_error(skt, 2)
                 continue
-            if player.name in lurk.Character.characters and (player.flag | lurk.MONSTER or player.flag ^ lurk.READY):
-                print(f"{Fore.YELLOW}WARN: Character attempted to access NPC/Monster {player.name}, which should have a MONSTER flag or not a READY flag if NPC, continuing!")
-                continue
             if player.name not in lurk.Character.characters:
                 if player.attack + player.defense + player.regen > INIT_POINTS:
                     print(f"{Fore.YELLOW}WARN: Character stats from {player.name} invalid, sending ERROR code 4!")
@@ -328,7 +325,7 @@ def handle_client(skt):
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.LEAVE:
-            print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
+            print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
             cleanup_client(skt)
             break
         elif lurk_type == lurk.CONNECTION:
