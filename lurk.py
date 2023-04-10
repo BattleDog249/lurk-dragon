@@ -328,7 +328,9 @@ class Character:
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
-        character_with_name = [character for character in Character.characters if Character.characters[character].name == target_name]
+        for character in Character.characters:
+            if Character.characters[character].name == target_name:
+                character_with_name = Character.characters[character.name]
         return character_with_name
     def get_characters_with_room(room):
         """Returns a list of character objects that are in the given room. If no characters are found, returns an empty list."""
@@ -337,7 +339,6 @@ class Character:
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
         Character.characters.update({character.name: character})
-        print("DEBUG: characters dictionary: ", Character.characters)
     def recv_character(skt):
         """Receives a character message from the given socket, and unpacks it into a character object that is returned, or None if an error occurred."""
         if not isinstance(skt, socket.socket):
