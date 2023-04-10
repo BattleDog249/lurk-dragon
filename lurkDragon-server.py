@@ -127,7 +127,7 @@ def handle_client(skt):
             print(f"DEBUG: Getting old room of player: {player.room}")
             old_room = lurk.Room.get_room(player.room)
             print(f"DEBUG: Old room: {old_room}")
-            if changeroom.target_room not in room.connections:
+            if changeroom.target_room not in old_room.connections:
                 print(f"{Fore.YELLOW}WARN: {player.name} attempted bad move, sending ERROR code 1!")
                 lurk.Error.send_error(skt, 1)
                 continue
