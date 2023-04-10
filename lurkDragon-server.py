@@ -97,6 +97,7 @@ def handle_client(skt):
             continue
         if lurk_type == lurk.MESSAGE:
             message = lurk.Message.recv_message(skt)
+            print(f"{Fore.WHITE}DEBUG: Received MESSAGE: {message}")
             if message is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
@@ -140,7 +141,6 @@ def handle_client(skt):
             # Send all characters in new room to player
             # Send updated player to all other players in new room that player entered room
             characters = lurk.Character.get_characters_with_room(player.room)
-            print(f"DEBUG: Characters in new room: {characters}")
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {sockets[skt]}")
                 lurk.Character.send_character(skt, character)
@@ -159,6 +159,7 @@ def handle_client(skt):
                 lurk.Character.send_character(names[character.name], player)
             #lock.release()
         elif lurk_type == lurk.FIGHT:
+            print(f"{Fore.WHITE}DEBUG: Received FIGHT: {lurk_type}")
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
