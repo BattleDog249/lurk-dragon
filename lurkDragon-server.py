@@ -105,8 +105,8 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Player not ready, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            if message.recipient not in names:
-                print(f"{Fore.WHITE}DEBUG: names = {names}")
+            if message.recipient not in sockets:
+                print(f"{Fore.WHITE}DEBUG: names = {sockets}")
                 print(f"{Fore.YELLOW}WARN: Recipient {message.recipient} not online, sending ERROR code 6!")
                 lurk.Error.send_error(skt, 6)
                 continue
