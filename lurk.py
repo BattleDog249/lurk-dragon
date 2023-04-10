@@ -476,7 +476,7 @@ class Connection:
         for connection in connections:
             connection = Room.get_room(connection)
             connections_to_return.append(connection)
-        print(Fore.WHITE+f'DEBUG: Connection(s) to room {number}: {connections_to_return}')
+        print(f"{Fore.WHITE}DEBUG: Connection(s) to room {number}: {connections_to_return}")
         return connections_to_return
     def send_connections_with_room(skt, number):
         """"""
@@ -486,7 +486,7 @@ class Connection:
             connection = Room.get_room(connection)
             connections_list.append(connection)
         for room in connections_list:
-            print(Fore.WHITE+f'DEBUG: send_connections_with_room: Sending connection {room.name} to client')
+            print(f"{Fore.WHITE}DEBUG: send_connections_with_room: Sending connection {room.name} to client")
             connection = Connection(number=room.number, name=room.name, description_len=room.description_len, description=room.description)
             bytes_sent = Connection.send_connection(skt, connection)
         return bytes_sent
@@ -496,7 +496,7 @@ class Connection:
             raise TypeError("Provided skt parameter must be a socket object!")
         connection_header = recv(skt, CONNECTION_LEN - 1)
         if not connection_header:
-            print(Fore.RED+"ERROR: recv_connection: Socket connection broken, returning None!")
+            print(f"{Fore.RED}ERROR: recv_connection: Socket connection broken, returning None!")
             return None
         try:
             number, name, description_len = struct.unpack('<H32sH', connection_header)
@@ -504,7 +504,7 @@ class Connection:
             raise struct.error("Failed to unpack connection_header!") from exc
         connection_data = recv(skt, description_len)
         if not connection_data:
-            print(Fore.RED+"ERROR: recv_connection: Socket connection broken, returning None!")
+            print(f"{Fore.RED}ERROR: recv_connection: Socket connection broken, returning None!")
             return None
         try:
             description, = struct.unpack(f'<{description_len}s', connection_data)
@@ -521,9 +521,9 @@ class Connection:
         packed = struct.pack(f'<BH32sH{connection.description_len}s', connection.lurk_type,  connection.number, connection.name.encode(), connection.description_len, connection.description.encode())
         bytes_sent = send(skt, packed)
         if bytes_sent != len(packed):
-            print(Fore.RED+f"ERROR: send_connection: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
+            print(f"{Fore.RED}ERROR: send_connection: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
-        print(Fore.WHITE+f'DEBUG: send_connection: Sent {bytes_sent} byte CONNECTION!')
+        print(f"{Fore.WHITE}DEBUG: send_connection: Sent {bytes_sent} byte CONNECTION!")
         return bytes_sent
 
 @dataclass
@@ -541,7 +541,7 @@ class Version:
             raise TypeError("Provided skt parameter must be a socket object!")
         version_header = recv(skt, VERSION_LEN - 1)
         if not version_header:
-            print(Fore.RED+"ERROR: recv_version: Socket connection broken, returning None!")
+            print(f"{Fore.RED}ERROR: recv_version: Socket connection broken, returning None!")
             return None
         try:
             major, minor, extensions_len = struct.unpack(Version.struct_format, version_header)
@@ -558,7 +558,7 @@ class Version:
         packed = struct.pack(f'<3BH{version.extensions_len}s', version.lurk_type, version.major, version.minor, version.extensions_len, version.extensions.encode())
         bytes_sent = send(skt, packed)
         if bytes_sent != len(packed):
-            print(Fore.RED+f"ERROR: send_version: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
+            print(f"{Fore.RED}ERROR: send_version: Socket connection broken, only sent {bytes_sent} out of {len(packed)} bytes!")
             return None
-        print(Fore.WHITE+f'DEBUG: send_version: Sent {bytes_sent} byte VERSION!')
+        print(f"{Fore.WHITE}DEBUG: send_version: Sent {bytes_sent} byte VERSION!")
         return bytes_sent
