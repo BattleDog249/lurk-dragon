@@ -328,11 +328,11 @@ class Character:
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
-        character_with_name = [character for character in Character.characters if character.name in Character.characters and Character.characters[character.name] == target_name]
+        character_with_name = [character for character in Character.characters if character.name in Character.characters and Character.characters[character].name == target_name]
         return character_with_name
     def get_characters_with_room(room):
         """Returns a list of character objects that are in the given room. If no characters are found, returns an empty list."""
-        characters_with_room = [character for character in Character.characters if character.name in Character.characters and Character.characters[character.name].room == room]
+        characters_with_room = [character for character in Character.characters if character.name in Character.characters and Character.characters[character].room == room]
         return characters_with_room
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
