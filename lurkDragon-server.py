@@ -167,6 +167,7 @@ def handle_client(skt):
             player = lurk.Character.get_character_with_name(sockets[skt])
             count = 0
             monsters = lurk.Character.get_characters_with_room(player.room)
+            print(f"DEBUG: Potential monsters to fight in room {player.room}: {monsters}")
             for monster in monsters:
                 if (character.flag != character.flag & lurk.MONSTER & lurk.ALIVE) or character.name == player.name:
                     print(f"{Fore.WHITE}DEBUG: Character {character.name} not a living monster (160), flag: {character.flag}")
