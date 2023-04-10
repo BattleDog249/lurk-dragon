@@ -328,14 +328,18 @@ def handle_client(skt):
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.LEAVE:
-            print(f"{Fore.CYAN}INFO: Received LEAVE, cleaning up client and closing socket!")
+            print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
             cleanup_client(skt)
             break
         elif lurk_type == lurk.CONNECTION:
-            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
+            connection = lurk.Connection.recv_connection(skt)
+            print(f"{Fore.WHITE}DEBUG: Received CONNECTION: {connection}")
+            print(f"{Fore.YELLOW}WARN: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.VERSION:
-            print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
+            version = lurk.Version.recv_version(skt)
+            print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
+            print(f"{Fore.YELLOW}WARN: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         else:
             print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
