@@ -111,6 +111,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 6)
                 continue
             lurk.Accept.send_accept(skt, lurk.MESSAGE)
+            print(f"DEBUG: Sending MESSAGE: {message} to {message.recipient} at socket: {names[message.recipient]}")
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
             #lock = threading.Lock()
