@@ -165,14 +165,13 @@ def handle_client(skt):
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
             count = 0
-            characters = lurk.Character.get_characters_with_room(player.room)
-            for character in characters:
+            monsters = lurk.Character.get_characters_with_room(player.room)
+            for monster in monsters:
                 if (character.flag != character.flag | lurk.MONSTER & lurk.ALIVE) or character.name == player.name:
                     print(f"{Fore.WHITE}DEBUG: Character {character.name} not a living monster (160), flag: {character.flag}")
                     continue
-                print(f"{Fore.WHITE}DEBUG: {character.name} has monster flag set, flag: {character.flag}")
+                print(f"{Fore.WHITE}DEBUG: {monster.name} has monster flag set, flag: {monster.flag}")
                 count+=1
-                monster = lurk.Character.get_character_with_name(character.name)
                 monster_damage = monster.attack * monster.attack / (monster.attack + monster.defense)
                 player.health -= monster_damage
                 player.health = round(player.health)
@@ -195,8 +194,8 @@ def handle_client(skt):
                 for character in characters:
                     if character.name not in names:
                         continue
-                    lurk.Character.send_character(names[player.name], player)
-                    lurk.Character.send_character(names[player.name], monster)
+                    lurk.Character.send_character(names[character.name], player)
+                    lurk.Character.send_character(names[character.name], monster)
             if count == 0:
                 print(f"{Fore.YELLOW}WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.Error.send_error(skt, 7)
