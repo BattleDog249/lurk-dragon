@@ -172,7 +172,7 @@ def handle_client(skt):
                 if (character.flag != character.flag | lurk.MONSTER | lurk.ALIVE) or character.name == player.name:
                     print(f"{Fore.WHITE}DEBUG: Character {character.name} not a living monster (160), flag: {character.flag}")
                     continue
-                print(f"{Fore.WHITE}DEBUG: {character.name} has MONSTER flag set, flag: {character.flag}")
+                print(f"{Fore.WHITE}DEBUG: {character.name} has MONSTER and ALIVE flag set, flag: {character.flag}")
                 count+=1
                 monster_damage = character.attack * character.attack / (character.attack + character.defense)
                 player.health -= monster_damage
@@ -191,17 +191,19 @@ def handle_client(skt):
                     character.health = 0
                 lurk.Character.update_character(character)
                 other_players = lurk.Character.get_characters_with_room(player.room)
+                # Update current player with new player and monster stats
+                print(f"DEBUG: Sending updated character to {player.name}")
                 lurk.Character.send_character(skt, player)
+                print(f"DEBUG: Sending updated monster to {player.name}")
                 lurk.Character.send_character(skt, character)
                 # Send updated player and monster stats to all other players in current room
-                # Broken, needs testing
                 for other_player in other_players:
                     if other_player.name not in names or other_player.name == sockets[skt]:
                         print(f"DEBUG: {other_player.name} is not a player, continuing...")
                         continue
-                    print(f"DEBUG: Sending character {player.name} to {other_player.name}")
+                    print(f"DEBUG: Sending updated player {player.name} to {other_player.name}")
                     lurk.Character.send_character(names[other_player.name], player)
-                    print(f"DEBUG: Sending character {character.name} to {other_player.name}")
+                    print(f"DEBUG: Sending updated monster {character.name} to {other_player.name}")
                     lurk.Character.send_character(names[other_player.name], character)
             if count == 0:
                 print(f"{Fore.YELLOW}WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
@@ -235,6 +237,7 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Player flag STARTED not set, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
+            print(f"DEBUG: Player {player.name} looting {loot.target_name}")
             target = lurk.Character.get_character_with_name(loot.target_name)
             if target is None or target.room != player.room:
                 print(f"{Fore.YELLOW}WARN: Cannot loot nonexistent target, sending ERROR code 6!")
