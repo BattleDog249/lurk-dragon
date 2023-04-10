@@ -102,7 +102,7 @@ def handle_client(skt):
                 cleanup_client(skt)
                 break
             if skt not in sockets:
-                print(f"{Fore.YELLOW}WARN: Player not ready, sending ERROR code 5!")
+                print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             if message.recipient not in names:
@@ -110,7 +110,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 6)
                 continue
             lurk.Accept.send_accept(skt, message.lurk_type)
-            print(f"DEBUG: Sending message {message.message} from {message.sender} to {message.recipient}")
+            print(f"DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
             #lock = threading.Lock()
@@ -122,7 +122,7 @@ def handle_client(skt):
                 cleanup_client(skt)
                 break
             if skt not in sockets:
-                print(f"{Fore.YELLOW}WARN: Player not ready, sending ERROR code 5!")
+                print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             old_room = lurk.Room.get_room(player.room)
@@ -160,7 +160,7 @@ def handle_client(skt):
             #lock.release()
         elif lurk_type == lurk.FIGHT:
             if skt not in sockets:
-                print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
+                print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
@@ -206,7 +206,7 @@ def handle_client(skt):
                 cleanup_client(skt)
                 break
             if skt not in sockets:
-                print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
+                print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
@@ -220,7 +220,7 @@ def handle_client(skt):
                 cleanup_client(skt)
                 break
             if skt not in sockets:
-                print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
+                print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             player = lurk.Character.get_character_with_name(sockets[skt])
@@ -252,7 +252,7 @@ def handle_client(skt):
             try:
                 player = lurk.Character.get_character_with_name(sockets[skt])
             except:
-                print(f"{Fore.YELLOW}WARN: Character not yet created, sending ERROR code 5!")
+                print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
             if player.room == 0:
