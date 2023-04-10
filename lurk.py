@@ -80,6 +80,7 @@ class Message:
             message, = struct.unpack(f'<{message_len}s', message_data)
         except struct.error as exc:
             raise struct.error("Failed to unpack message_data!") from exc
+        recipient = recipient.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
         message = Message(message_len=message_len, recipient=recipient, sender=sender, message=message)
         return message
     def send_message(skt, message):
