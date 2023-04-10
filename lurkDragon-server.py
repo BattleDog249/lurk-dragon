@@ -177,7 +177,7 @@ def handle_client(skt):
                 monster_damage = character.attack * character.attack / (character.attack + character.defense)
                 player.health -= monster_damage
                 player.health = round(player.health)
-                print(f"{Fore.WHITE}DEBUG: player.health after fight: {player.health}")
+                print(f"{Fore.WHITE}DEBUG: {player.name}'s health after fight: {player.health}")
                 if player.health <= 0:
                     player.flag ^= lurk.ALIVE
                     player.health = 0
@@ -185,18 +185,21 @@ def handle_client(skt):
                 player_damage = player.attack * player.attack / (player.attack + player.defense)
                 character.health -= player_damage
                 character.health = round(character.health)
-                print(f"{Fore.WHITE}DEBUG: character.health after fight: {character.health}")
+                print(f"{Fore.WHITE}DEBUG: {character.name}'s health after fight: {character.health}")
                 if character.health <= 0:
                     character.flag ^= lurk.ALIVE
                     character.health = 0
                 lurk.Character.update_character(character)
-                # Send updated player stats to all other players in room that player is in
+                # Send updated player and monster stats to all players in current room
                 # This is currently broken
                 characters = lurk.Character.get_characters_with_room(player.room)
+                print(f"DEBUG: Sending updated player and monster stats to all players in current room: {characters}")
                 for character in characters:
                     if character.name not in names:
                         continue
+                    print(f"DEBUG: Sending character {player.name} to {character.name}")
                     lurk.Character.send_character(names[character.name], player)
+                    print(f"DEBUG: Sending character {character.name} to {character.name}")
                     lurk.Character.send_character(names[character.name], character)
             if count == 0:
                 print(f"{Fore.YELLOW}WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
