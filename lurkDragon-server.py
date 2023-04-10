@@ -112,7 +112,8 @@ def handle_client(skt):
             lurk.Accept.send_accept(skt, lurk.MESSAGE)
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
-            lock = threading.Lock.acquire()
+            lock = threading.Lock()
+            lock.acquire()
             changeroom = lurk.Changeroom.recv_changeroom(skt)
             if changeroom is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
