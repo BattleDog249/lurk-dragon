@@ -324,29 +324,19 @@ class Character:
     description: str
     lurk_type: c_uint8 = 10
     struct_format: str = '<32sB3Hh3H'
-    # Key (str): name, Value (list): [flag, attack, defense, regen, health, gold, room, description_len, description]
+    # Key (str): character.name, Value (Character): Character(name, flag, attack, defense, regen, health, gold, room, description_len, description...)
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
-        character = [(name, stat) for name, stat in Character.characters.items() if name in Character.characters and target_name == name]
-        if character == []:
-            print(f"ERROR: get_character_with_name: {target_name} not found in characters dictionary: {Character.characters}")
-            return None
-        print(f"DEBUG: get_character_with_name: character = {character}")
-        print(f"DEBUG: Attempting to create character object with name {character[0][0]}")
-        character = Character(name=character[0][0], flag=character[0][1][0], attack=character[0][1][1], defense=character[0][1][2], regen=character[0][1][3], health=character[0][1][4], gold=character[0][1][5], room=character[0][1][6], description_len=character[0][1][7], description=character[0][1][8])
-        return character
+        character_with_name = [character for character in Character.characters if character.name in Character.characters and Character.characters[character.name].name == target_name]
+        return character_with_name
     def get_characters_with_room(room):
         """Returns a list of character objects that are in the given room. If no characters are found, returns an empty list."""
-        characters_with_room = [(name, stat) for name, stat in Character.characters.items() if Character.characters[name][6] == room]
-        characters = []
-        for character in characters_with_room:
-            character_with_room = Character(name=character[0], flag=character[1][0], attack=character[1][1], defense=character[1][2], regen=character[1][3], health=character[1][4], gold=character[1][5], room=character[1][6], description_len=character[1][7], description=character[1][8])
-            characters.append(character_with_room)
-        return characters
+        characters_with_room = [character for character in Character.characters if character.name in Character.characters and Character.characters[character.name].room == room]
+        return characters_with_room
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
-        Character.characters.update({character.name: [character.flag, character.attack, character.defense, character.regen, character.health, character.gold, character.room, character.description_len, character.description]})
+        Character.characters.update({character.name: character})
     def recv_character(skt):
         """Receives a character message from the given socket, and unpacks it into a character object that is returned, or None if an error occurred."""
         if not isinstance(skt, socket.socket):
