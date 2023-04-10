@@ -80,7 +80,6 @@ class Message:
             message, = struct.unpack(f'<{message_len}s', message_data)
         except struct.error as exc:
             raise struct.error("Failed to unpack message_data!") from exc
-        #recipient = recipient.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
         message = Message(message_len=message_len, recipient=recipient.decode(), sender=sender.decode(), message=message.decode())
         return message
     def send_message(skt, message):
@@ -363,8 +362,8 @@ class Character:
             description, = struct.unpack(f'<{description_len}s', character_data)
         except struct.error:
             raise struct.error("Failed to unpack character_data!")
-        name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
-        character = Character(name=name.decode('utf-8', 'ignore'), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode('utf-8', 'ignore'))
+        #name = name.replace(b'\x00', b'')   # I think this fixed stuff? Weird..
+        character = Character(name=name.decode(), flag=flag, attack=attack, defense=defense, regen=regen, health=health, gold=gold, room=room, description_len=description_len, description=description.decode())
         return character
     def send_character(skt, character):
         """Packs a character message into bytes with the given character object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the character parameter is not a Character object."""
@@ -408,7 +407,7 @@ class Game:
             description, = struct.unpack(f'<{description_len}s', game_data)
         except struct.error:
             raise struct.error("Failed to unpack game_data!")
-        game = Game(init_points=init_points,stat_limit=stat_limit, description_len=description_len, description=description.decode('utf-8', 'ignore'))
+        game = Game(init_points=init_points,stat_limit=stat_limit, description_len=description_len, description=description.decode())
         return game
     def send_game(skt, game):
         """Packs a game message into bytes with the given game object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the game parameter is not a Game object."""
@@ -490,7 +489,7 @@ class Connection:
             description, = struct.unpack(f'<{description_len}s', connection_data)
         except struct.error:
             raise struct.error("Failed to unpack connection_data!")
-        connection = Connection(number=number, name=name.decode('utf-8', 'ignore'), description_len=description_len, description=description.decode('utf-8', 'ignore'))
+        connection = Connection(number=number, name=name.decode(), description_len=description_len, description=description.decode())
         return connection
     def send_connection(skt, connection):
         """Packs a connection message into bytes with the given connection object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the connection parameter is not a Connection object."""
