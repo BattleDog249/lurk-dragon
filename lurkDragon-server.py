@@ -106,6 +106,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 5)
                 continue
             if message.recipient not in names:
+                print(f"{Fore.WHITE}DEBUG: names = {names}")
                 print(f"{Fore.YELLOW}WARN: Recipient {message.recipient} not online, sending ERROR code 6!")
                 lurk.Error.send_error(skt, 6)
                 continue
@@ -136,17 +137,16 @@ def handle_client(skt):
             new_room = lurk.Room.get_room(player.room)
             # Send new ROOM to player
             lurk.Room.send_room(skt, new_room)
-            # Send updated CHARACTER to player
-            #lurk.Character.send_character(skt, player)
             # Send all characters in new room to player
-            # And send updated character to all players in new room that player entered new room
+            # Send updated player to all other players in new room that player entered room
             characters = lurk.Character.get_characters_with_room(player.room)
             print(f"DEBUG: Characters in new room: {characters}")
             for character in characters:
-                print(f"DEBUG: Sending character {character.name} to {sockets[skt]}")
+                print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {sockets[skt]}")
                 lurk.Character.send_character(skt, character)
                 if character.name not in names or character.name == sockets[skt]:
                     continue
+                print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
                 lurk.Character.send_character(names[character.name], player)
             # Send CONNECTION messages for all connections with new room to player
             lurk.Connection.send_connections_with_room(skt, player.room)
