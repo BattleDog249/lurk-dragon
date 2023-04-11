@@ -350,7 +350,7 @@ class Character:
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
         character_with_name = None
-        target_name = target_name.strip()
+        target_name = target_name.strip()   # Does nothing to solve issue..
         for character in Character.characters:
             print(f"DEBUG: get_character_with_name: Checking {Character.characters[character].name} against {target_name}!")
             if Character.characters[character].name == target_name:

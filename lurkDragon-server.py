@@ -52,6 +52,7 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', enco
     for npc in characters_data:
         npc = lurk.Character(name=npc['name'].strip(), flag=npc['flag'], attack=npc['attack'], defense=npc['defense'], regen=npc['regen'], health=npc['health'], gold=npc['gold'], room=npc['room'], description_len=len(npc['description']), description=npc['description'].strip())
         lurk.Character.update_character(npc)
+    print(f"DEBUG: Populated characters dictionary: {lurk.Character.characters}")
 # Populate room dictionary containing all rooms in the game.
 #   Key (int): Room Number
 #   Value (list): [name, description_len, description, connections]
