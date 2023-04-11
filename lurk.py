@@ -351,7 +351,7 @@ class Character:
         """Returns a character with the given name. If the character is not found, returns None."""
         character_with_name = None
         for character in Character.characters:
-            print(f"DEBUG: get_character_with_name: Checking {Character.characters[character].name} against {target_name}")
+            print(f"DEBUG: get_character_with_name: Checking {Character.characters[character].name} with type {type(Character.characters[character].name)} against {target_name} with type {type(target_name)}")
             if Character.characters[character].name == target_name:
                 print(f"DEBUG: get_character_with_name: Found {Character.characters[character].name}!")
                 character_with_name = Character.characters[character]
