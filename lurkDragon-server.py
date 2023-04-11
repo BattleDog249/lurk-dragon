@@ -50,7 +50,7 @@ def del_socket(skt):
 with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', encoding='utf-8') as characters_json:
     characters_data = json.load(characters_json)
     for npc in characters_data:
-        npc = lurk.Character(name=npc['name'], flag=npc['flag'], attack=npc['attack'], defense=npc['defense'], regen=npc['regen'], health=npc['health'], gold=npc['gold'], room=npc['room'], description_len=len(npc['description']), description=npc['description'])
+        npc = lurk.Character(name=npc['name'].strip(), flag=npc['flag'], attack=npc['attack'], defense=npc['defense'], regen=npc['regen'], health=npc['health'], gold=npc['gold'], room=npc['room'], description_len=len(npc['description']), description=npc['description'].strip())
         lurk.Character.update_character(npc)
 # Populate room dictionary containing all rooms in the game.
 #   Key (int): Room Number
