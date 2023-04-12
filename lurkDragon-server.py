@@ -118,8 +118,8 @@ def handle_client(skt):
             print(f"DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
-            #lock = threading.Lock()
-            #lock.acquire()
+            lock = threading.Lock()
+            lock.acquire()
             changeroom = lurk.Changeroom.recv_changeroom(skt)
             print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
             if changeroom is None:
@@ -161,7 +161,7 @@ def handle_client(skt):
                     continue
                 print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
                 lurk.Character.send_character(names[character.name], player)
-            #lock.release()
+            lock.release()
         elif lurk_type == lurk.FIGHT:
             print(f"{Fore.WHITE}DEBUG: Received FIGHT: {lurk_type}")
             if skt not in sockets:
