@@ -85,6 +85,7 @@ def cleanup_client(skt):
     print(f"{Fore.GREEN}INFO: cleanup_client: Finished!")
 def handle_client(skt):
     """Thread function for handling a client."""
+    lock = threading.Lock()
     while True:
         lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
@@ -118,7 +119,6 @@ def handle_client(skt):
             print(f"DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
             lurk.Message.send_message(names[message.recipient], message)
         elif lurk_type == lurk.CHANGEROOM:
-            lock = threading.Lock()
             lock.acquire()
             changeroom = lurk.Changeroom.recv_changeroom(skt)
             print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
@@ -130,20 +130,27 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
+            lock.acquire()
             old_room = lurk.Room.get_room(player.room)
+            lock.release()
             if changeroom.target_room not in old_room.connections:
                 print(f"{Fore.YELLOW}WARN: {player.name} attempted bad move, sending ERROR code 1!")
                 lurk.Error.send_error(skt, 1)
                 continue
+            lock.acquire()
             player = lurk.Character.get_character_with_name(sockets[skt])
+            lock.release()
             old_room = player.room
             player.room = changeroom.target_room
             lurk.Character.update_character(player)
+            lock.acquire()
             new_room = lurk.Room.get_room(player.room)
+            lock.release()
             # Send new ROOM to player
             lurk.Room.send_room(skt, new_room)
             # Send all characters in new room to player
             # Send updated player to all other players in new room that player entered room
+            lock.acquire()
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {sockets[skt]}")
@@ -324,15 +331,12 @@ def handle_client(skt):
                 player.description_len = len(player.description)
                 print(f"{Fore.CYAN}INFO: Adding new character {player.name} to database")
                 lurk.Character.update_character(player)
-            lock = threading.Lock()
-            lock.acquire()
             player = lurk.Character.get_character_with_name(player.name)
             print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
             player.skt = skt
             lurk.Character.update_character(player)
-            lock.release()
             add_name(skt, player.name)
             add_socket(skt, player.name)
             lurk.Accept.send_accept(skt, lurk.CHARACTER)
