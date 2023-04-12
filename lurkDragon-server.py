@@ -90,7 +90,7 @@ def handle_client(skt):
         try:
             lock.release()
         except RuntimeError as exc:
-            continue
+            pass
         lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
             print(f"{Fore.YELLOW}WARN: Client disconnected while waiting for a lurk message!")
