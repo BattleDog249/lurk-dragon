@@ -324,12 +324,15 @@ def handle_client(skt):
                 player.description_len = len(player.description)
                 print(f"{Fore.CYAN}INFO: Adding new character {player.name} to database")
                 lurk.Character.update_character(player)
+            lock = threading.Lock()
+            lock.acquire()
             player = lurk.Character.get_character_with_name(player.name)
             print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
             player.skt = skt
             lurk.Character.update_character(player)
+            lock.release()
             add_name(skt, player.name)
             add_socket(skt, player.name)
             lurk.Accept.send_accept(skt, lurk.CHARACTER)
