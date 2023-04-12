@@ -354,22 +354,24 @@ class Character:
         character_with_name = None
         target_name = target_name.strip()   # Does nothing to solve issue..
         print(f"DEBUG: get_character_with_name: Target name is {target_name}!")
-        mutex = threading.Lock().acquire()
+        lock = threading.Lock()
+        lock.acquire()
         for character in Character.characters:
             print(f"DEBUG: get_character_with_name: Checking {Character.characters[character].name} against {target_name}!")
             if Character.characters[character].name == target_name:
                 print(f"DEBUG: get_character_with_name: Found {Character.characters[character].name}!")
                 character_with_name = Character.characters[character]
-        mutex.release()
+        lock.release()
         return character_with_name
     def get_characters_with_room(room):
         """Returns a list of character objects that are in the given room. If no characters are found, returns an empty list."""
         characters_with_room = []
-        mutex = threading.Lock().acquire()
+        lock = threading.Lock()
+        lock.acquire()
         for character in Character.characters:
             if Character.characters[character].room == room:
                 characters_with_room.append(Character.characters[character])
-        mutex.release()
+        lock.release()
         return characters_with_room
     def update_character(character):
         """Updates the character with the given character object in the characters dictionary, or adds it if it doesn't exist."""
