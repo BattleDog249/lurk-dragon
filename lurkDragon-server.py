@@ -87,6 +87,10 @@ def handle_client(skt):
     """Thread function for handling a client."""
     lock = threading.Lock()
     while True:
+        try:
+            lock.release()
+        except RuntimeError as exc:
+            continue
         lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
             print(f"{Fore.YELLOW}WARN: Client disconnected while waiting for a lurk message!")
@@ -130,27 +134,20 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            lock.acquire()
             old_room = lurk.Room.get_room(player.room)
-            lock.release()
             if changeroom.target_room not in old_room.connections:
                 print(f"{Fore.YELLOW}WARN: {player.name} attempted bad move, sending ERROR code 1!")
                 lurk.Error.send_error(skt, 1)
                 continue
-            lock.acquire()
             player = lurk.Character.get_character_with_name(sockets[skt])
-            lock.release()
             old_room = player.room
             player.room = changeroom.target_room
             lurk.Character.update_character(player)
-            lock.acquire()
             new_room = lurk.Room.get_room(player.room)
-            lock.release()
             # Send new ROOM to player
             lurk.Room.send_room(skt, new_room)
             # Send all characters in new room to player
             # Send updated player to all other players in new room that player entered room
-            lock.acquire()
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {sockets[skt]}")
@@ -307,6 +304,7 @@ def handle_client(skt):
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.CHARACTER:
             player = lurk.Character.recv_character(skt)
+            lock.acquire()
             print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
             if player is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
@@ -331,9 +329,7 @@ def handle_client(skt):
                 player.description_len = len(player.description)
                 print(f"{Fore.CYAN}INFO: Adding new character {player.name} to database")
                 lurk.Character.update_character(player)
-            lock.acquire()
             player = lurk.Character.get_character_with_name(player.name)
-            lock.release()
             print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
@@ -343,6 +339,7 @@ def handle_client(skt):
             add_socket(skt, player.name)
             lurk.Accept.send_accept(skt, lurk.CHARACTER)
             lurk.Character.send_character(skt, player)
+            lock.release()
             # Send MESSAGE to client from narrator here, stating welcome back!
         elif lurk_type == lurk.GAME:
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
