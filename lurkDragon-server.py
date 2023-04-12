@@ -331,7 +331,9 @@ def handle_client(skt):
                 player.description_len = len(player.description)
                 print(f"{Fore.CYAN}INFO: Adding new character {player.name} to database")
                 lurk.Character.update_character(player)
+            lock.acquire()
             player = lurk.Character.get_character_with_name(player.name)
+            lock.release()
             print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
