@@ -74,6 +74,7 @@ def cleanup_client(skt):
     if skt in sockets:
         player = lurk.Character.get_character_with_name(sockets[skt])
         player.flag ^= lurk.READY | lurk.STARTED  # This needs verification, basically set ready & started flags to 0, keeping all other flags the same.
+        player.skt = None
         lurk.Character.update_character(player)
     try:
         del_name(sockets[skt])
@@ -111,7 +112,7 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Message recipient {message.recipient} not online, sending ERROR code 6 to {sockets[skt]}!")
                 lurk.Error.send_error(skt, 6)
                 continue
-            # Prevents a player from spoofing a message from another player.
+            # Prevents a player from spoofing a message from another player by hardcoding the sender's name.
             sender = lurk.Character.get_character_with_name(sockets[skt])
             message.sender = sender.name
             lurk.Accept.send_accept(skt, message.lurk_type)
