@@ -112,7 +112,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 6)
                 continue
             # Prevents a player from spoofing a message from another player.
-            sender = lurk.Character.get_character_with_name([sockets[skt]])
+            sender = lurk.Character.get_character_with_name(sockets[skt])
             message.sender = sender.name
             lurk.Accept.send_accept(skt, message.lurk_type)
             print(f"DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
