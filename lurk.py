@@ -344,8 +344,9 @@ class Character:
     room: c_uint16
     description_len: c_uint16
     description: str
+    skt: socket.socket = None
     lurk_type: c_uint8 = CHARACTER
-    # Key (str): character.name, Value (Character): Character(name, flag, attack, defense, regen, health, gold, room, description_len, description...)
+    # Key (str): character.name, Value (Character): Character(name, flag, attack, defense, regen, health, gold, room, description_len, description, skt)
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""

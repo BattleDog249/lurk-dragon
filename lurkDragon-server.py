@@ -112,7 +112,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 6)
                 continue
             # Prevents a player from spoofing a message from another player.
-            sender = lurk.Character.get_character_with_name(sockets[names[message.sender]])
+            sender = lurk.Character.get_character_with_name([sockets[skt]])
             message.sender = sender.name
             lurk.Accept.send_accept(skt, message.lurk_type)
             print(f"DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
@@ -305,7 +305,7 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
                 break
-            if player.name in names:
+            if player.skt is not None:
                 print(f"{Fore.YELLOW}WARN: Socket attempting to access active player {player.name}, sending ERROR code 2!")
                 lurk.Error.send_error(skt, 2)
                 continue
@@ -328,6 +328,7 @@ def handle_client(skt):
             print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
+            player.skt = skt
             lurk.Character.update_character(player)
             add_name(skt, player.name)
             add_socket(skt, player.name)
