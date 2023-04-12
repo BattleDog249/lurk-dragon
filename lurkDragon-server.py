@@ -111,6 +111,9 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Message recipient {message.recipient} not online, sending ERROR code 6 to {sockets[skt]}!")
                 lurk.Error.send_error(skt, 6)
                 continue
+            # Prevents a player from spoofing a message from another player.
+            sender = lurk.Character.get_character_with_name(sockets[names[message.sender]])
+            message.sender = sender.name
             lurk.Accept.send_accept(skt, message.lurk_type)
             print(f"DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
             lurk.Message.send_message(names[message.recipient], message)
@@ -261,12 +264,11 @@ def handle_client(skt):
                 lurk.Character.send_character(names[player.name], character)
         elif lurk_type == lurk.START:
             print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
-            try:
-                player = lurk.Character.get_character_with_name(sockets[skt])
-            except:
+            if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
+            player = lurk.Character.get_character_with_name(sockets[skt])
             if player.room == 0:
                 player.room = 1
             player.flag = player.flag | lurk.STARTED
@@ -371,8 +373,8 @@ server_skt.listen()
 print(f"{Fore.WHITE}INFO: Listening on address: {ADDRESS}, {port}")
 while True:
     client_skt, client_addr = server_skt.accept()
-    version = lurk.Version(major=MAJOR, minor=MINOR)
-    lurk.Version.send_version(client_skt, version)
-    game = lurk.Game(initial_points=INIT_POINTS, stat_limit=STAT_LIMIT, description_len=len(GAME_DESCRIPTION), description=GAME_DESCRIPTION)
-    lurk.Game.send_game(client_skt, game)
+    version_to_send = lurk.Version(major=MAJOR, minor=MINOR)
+    lurk.Version.send_version(client_skt, version_to_send)
+    game_to_send = lurk.Game(initial_points=INIT_POINTS, stat_limit=STAT_LIMIT, description_len=len(GAME_DESCRIPTION), description=GAME_DESCRIPTION)
+    lurk.Game.send_game(client_skt, game_to_send)
     threading.Thread(target=handle_client, args=(client_skt,), daemon=True).start()
