@@ -57,7 +57,7 @@ def recv(socket, message_length):
             print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
             lock.release()
             return None
-        lock.release()
+    lock.release()
     return message
 
 def send(skt, message):
