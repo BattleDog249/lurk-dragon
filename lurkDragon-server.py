@@ -247,7 +247,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 5)
                 continue
             print(f"{Fore.WHITE}DEBUG: Player {player.name} looting {loot.target_name}")
-            target_name = str(loot.target_name).strip()
+            target_name = loot.target_name.replace('\x00', '')
             target = lurk.Character.get_character_with_name(target_name)
             print(f"{Fore.WHITE}DEBUG: Target: {target}")
             if target is None or target.room != player.room:
