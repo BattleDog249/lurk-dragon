@@ -1,0 +1,156 @@
+[
+    {
+        "name": "Jarl",
+        "flag": 128,
+        "attack": 100,
+        "defense": 100,
+        "regen": 100,
+        "health": 100,
+        "gold": 0,
+        "room": 1,
+        "description": "As the leader of the Valhallians, the Jarl is a natural-born leader and a skilled strategist, with a deep understanding of the ways of dragons and the dangers they pose to his people. Despite his tough exterior, the Jarl is known for his compassion and empathy, and will do whatever it takes to protect his village and the people he cares about. He is a respected and revered figure among the dragon hunters, and his unwavering commitment to their cause has earned him the loyalty and admiration of his followers."
+    },
+    {
+        "name": "Town Idiot",
+        "flag": 128,
+        "attack": 10,
+        "defense": 30,
+        "regen": 20,
+        "health": 100,
+        "gold": 0,
+        "room": 1,
+        "description": "A pitiful figure, often seen stumbling and slurring his words through the streets of Valhalla. His hair is greasy and unkempt, and his clothes are ragged and torn, as if he has been sleeping in them for days. The smell of alcohol clings to him like a second skin, and his breath reeks of cheap ale and stale tobacco."
+    },
+    {
+        "name": "Village Guard",
+        "flag": 192,
+        "attack": 50,
+        "defense": 40,
+        "regen": 10,
+        "health": 100,
+        "gold": 50,
+        "room": 1,
+        "description": "A guard clad in steel armor and carrying a spear."
+    },
+    {
+        "name": "Watchman",
+        "flag": 192,
+        "attack": 20,
+        "defense": 20,
+        "regen": 20,
+        "health": 100,
+        "gold": 50,
+        "room": 1,
+        "description": "A guardian wearing leather and seemingly constantly scanning the horizon."
+    },
+    {
+        "name": "Blue Bunny",
+        "flag": 160,
+        "attack": 0,
+        "defense": 1,
+        "regen": 5,
+        "health": 100,
+        "gold": 10,
+        "room": 3,
+        "description": "A rabbit with gray-blue fur and a red collar with a bell."
+    },
+    {
+        "name": "Undead Farmer",
+        "flag": 160,
+        "attack": 10,
+        "defense": 5,
+        "regen": 5,
+        "health": 100,
+        "gold": 100,
+        "room": 27,
+        "description": "A menacing, pesticide-ridden rotting guy, haunting the fields of the Hidden Valley long after his death."
+    },
+    {
+        "name": "Barnyard Bucko",
+        "flag": 160,
+        "attack": 30,
+        "defense": 35,
+        "regen": 5,
+        "health": 100,
+        "gold": 100,
+        "room": 30,
+        "description": "Some weird guy you should probably destroy."
+    },
+    {
+        "name": "LurkDragon",
+        "flag": 224,
+        "attack": 60,
+        "defense": 40,
+        "regen": 0,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description": "A big scary dragon!"
+    },
+    {
+        "name": "Sentient Sandstorm",
+        "flag": 224,
+        "attack": 20,
+        "defense": 20,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 35,
+        "description": "A cloud of dust and sand trying to suffocate you."
+    },
+    {
+        "name": "Giant Sandworm",
+        "flag": 224,
+        "attack": 25,
+        "defense": 25,
+        "regen": 50,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description": "A foul worm full of teeth with a ravenous hunger that dwells deep beneath the arid dunes of the desert."
+    },
+    {
+        "name": "Mudcrab",
+        "flag": 224,
+        "attack": 20,
+        "defense": 20,
+        "regen": 10,
+        "health": 100,
+        "gold": 100,
+        "room": 5,
+        "description": "Giant crabs with claws that could lop off an arm."
+    },
+    {
+        "name": "Megalodon",
+        "flag": 224,
+        "attack": 50,
+        "defense": 50,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 12,
+        "description": "This is one massive shark..."
+    },
+    {
+        "name": "Rabid Wolf",
+        "flag": 224,
+        "attack": 15,
+        "defense": 15,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 2,
+        "description": "A gray wolf frothing at the mouth, poor thing!"
+    },
+    {
+        "name": "Rattlesnake",
+        "flag": 224,
+        "attack": 15,
+        "defense": 2,
+        "regen": 5,
+        "health": 100,
+        "gold": 100,
+        "room": 4,
+        "description": "A relatively large and loud rattlesnake."
+    }
+]
