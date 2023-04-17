@@ -79,12 +79,12 @@
     {
         "name": "LurkDragon",
         "flag": 224,
-        "attack": 60,
-        "defense": 40,
-        "regen": 0,
+        "attack": 500,
+        "defense": 400,
+        "regen": 100,
         "health": 100,
-        "gold": 100,
-        "room": 5,
+        "gold": 1000,
+        "room": 28,
         "description": "A big scary dragon!"
     },
     {
@@ -95,7 +95,7 @@
         "regen": 20,
         "health": 100,
         "gold": 100,
-        "room": 35,
+        "room": 10,
         "description": "A cloud of dust and sand trying to suffocate you."
     },
     {
@@ -106,7 +106,7 @@
         "regen": 50,
         "health": 100,
         "gold": 100,
-        "room": 5,
+        "room": 11,
         "description": "A foul worm full of teeth with a ravenous hunger that dwells deep beneath the arid dunes of the desert."
     },
     {
@@ -152,5 +152,93 @@
         "gold": 100,
         "room": 4,
         "description": "A relatively large and loud rattlesnake."
+    },
+    {
+        "name": "Winter Wolf",
+        "flag": 224,
+        "attack": 50,
+        "defense": 40,
+        "regen": 10,
+        "health": 100,
+        "gold": 50,
+        "room": 33,
+        "description": "A large wolf-like monster with a thick, long white fur coat and sharp claws and teeth."
+    },
+    {
+        "name": "Black Marsh Dragon",
+        "flag": 224,
+        "attack": 60,
+        "defense": 40,
+        "regen": 0,
+        "health": 100,
+        "gold": 100,
+        "room": 7,
+        "description": "A gray wolf frothing at the mouth, poor thing!"
+    },
+    {
+        "name": "Cinder Drake",
+        "flag": 224,
+        "attack": 100,
+        "defense": 40,
+        "regen": 0,
+        "health": 100,
+        "gold": 100,
+        "room": 35,
+        "description": "A monstrous dragon that inhabits the scorching deserts of the world. Its body is covered in red scales that smolder with heat. These scales are said to be as hot as the sand around it, and can melt steel with ease."
+    },
+    {
+        "name": "Pit Horror",
+        "flag": 224,
+        "attack": 200,
+        "defense": 100,
+        "regen": 10,
+        "health": 100,
+        "gold": 200,
+        "room": 36,
+        "description": "A colossal, twisted nightmare-inducing beast made of the flesh of its previous victims."
+    },
+    {
+        "name": "Dunes Wraith",
+        "flag": 224,
+        "attack": 100,
+        "defense": 100,
+        "regen": 50,
+        "health": 100,
+        "gold": 100,
+        "room": 34,
+        "description": "An extremely powerful ghost-like creature that is capable of possessing humans and other creatures, manipulating their minds and bodies to do its bidding. It is thought that the Dunes Wraith is able to drain the life-force from its victims and to feed on their life energy, leaving nothing but dry, empty husks behind."
+    },
+    {
+        "name": "Abyss Dragon",
+        "flag": 224,
+        "attack": 20,
+        "defense": 20,
+        "regen": 20,
+        "health": 100,
+        "gold": 100,
+        "room": 2,
+        "description": "A gigantic dragon that inhabits the deep, dark depths of the world, and is said to be as old as time itself. It is said to be capable of harnessing the power of the shadows and the darkness to bend reality to its will. It is thought that the Abyss Dragon's presence alone can cause madness and insanity."
+    },
+    {
+        "name": "Grendel Spider",
+        "flag": 224,
+        "attack": 70,
+        "defense": 50,
+        "regen": 10,
+        "health": 100,
+        "gold": 100,
+        "room": 19,
+        "description": "A massive spider that haunts the dark, tangled caverns beneath the earth. It is a giant, hairy beast that can reach sizes as large as a horse. It hunts underground, stalking its prey in the darkness and striking without warning. Its bite is laced with lethal venom and its silk is stronger than steel."
+    },
+    {
+        "name": "River Demon",
+        "flag": 224,
+        "attack": 50,
+        "defense": 50,
+        "regen": 50,
+        "health": 100,
+        "gold": 100,
+        "room": 22,
+        "description": "A terrifying, monstrous entity that lurks in the depths of rivers and ponds, waiting to strike its prey. It is said that those who encounter the River Demon are quickly sucked under the water to meet a terrible fate. The demon is a cunning and devious creature that uses its natural camouflage to its advantage, waiting until its prey is within its grasp before striking."
     }
 ]
