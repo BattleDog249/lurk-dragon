@@ -16,7 +16,7 @@ EXT_SIZE = 0
 
 INIT_POINTS = 100
 STAT_LIMIT = 65535
-GAME_DESCRIPTION = r"""This is a testing branch, and probably broken!
+GAME_DESCRIPTION = r"""Can you conquer the beasts?
     (                    (                                   
     )\ )               ) )\ )                                
 (()/(   (   (    ( /((()/(   (       )  (  (              
