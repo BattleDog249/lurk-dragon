@@ -218,6 +218,7 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 7)
         elif lurk_type == lurk.PVPFIGHT:
             pvpfight = lurk.Pvpfight.recv_pvpfight(skt)
+            print(f"{Fore.WHITE}DEBUG: Received PVPFIGHT: {pvpfight}")
             if pvpfight is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
