@@ -248,7 +248,7 @@ def handle_client(skt):
                 continue
             print(f"{Fore.WHITE}DEBUG: Player {player.name} looting {loot.target_name}")
             target_name = loot.target_name
-            target = lurk.Character.get_character_with_name(target_name)
+            target = lurk.Character.get_character_with_name("Rattlesnake")
             print(f"{Fore.WHITE}DEBUG: Target: {target}")
             if target is None or target.room != player.room:
                 print(f"{Fore.YELLOW}WARN: Cannot loot nonexistent target, sending ERROR code 6!")
