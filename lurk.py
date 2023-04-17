@@ -166,8 +166,19 @@ class Pvpfight:
     target_name: str
     lurk_type: c_uint8 = PVPFIGHT
     def recv_pvpfight(skt):
-        """"""
-        pass
+        """Receives a pvpfight message from the given socket, and unpacks it into a pvpfight object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        pvpfight_header = recv(skt, PVPFIGHT_LEN - 1)
+        if not pvpfight_header:
+            print(f"{Fore.RED}ERROR: recv_pvpfight: Socket connection broken, returning None!")
+            return None
+        try:
+            target_name, = struct.unpack('<32s', pvpfight_header)
+        except struct.error as exc:
+            raise struct.error("Failed to unpack pvpfight_header!") from exc
+        pvpfight = Pvpfight(target_name=target_name.decode())
+        return pvpfight
     def send_pvpfight(skt, pvpfight):
         """"""
         pass
