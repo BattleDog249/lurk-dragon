@@ -260,12 +260,23 @@ def handle_client(skt):
             target.gold = 0
             lurk.Character.update_character(player)
             lurk.Character.update_character(target)
+            '''
             # Send updated player stats to all other players in room that player is in
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 if character.name not in names or player.name == sockets[skt]:
                     continue
                 lurk.Character.send_character(names[player.name], character)
+            '''
+            # Send all characters in room to player, including player, and send player to all active players in room
+            characters = lurk.Character.get_characters_with_room(player.room)
+            for character in characters:
+                print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {player.name}")
+                lurk.Character.send_character(skt, character)
+                if character.name not in names or character.name == sockets[skt]:
+                    continue
+                print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
+                lurk.Character.send_character(names[character.name], player)
         elif lurk_type == lurk.START:
             print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
             if skt not in sockets:
