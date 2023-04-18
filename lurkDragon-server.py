@@ -260,15 +260,8 @@ def handle_client(skt):
             target.gold = 0
             lurk.Character.update_character(player)
             lurk.Character.update_character(target)
-            '''
-            # Send updated player stats to all other players in room that player is in
-            characters = lurk.Character.get_characters_with_room(player.room)
-            for character in characters:
-                if character.name not in names or player.name == sockets[skt]:
-                    continue
-                lurk.Character.send_character(names[player.name], character)
-            '''
             # Send all characters in room to player, including player, and send player to all active players in room
+            # BUG: Sends updated player to other players, but not updated target
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {player.name}")
@@ -314,6 +307,7 @@ def handle_client(skt):
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.CHARACTER:
+            # BUG: Another client can connect to a character that is already connected to a client
             player = lurk.Character.recv_character(skt)
             lock.acquire()
             print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
@@ -321,7 +315,8 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
                 break
-            if player.skt is not None:
+            # Bug fix attempt
+            if player.skt != None:
                 print(f"{Fore.YELLOW}WARN: Socket attempting to access active player {player.name}, sending ERROR code 2!")
                 lurk.Error.send_error(skt, 2)
                 continue
