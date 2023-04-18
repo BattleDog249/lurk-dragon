@@ -308,34 +308,35 @@ def handle_client(skt):
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.CHARACTER:
             # BUG: Another client can connect to a character that is already connected to a client
-            player = lurk.Character.recv_character(skt)
+            desired_player = lurk.Character.recv_character(skt)
             lock.acquire()
-            print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
-            if player is None:
+            print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {desired_player}")
+            # Check that client did not disconnect during recv_character
+            if desired_player is None:
                 print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
                 cleanup_client(skt)
                 break
-            # Bug fix attempt
-            if player.skt != None:
-                print(f"{Fore.YELLOW}WARN: Socket attempting to access active player {player.name}, sending ERROR code 2!")
+            # Check that client is not already associated with a character
+            if desired_player.name in lurk.Character.characters and lurk.Character.characters[desired_player.name].skt is not None:
+                print(f"{Fore.YELLOW}WARN: Character {desired_player.name} already in use, sending ERROR code 2!")
                 lurk.Error.send_error(skt, 2)
                 continue
-            if player.name not in lurk.Character.characters:
-                if player.attack + player.defense + player.regen > INIT_POINTS:
-                    print(f"{Fore.YELLOW}WARN: Character stats from {player.name} invalid, sending ERROR code 4!")
+            if desired_player.name not in lurk.Character.characters:
+                if desired_player.attack + desired_player.defense + desired_player.regen > INIT_POINTS:
+                    print(f"{Fore.YELLOW}WARN: Character stats from {desired_player.name} invalid, sending ERROR code 4!")
                     lurk.Error.send_error(skt, 4)
                     continue
-                if player.flag | lurk.JOIN_BATTLE:
-                    player.flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
+                if desired_player.flag | lurk.JOIN_BATTLE:
+                    desired_player.flag = lurk.ALIVE | lurk.JOIN_BATTLE | lurk.READY
                 else:
-                    player.flag = lurk.ALIVE | lurk.READY
-                player.health = 100
-                player.gold = 0
-                player.room = 0
-                player.description_len = len(player.description)
-                print(f"{Fore.CYAN}INFO: Adding new character {player.name} to database")
-                lurk.Character.update_character(player)
-            player = lurk.Character.get_character_with_name(player.name)
+                    desired_player.flag = lurk.ALIVE | lurk.READY
+                desired_player.health = 100
+                desired_player.gold = 0
+                desired_player.room = 0
+                desired_player.description_len = len(desired_player.description)
+                print(f"{Fore.CYAN}INFO: Adding new character {desired_player.name} to database")
+                lurk.Character.update_character(desired_player)
+            player = lurk.Character.get_character_with_name(desired_player.name)
             print(f"{Fore.CYAN}INFO: Accessing character {player.name} from database")
             player.flag = player.flag | lurk.ALIVE
             player.health = 100
