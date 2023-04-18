@@ -369,12 +369,8 @@ class Character:
     characters = {}
     def get_character_with_name(target_name):
         """Returns a character with the given name. If the character is not found, returns None."""
-        target_name = target_name.strip()   # Does nothing to solve issue...
-        #print(f"{Fore.WHITE}DEBUG: get_character_with_name: Target name is {target_name}!")
         for character in Character.characters:
-            #print(f"{Fore.WHITE}DEBUG: get_character_with_name: Checking {Character.characters[character].name} against {target_name}!")
             if Character.characters[character].name == target_name:
-                #print(f"{Fore.WHITE}DEBUG: get_character_with_name: Found {Character.characters[character].name}!")
                 return Character.characters[character]
         return None
     def get_character_with_socket(target_skt):

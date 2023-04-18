@@ -307,7 +307,6 @@ def handle_client(skt):
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.CHARACTER:
-            # BUG: Another client can connect to a character that is already connected to a client
             desired_player = lurk.Character.recv_character(skt)
             lock.acquire()
             print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {desired_player}")
