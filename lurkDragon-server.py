@@ -2,12 +2,12 @@
 #!/usr/bin/env python3
 
 import json
+from pathlib import Path
 import socket
 import sys
 import threading
 
 from colorama import Fore
-from pathlib import Path
 
 import lurk
 
@@ -46,8 +46,8 @@ def del_socket(skt):
     return sockets.pop(skt)
 
 # Populate character dictionary containing all monsters and characters in the game.
-#   Key (string): UUID
-#   Value (list): [name, flag, attack, defense, regen, health, gold, room number, description length, description]
+#   Key (string): Character.name
+#   Value (Character): Character() object containing all character data
 p = Path(__file__).with_name('characters.json')
 with p.open('r', encoding='utf-8') as characters_json:
     characters_data = json.load(characters_json)
@@ -56,7 +56,7 @@ with p.open('r', encoding='utf-8') as characters_json:
         lurk.Character.update_character(npc)
 # Populate room dictionary containing all rooms in the game.
 #   Key (int): Room Number
-#   Value (list): [name, description_len, description, connections]
+#   Value (Rooms): Room() object containing all room data
 p = Path(__file__).with_name('rooms.json')
 with p.open('r', encoding='utf-8') as rooms_json:
     game_map = json.load(rooms_json)
@@ -65,7 +65,7 @@ with p.open('r', encoding='utf-8') as rooms_json:
         lurk.Room.update_room(location)
 # Populate error dictionary containing all errors in the game.
 #   Key (int): Error Code
-#   Value (list): [description_len, description]
+#   Value (Error): Error() object containing all error data
 p = Path(__file__).with_name('errors.json')
 with p.open('r', encoding='utf-8') as errors_json:
     errors_list = json.load(errors_json)
@@ -76,7 +76,8 @@ def cleanup_client(skt):
     """Function for cleaning up a disconnected client."""
     if skt in sockets:
         player = lurk.Character.get_character_with_name(sockets[skt])
-        player.flag ^= lurk.READY | lurk.STARTED  # This needs verification, basically set ready & started flags to 0, keeping all other flags the same.
+        # Needs verification, basically set ready & started flags to 0, keeping all other flags the same.
+        player.flag ^= lurk.READY | lurk.STARTED
         player.skt = None
         lurk.Character.update_character(player)
         leave_message = player.name.replace('\x00', '') + " has left the game!"
