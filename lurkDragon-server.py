@@ -75,7 +75,7 @@ def cleanup_client(skt):
         player.flag ^= lurk.READY | lurk.STARTED  # This needs verification, basically set ready & started flags to 0, keeping all other flags the same.
         player.skt = None
         lurk.Character.update_character(player)
-        leave_message = f"{player.name} has left the game!"
+        leave_message = player.name.replace('\x00', ''), " has left the game!"
         for character in lurk.Character.characters.values():
             if character.skt is None:
                 continue
@@ -304,7 +304,7 @@ def handle_client(skt):
             # Send CONNECTION messages for all connections with current room
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send MESSAGE to client from narrator here, player has joined the game!
-            start_message = f"{player.name} has started the game!"
+            start_message = player.name.replace('\x00', ''), " has started the game!"
             for character in lurk.Character.characters.values():
                 if character.skt is None:
                     continue
@@ -359,11 +359,10 @@ def handle_client(skt):
             lurk.Accept.send_accept(skt, lurk.CHARACTER)
             lurk.Character.send_character(skt, player)
             # Send MESSAGE to client from narrator here, player has joined the game!
-            start_message = f"{player.name} has joined the game!"
+            start_message = player.name.replace('\x00', ''), " has joined the game!"
             for character in lurk.Character.characters.values():
                 if character.skt is None:
                     continue
-                print(f"DEBUG: message_len={len(start_message)}, recipient={character.name}, sender=Jarl, message={start_message}")
                 character_message = lurk.Message(message_len=len(start_message), recipient=character.name.replace('\x00', ''), sender="Jarl", message=start_message)
                 print(f"DEBUG: character_message={character_message}")
                 lurk.Message.send_message(character.skt, character_message)
