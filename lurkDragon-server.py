@@ -79,7 +79,7 @@ def cleanup_client(skt):
         for character in lurk.Character.characters.values():
             if character.skt is None:
                 continue
-            character_message = lurk.Message(message_len=len(leave_message), recipient=character.name, sender="Jarl", message=leave_message)
+            character_message = lurk.Message(message_len=len(leave_message), recipient=character.name.replace('\x00', ''), sender="Jarl", message=leave_message)
             lurk.Message.send_message(character.skt, character_message)
     try:
         del_name(sockets[skt])
@@ -308,7 +308,7 @@ def handle_client(skt):
             for character in lurk.Character.characters.values():
                 if character.skt is None:
                     continue
-                character_message = lurk.Message(message_len=len(start_message), recipient=character.name, sender="Jarl", message=start_message)
+                character_message = lurk.Message(message_len=len(start_message), recipient=character.name.replace('\x00', ''), sender="Jarl", message=start_message)
                 lurk.Message.send_message(character.skt, character_message)
         elif lurk_type == lurk.ERROR:
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
@@ -364,7 +364,7 @@ def handle_client(skt):
                 if character.skt is None:
                     continue
                 print(f"DEBUG: message_len={len(start_message)}, recipient={character.name}, sender=Jarl, message={start_message}")
-                character_message = lurk.Message(message_len=len(start_message), recipient=character.name, sender="Jarl", message=start_message)
+                character_message = lurk.Message(message_len=len(start_message), recipient=character.name.replace('\x00', ''), sender="Jarl", message=start_message)
                 print(f"DEBUG: character_message={character_message}")
                 lurk.Message.send_message(character.skt, character_message)
             lock.release()
