@@ -7,6 +7,7 @@ import sys
 import threading
 
 from colorama import Fore
+from pathlib import Path
 
 import lurk
 
@@ -47,7 +48,8 @@ def del_socket(skt):
 # Populate character dictionary containing all monsters and characters in the game.
 #   Key (string): UUID
 #   Value (list): [name, flag, attack, defense, regen, health, gold, room number, description length, description]
-with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', encoding='utf-8') as characters_json:
+p = Path(__file__).with_name('characters.json')
+with p.open('r', encoding='utf-8') as characters_json:
     characters_data = json.load(characters_json)
     for npc in characters_data:
         npc = lurk.Character(name=npc['name'].strip(), flag=npc['flag'], attack=npc['attack'], defense=npc['defense'], regen=npc['regen'], health=npc['health'], gold=npc['gold'], room=npc['room'], description_len=len(npc['description']), description=npc['description'].strip())
@@ -55,7 +57,8 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\characters.json', 'r', enco
 # Populate room dictionary containing all rooms in the game.
 #   Key (int): Room Number
 #   Value (list): [name, description_len, description, connections]
-with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding='utf-8') as rooms_json:
+p = Path(__file__).with_name('rooms.json')
+with p.open('r', encoding='utf-8') as rooms_json:
     game_map = json.load(rooms_json)
     for location in game_map:
         location = lurk.Room(number=location['number'], name=location['name'], description_len=len(location['description']), description=location['description'], connections=location['connections'])
@@ -63,7 +66,8 @@ with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\rooms.json', 'r', encoding=
 # Populate error dictionary containing all errors in the game.
 #   Key (int): Error Code
 #   Value (list): [description_len, description]
-with open(r'C:\Users\lhgray\Documents\CS-435-01\Lurk\errors.json', 'r', encoding='utf-8') as errors_json:
+p = Path(__file__).with_name('errors.json')
+with p.open('r', encoding='utf-8') as errors_json:
     errors_list = json.load(errors_json)
     for error in errors_list:
         error = lurk.Error(number=error['number'], description_len=len(error['message']), description=error['message'])
@@ -255,12 +259,12 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Player {player.name} attempting to loot {loot.target_name}")
             target = lurk.Character.get_character_with_name(loot.target_name.replace('\x00', ''))
             if target is None or target.room != player.room:
-                print(f"{Fore.YELLOW}WARN: Cannot loot nonexistent target, sending ERROR code 6!")
-                lurk.Error.send_error(skt, 6)
+                print(f"{Fore.YELLOW}WARN: Cannot loot nonexistent target, sending ERROR code 3!")
+                lurk.Error.send_error(skt, 3)
                 continue
             if target.flag == target.flag | lurk.ALIVE:
                 print(f"{Fore.YELLOW}WARN: Cannot loot a living target, sending ERROR code 3!")
-                lurk.Error.send_error(skt, 6)
+                lurk.Error.send_error(skt, 3)
                 continue
             player.gold += target.gold
             target.gold = 0

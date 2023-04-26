@@ -1,15 +1,15 @@
 [
     {
         "number": 0,
-        "message": "ERROR: The server does not support receiving this message type!"
+        "message": "ERROR: The server/client does not support receiving this message type!"
     },
     {
         "number": 1,
-        "message": "ERROR: Bad Room! Cannot change to requested room."
+        "message": "ERROR: Bad Room. Room does not exist, or there are no connections to the desired room."
     },
     {
         "number": 2,
-        "message": "ERROR: Player Exists. Attempt to create a player that already exists."
+        "message": "ERROR: Character in use. Cannot reprise a character that is already tied to a socket."
     },
     {
         "number": 3,
@@ -17,23 +17,23 @@
     },
     {
         "number": 4,
-        "message": "ERROR: Stat error. Caused by setting inappropriate player stats. Try again!"
+        "message": "ERROR: Stat error. Cannot accept inappropriate player stats. Try again!"
     },
     {
         "number": 5,
-        "message": "ERROR: Not Ready. Caused by attempting an action too early, for example changing rooms before sending START or CHARACTER."
+        "message": "ERROR: Not Ready. Caused by attempting an action too early, like changing rooms before sending START or CHARACTER."
     },
     {
         "number": 6,
-        "message": "ERROR: No target. Attempt to loot nonexistent players, fight players in different rooms, message someone offline, etc."
+        "message": "ERROR: No target. Cannot loot nonexistent characters, fight players in different rooms, or message someone offline."
     },
     {
         "number": 7,
-        "message": "ERROR: No fight. Sent if the requested fight cannot happen for some reason, like no live monsters in room."
+        "message": "ERROR: No fight. Fight cannot happen for some reason, like no live monsters in room."
     },
     {
         "number": 8,
-        "message": "ERROR: Player vs. player combat is not currently supported on this server."
+        "message": "ERROR: Player vs. player combat is currently not supported on this server."
     },
     {
         "number": 9,
