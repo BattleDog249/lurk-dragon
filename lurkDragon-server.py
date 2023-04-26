@@ -361,6 +361,7 @@ def handle_client(skt):
             # Send MESSAGE to client from narrator here, player has joined the game!
             message = f"{player.name} has joined the game!"
             for c in lurk.Character.characters:
+                print(f"DEBUG: c= {c}")
                 if c.skt is None:
                     continue
                 character_message = lurk.Message(message_len=len(message), recipient=c.name, sender="Jarl", message=message)
