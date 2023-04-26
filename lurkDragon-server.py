@@ -76,11 +76,11 @@ def cleanup_client(skt):
         player.skt = None
         lurk.Character.update_character(player)
         message = f"{player.name} has left the game!"
-        for c in lurk.Character.characters:
-            if c.skt is None:
+        for character in lurk.Character.characters.values():
+            if character.skt is None:
                 continue
-            character_message = lurk.Message(message_len=len(message), recipient=c.name, sender="Jarl", message=message)
-            lurk.Message.send_message(c.skt, character_message)
+            character_message = lurk.Message(message_len=len(message), recipient=character.name, sender="Jarl", message=message)
+            lurk.Message.send_message(character.skt, character_message)
     try:
         del_name(sockets[skt])
         del_socket(skt)
@@ -305,10 +305,10 @@ def handle_client(skt):
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send MESSAGE to client from narrator here, player has joined the game!
             message = f"{player.name} has started the game!"
-            for c in lurk.Character.characters:
-                if c.skt is None:
+            for character in lurk.Character.characters.values():
+                if character.skt is None:
                     continue
-                character_message = lurk.Message(message_len=len(message), recipient=c.name, sender="Jarl", message=message)
+                character_message = lurk.Message(message_len=len(message), recipient=character.name, sender="Jarl", message=message)
                 lurk.Message.send_message(character.skt, character_message)
         elif lurk_type == lurk.ERROR:
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
@@ -360,12 +360,12 @@ def handle_client(skt):
             lurk.Character.send_character(skt, player)
             # Send MESSAGE to client from narrator here, player has joined the game!
             message = f"{player.name} has joined the game!"
-            for c in lurk.Character.characters:
-                print(f"DEBUG: c= {c}")
-                if c.skt is None:
+            for character in lurk.Character.characters.values():
+                print(f"DEBUG: c= {character}")
+                if character.skt is None:
                     continue
-                character_message = lurk.Message(message_len=len(message), recipient=c.name, sender="Jarl", message=message)
-                lurk.Message.send_message(c.skt, character_message)
+                character_message = lurk.Message(message_len=len(message), recipient=character.name, sender="Jarl", message=message)
+                lurk.Message.send_message(character.skt, character_message)
             lock.release()
         elif lurk_type == lurk.GAME:
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
