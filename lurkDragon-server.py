@@ -363,6 +363,7 @@ def handle_client(skt):
             for character in lurk.Character.characters.values():
                 if character.skt is None:
                     continue
+                print(f"DEBUG: message_len={len(start_message)}, recipient={character.name}, sender=Jarl, message={start_message}")
                 character_message = lurk.Message(message_len=len(start_message), recipient=character.name, sender="Jarl", message=start_message)
                 lurk.Message.send_message(character.skt, character_message)
             lock.release()
