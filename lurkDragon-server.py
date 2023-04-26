@@ -75,11 +75,11 @@ def cleanup_client(skt):
         player.flag ^= lurk.READY | lurk.STARTED  # This needs verification, basically set ready & started flags to 0, keeping all other flags the same.
         player.skt = None
         lurk.Character.update_character(player)
-        message = f"{player.name} has left the game!"
+        leave_message = f"{player.name} has left the game!"
         for character in lurk.Character.characters.values():
             if character.skt is None:
                 continue
-            character_message = lurk.Message(message_len=len(message), recipient=character.name, sender="Jarl", message=message)
+            character_message = lurk.Message(message_len=len(leave_message), recipient=character.name, sender="Jarl", message=leave_message)
             lurk.Message.send_message(character.skt, character_message)
     try:
         del_name(sockets[skt])
@@ -304,11 +304,11 @@ def handle_client(skt):
             # Send CONNECTION messages for all connections with current room
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send MESSAGE to client from narrator here, player has joined the game!
-            message = f"{player.name} has started the game!"
+            start_message = f"{player.name} has started the game!"
             for character in lurk.Character.characters.values():
                 if character.skt is None:
                     continue
-                character_message = lurk.Message(message_len=len(message), recipient=character.name, sender="Jarl", message=message)
+                character_message = lurk.Message(message_len=len(start_message), recipient=character.name, sender="Jarl", message=start_message)
                 lurk.Message.send_message(character.skt, character_message)
         elif lurk_type == lurk.ERROR:
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
@@ -359,12 +359,11 @@ def handle_client(skt):
             lurk.Accept.send_accept(skt, lurk.CHARACTER)
             lurk.Character.send_character(skt, player)
             # Send MESSAGE to client from narrator here, player has joined the game!
-            message = f"{player.name} has joined the game!"
+            start_message = f"{player.name} has joined the game!"
             for character in lurk.Character.characters.values():
-                print(f"DEBUG: c= {character}")
                 if character.skt is None:
                     continue
-                character_message = lurk.Message(message_len=len(message), recipient=character.name, sender="Jarl", message=message)
+                character_message = lurk.Message(message_len=len(start_message), recipient=character.name, sender="Jarl", message=start_message)
                 lurk.Message.send_message(character.skt, character_message)
             lock.release()
         elif lurk_type == lurk.GAME:
