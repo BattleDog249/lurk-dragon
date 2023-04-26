@@ -1,7 +1,7 @@
 [
     {
         "number": 0,
-        "message": "ERROR: This message type is not supported!"
+        "message": "ERROR: The server does not support receiving this message type!"
     },
     {
         "number": 1,
