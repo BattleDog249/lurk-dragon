@@ -270,7 +270,7 @@ def handle_client(skt):
             lurk.Character.update_character(player)
             lurk.Character.update_character(target)
             # Send all characters in room to player, including player, and send player to all active players in room
-            # BUG: Sends updated player to other players, but not updated target
+            # BUG: Sends updated player to other players, and target to player that sent loot, but not updated target with drained loot to other players in room
             characters = lurk.Character.get_characters_with_room(player.room)
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {player.name}")
