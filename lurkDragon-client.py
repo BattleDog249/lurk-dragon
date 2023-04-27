@@ -1,3 +1,4 @@
+"""Logan's LURK Client"""
 #!/usr/bin/env python3
 
 import lurk
