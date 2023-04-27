@@ -104,8 +104,6 @@ def handle_client(skt):
             pass
         lurk_type = lurk.recv(skt, 1)
         if not lurk_type:
-            print(f"{Fore.YELLOW}WARN: Client disconnected while waiting for a lurk message!")
-            cleanup_client(skt)
             break
         lurk_type = int.from_bytes(lurk_type, byteorder='little')
         if lurk_type < 1 or lurk_type > 14:
@@ -116,8 +114,6 @@ def handle_client(skt):
             message = lurk.Message.recv_message(skt)
             print(f"{Fore.WHITE}DEBUG: Received MESSAGE: {message}")
             if message is None:
-                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
-                cleanup_client(skt)
                 break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
@@ -138,8 +134,6 @@ def handle_client(skt):
             changeroom = lurk.Changeroom.recv_changeroom(skt)
             print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
             if changeroom is None:
-                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
-                cleanup_client(skt)
                 break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
@@ -231,8 +225,6 @@ def handle_client(skt):
             pvpfight = lurk.Pvpfight.recv_pvpfight(skt)
             print(f"{Fore.WHITE}DEBUG: Received PVPFIGHT: {pvpfight}")
             if pvpfight is None:
-                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
-                cleanup_client(skt)
                 break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
@@ -245,8 +237,6 @@ def handle_client(skt):
             loot = lurk.Loot.recv_loot(skt)
             print(f"{Fore.WHITE}DEBUG: Received LOOT: {loot}")
             if loot is None:
-                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
-                cleanup_client(skt)
                 break
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
@@ -330,8 +320,6 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {desired_player}")
             # Check that client did not disconnect during recv_character
             if desired_player is None:
-                print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
-                cleanup_client(skt)
                 break
             # Check that client is not already associated with a character
             if desired_player.name in lurk.Character.characters and lurk.Character.characters[desired_player.name].skt is not None:
@@ -376,7 +364,6 @@ def handle_client(skt):
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.LEAVE:
             print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type} from {sockets[skt]}")
-            cleanup_client(skt)
             break
         elif lurk_type == lurk.CONNECTION:
             connection = lurk.Connection.recv_connection(skt)
@@ -391,6 +378,8 @@ def handle_client(skt):
         else:
             print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
+    print(f"{Fore.YELLOW}WARN: Cleaning up after client disconnect!")
+    cleanup_client(skt)
 # Establish IPv4 TCP socket
 server_skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if server_skt == -1:
