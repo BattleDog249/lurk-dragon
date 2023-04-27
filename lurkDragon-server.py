@@ -75,7 +75,6 @@ with p.open('r', encoding='utf-8') as errors_json:
 def cleanup_client(skt):
     """Function for cleaning up a disconnected client."""
     if skt in sockets:
-        #player = lurk.Character.get_character_with_name(sockets[skt])
         player = lurk.Character.get_character_with_socket(skt)
         # Needs verification, basically set ready & started flags to 0, keeping all other flags the same.
         player.flag ^= lurk.READY | lurk.STARTED
@@ -125,12 +124,12 @@ def handle_client(skt):
                 lurk.Error.send_error(skt, 6)
                 continue
             # Prevents a player from spoofing a message from another player by hardcoding the sender's name.
-            #sender = lurk.Character.get_character_with_name(sockets[skt])
             sender = lurk.Character.get_character_with_socket(skt)
             message.sender = sender.name
             lurk.Accept.send_accept(skt, message.lurk_type)
             print(f"{Fore.WHITE}DEBUG: Sending message '{message.message}' to {message.recipient} from {message.sender}")
-            lurk.Message.send_message(names[message.recipient], message)
+            #lurk.Message.send_message(names[message.recipient], message)
+            lurk.Message.send_message(lurk.Character.get_character_with_name(message.recipient).skt, message)
         elif lurk_type == lurk.CHANGEROOM:
             lock.acquire()
             changeroom = lurk.Changeroom.recv_changeroom(skt)
@@ -146,7 +145,6 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: {player.name} attempted bad move, sending ERROR code 1!")
                 lurk.Error.send_error(skt, 1)
                 continue
-            #player = lurk.Character.get_character_with_name(sockets[skt])
             player = lurk.Character.get_character_with_socket(skt)
             old_room = player.room
             player.room = changeroom.target_room
@@ -160,19 +158,19 @@ def handle_client(skt):
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {sockets[skt]}")
                 lurk.Character.send_character(skt, character)
-                if character.name not in names or character.name == sockets[skt]:
+                if character.name not in names or character.name == lurk.Character.get_character_with_socket(skt).name:
                     continue
                 print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
-                lurk.Character.send_character(names[character.name], player)
+                lurk.Character.send_character(character.skt, player)
             # Send CONNECTION messages for all connections with new room to player
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send updated CHARACTER to all players in old room that player moved to new room
             characters = lurk.Character.get_characters_with_room(old_room)
             for character in characters:
-                if character.name not in names or character.name == sockets[skt]:
+                if character.name not in names or character.name == lurk.Character.get_character_with_socket(skt).name:
                     continue
                 print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
-                lurk.Character.send_character(names[character.name], player)
+                lurk.Character.send_character(character.skt, player)
             lock.release()
         elif lurk_type == lurk.FIGHT:
             # TODO: Get "join battle" flag working properly
@@ -181,7 +179,6 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            #player = lurk.Character.get_character_with_name(sockets[skt])
             player = lurk.Character.get_character_with_socket(skt)
             count = 0
             characters = lurk.Character.get_characters_with_room(player.room)
@@ -216,13 +213,13 @@ def handle_client(skt):
                 lurk.Character.send_character(skt, character)
                 # Send updated player and monster stats to all other players in current room
                 for other_player in other_players:
-                    if other_player.name not in names or other_player.name == sockets[skt]:
+                    if other_player.name not in names or other_player.name == lurk.Character.get_character_with_socket(skt).name:
                         print(f"{Fore.WHITE}DEBUG: {other_player.name} is not a player, continuing...")
                         continue
                     print(f"{Fore.WHITE}DEBUG: Sending updated player {player.name} to {other_player.name}")
-                    lurk.Character.send_character(names[other_player.name], player)
+                    lurk.Character.send_character(other_player.skt, player)
                     print(f"{Fore.WHITE}DEBUG: Sending updated monster {character.name} to {other_player.name}")
-                    lurk.Character.send_character(names[other_player.name], character)
+                    lurk.Character.send_character(other_player.skt, character)
             if count == 0:
                 print(f"{Fore.YELLOW}WARN: No valid monsters in {player.name}'s room {player.room}, sending ERROR code 7!")
                 lurk.Error.send_error(skt, 7)
@@ -235,7 +232,6 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            #player = lurk.Character.get_character_with_name(sockets[skt])
             player = lurk.Character.get_character_with_socket(skt)
             print(f"{Fore.YELLOW}WARN: Server does not currently support PVPFIGHT, sending ERROR code 8!")
             lurk.Error.send_error(skt, 8)
@@ -248,7 +244,6 @@ def handle_client(skt):
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            #player = lurk.Character.get_character_with_name(sockets[skt])
             player = lurk.Character.get_character_with_socket(skt)
             if player.flag != player.flag | lurk.STARTED:
                 print(f"{Fore.YELLOW}WARN: Player flag STARTED not set, sending ERROR code 5!")
@@ -274,17 +269,16 @@ def handle_client(skt):
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {player.name}")
                 lurk.Character.send_character(skt, character)
-                if character.name not in names or character.name == sockets[skt]:
+                if character.name not in names or character.name == lurk.Character.get_character_with_socket(skt).name:
                     continue
                 print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
-                lurk.Character.send_character(names[character.name], player)
+                lurk.Character.send_character(character.skt, player)
         elif lurk_type == lurk.START:
             print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
             if skt not in sockets:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
-            #player = lurk.Character.get_character_with_name(sockets[skt])
             player = lurk.Character.get_character_with_socket(skt)
             if player.room == 0:
                 player.room = 1
@@ -300,10 +294,10 @@ def handle_client(skt):
             for character in characters:
                 print(f"{Fore.WHITE}DEBUG: Sending character {character.name} to {player.name}")
                 lurk.Character.send_character(skt, character)
-                if character.name not in names or character.name == sockets[skt]:
+                if character.name not in names or character.name == lurk.Character.get_character_with_socket(skt).name:
                     continue
                 print(f"{Fore.WHITE}DEBUG: Sending character {player.name} to {character.name}")
-                lurk.Character.send_character(names[character.name], player)
+                lurk.Character.send_character(character.skt, player)
             # Send CONNECTION messages for all connections with current room
             lurk.Connection.send_connections_with_room(skt, player.room)
             # Send MESSAGE to client from narrator here, player has joined the game!
