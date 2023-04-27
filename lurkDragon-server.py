@@ -115,7 +115,8 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Received MESSAGE: {message}")
             if message is None:
                 break
-            if skt not in sockets:
+            #if skt not in sockets:
+            if lurk.Character.get_character_with_socket(skt) is None:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
@@ -136,7 +137,8 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
             if changeroom is None:
                 break
-            if skt not in sockets:
+            #if skt not in sockets:
+            if lurk.Character.get_character_with_socket(skt) is None:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
@@ -175,7 +177,8 @@ def handle_client(skt):
         elif lurk_type == lurk.FIGHT:
             # TODO: Get "join battle" flag working properly
             print(f"{Fore.WHITE}DEBUG: Received FIGHT: {lurk_type}")
-            if skt not in sockets:
+            #if skt not in sockets:
+            if lurk.Character.get_character_with_socket(skt) is None:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
@@ -228,7 +231,8 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Received PVPFIGHT: {pvpfight}")
             if pvpfight is None:
                 break
-            if skt not in sockets:
+            #if skt not in sockets:
+            if lurk.Character.get_character_with_socket(skt) is None:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
@@ -240,7 +244,8 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Received LOOT: {loot}")
             if loot is None:
                 break
-            if skt not in sockets:
+            #if skt not in sockets:
+            if lurk.Character.get_character_with_socket(skt) is None:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
@@ -275,7 +280,8 @@ def handle_client(skt):
                 lurk.Character.send_character(character.skt, player)
         elif lurk_type == lurk.START:
             print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
-            if skt not in sockets:
+            #if skt not in sockets:
+            if lurk.Character.get_character_with_socket(skt) is None:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
