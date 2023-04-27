@@ -231,8 +231,9 @@ def handle_client(skt):
             print(f"{Fore.WHITE}DEBUG: Received PVPFIGHT: {pvpfight}")
             if pvpfight is None:
                 break
-            #if skt not in sockets:
-            if lurk.Character.get_character_with_socket(skt) is None:
+            # If socket is not associated with a character or character has not started the game, send ERROR code 5
+            # TODO: Verify the STARTED part works correctly
+            if lurk.Character.get_character_with_socket(skt) is None or lurk.Character.get_character_with_socket(skt).flag != lurk.STARTED:
                 print(f"{Fore.YELLOW}WARN: Socket {skt} not yet associated with a character, sending ERROR code 5!")
                 lurk.Error.send_error(skt, 5)
                 continue
