@@ -6,74 +6,10 @@
 import lurk
 import socket
 import sys
-import threading
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox
 
 from colorama import Fore
-
-class ReceiveMessagesThread(QThread):
-    message_received = pyqtSignal(object)
-
-    def __init__(self, socket_obj):
-        super().__init__()
-        self.socket_obj = socket_obj
-
-    def run(self):
-        # Receive messages from the server
-        while True:
-            lurk_type = lurk.recv(self.socket_obj, 1)
-            if not lurk_type:
-                print("DEBUG: Detected NONE from lurk.recv()!")
-                break
-            lurk_type = int.from_bytes(lurk_type, byteorder='little')
-            #self.message_received.emit(f"Received type: {lurk_type}")
-            if lurk_type == lurk.MESSAGE:
-                message = lurk.Message.recv_message(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received MESSAGE: {message}")
-            elif lurk_type == lurk.CHANGEROOM:
-                changeroom = lurk.Changeroom.recv_changeroom(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
-            elif lurk_type == lurk.FIGHT:
-                print(f"{Fore.WHITE}DEBUG: Received FIGHT: {lurk_type}")
-            elif lurk_type == lurk.PVPFIGHT:
-                pvpfight = lurk.Pvpfight.recv_pvpfight(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received PVPFIGHT: {pvpfight}")
-            elif lurk_type == lurk.LOOT:
-                loot = lurk.Loot.recv_loot(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received LOOT: {loot}")
-            elif lurk_type == lurk.START:
-                print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
-            elif lurk_type == lurk.ERROR:
-                error = lurk.Error.recv_error(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received ERROR: {error}")
-            elif lurk_type == lurk.ACCEPT:
-                accept = lurk.Accept.recv_accept(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received ACCEPT: {accept}")
-            elif lurk_type == lurk.ROOM:
-                print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
-                lurk.Error.send_error(self.socket_obj, 0)
-            elif lurk_type == lurk.CHARACTER:
-                desired_player = lurk.Character.recv_character(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {desired_player}")
-            elif lurk_type == lurk.GAME:
-                game = lurk.Game.recv_game(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")
-                self.message_received.emit(f"Server has {game.initial_points} initial points and a stat limit of {game.stat_limit}")
-                self.message_received.emit(f"{game.description}")
-            elif lurk_type == lurk.LEAVE:
-                print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
-            elif lurk_type == lurk.CONNECTION:
-                connection = lurk.Connection.recv_connection(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received CONNECTION: {connection}")
-            elif lurk_type == lurk.VERSION:
-                version = lurk.Version.recv_version(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
-                self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
-            else:
-                print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
-        self.message_received.emit("Connection to server lost!")
-        MainWindow.disconnect_from_server()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -82,15 +18,14 @@ class MainWindow(QMainWindow):
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle("Chat Window")
+        self.setWindowTitle("Lurk Dragon")
         self.setMinimumSize(400, 400)
 
         # Create widgets
         self.text_edit_incoming = QTextEdit()
+        self.text_edit_incoming.setPlaceholderText("Incoming Messages")
         self.text_edit_outgoing = QTextEdit()
-        self.text_edit_outgoing.setFixedHeight(50)
-        self.line_edit = QLineEdit()
-        self.line_edit.setPlaceholderText("Enter message...")
+        self.text_edit_outgoing.setPlaceholderText("LURK Message")
         self.button_send = QPushButton("Send")
         self.button_send.setEnabled(False)
         self.button_connect = QPushButton("Connect")
@@ -117,7 +52,6 @@ class MainWindow(QMainWindow):
 
         # Add widgets to layouts
         incoming_layout.addWidget(splitter)
-        outgoing_layout.addWidget(self.line_edit)
         outgoing_layout.addWidget(self.button_send)
         button_layout.addWidget(self.button_connect)
         button_layout.addWidget(self.button_disconnect)
@@ -135,7 +69,6 @@ class MainWindow(QMainWindow):
         # Connect signals and slots
         self.button_connect.clicked.connect(self.connect_to_server)
         self.button_disconnect.clicked.connect(self.disconnect_from_server)
-        self.line_edit.returnPressed.connect(self.send_message)
         self.button_send.clicked.connect(self.send_message)
 
         # Socket to receive messages
@@ -192,11 +125,73 @@ class MainWindow(QMainWindow):
             self.socket.sendall(message.encode())
             self.text_edit_outgoing.clear()
 
-if __name__ == "__main__":
-    import sys
-    from PyQt6.QtWidgets import QApplication
+class ReceiveMessagesThread(QThread):
+    message_received = pyqtSignal(object)
 
+    def __init__(self, socket_obj):
+        super().__init__()
+        self.socket_obj = socket_obj
+
+    def run(self):
+        # Receive messages from the server
+        while True:
+            lurk_type = lurk.recv(self.socket_obj, 1)
+            if not lurk_type:
+                print("DEBUG: Detected NONE from lurk.recv()!")
+                break
+            lurk_type = int.from_bytes(lurk_type, byteorder='little')
+            #self.message_received.emit(f"Received type: {lurk_type}")
+            if lurk_type == lurk.MESSAGE:
+                message = lurk.Message.recv_message(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received MESSAGE: {message}")
+            elif lurk_type == lurk.CHANGEROOM:
+                changeroom = lurk.Changeroom.recv_changeroom(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received CHANGEROOM: {changeroom}")
+            elif lurk_type == lurk.FIGHT:
+                print(f"{Fore.WHITE}DEBUG: Received FIGHT: {lurk_type}")
+            elif lurk_type == lurk.PVPFIGHT:
+                pvpfight = lurk.Pvpfight.recv_pvpfight(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received PVPFIGHT: {pvpfight}")
+            elif lurk_type == lurk.LOOT:
+                loot = lurk.Loot.recv_loot(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received LOOT: {loot}")
+            elif lurk_type == lurk.START:
+                print(f"{Fore.WHITE}DEBUG: Received START: {lurk_type}")
+            elif lurk_type == lurk.ERROR:
+                error = lurk.Error.recv_error(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received ERROR: {error}")
+                self.message_received.emit(f"ERROR {error.number}: {error.description}")
+            elif lurk_type == lurk.ACCEPT:
+                accept = lurk.Accept.recv_accept(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received ACCEPT: {accept}")
+            elif lurk_type == lurk.ROOM:
+                print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
+                lurk.Error.send_error(self.socket_obj, 0)
+            elif lurk_type == lurk.CHARACTER:
+                desired_player = lurk.Character.recv_character(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {desired_player}")
+            elif lurk_type == lurk.GAME:
+                game = lurk.Game.recv_game(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")
+                self.message_received.emit(f"Server has {game.initial_points} initial points and a stat limit of {game.stat_limit}")
+                self.message_received.emit(f"{game.description}")
+            elif lurk_type == lurk.LEAVE:
+                print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
+            elif lurk_type == lurk.CONNECTION:
+                connection = lurk.Connection.recv_connection(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received CONNECTION: {connection}")
+            elif lurk_type == lurk.VERSION:
+                version = lurk.Version.recv_version(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
+                self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
+            else:
+                print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
+        self.message_received.emit("Connection to server lost!")
+        main_window.disconnect_from_server()
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec())

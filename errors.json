@@ -1,42 +1,42 @@
 [
     {
         "number": 0,
-        "message": "ERROR: The server/client does not support receiving this message type!"
+        "message": "The server/client does not support receiving this message type!"
     },
     {
         "number": 1,
-        "message": "ERROR: Bad Room. Room does not exist, or there are no connections to the desired room."
+        "message": "Bad Room. Room does not exist, or there are no connections to the desired room."
     },
     {
         "number": 2,
-        "message": "ERROR: Character in use. Cannot reprise a character that is already tied to a socket."
+        "message": "Character in use. Cannot reprise a character that is already tied to a socket."
     },
     {
         "number": 3,
-        "message": "ERROR: Bad Monster. Cannot loot a nonexistent, not present, or living monster."
+        "message": "Bad Monster. Cannot loot a nonexistent, not present, or living monster."
     },
     {
         "number": 4,
-        "message": "ERROR: Stat error. Cannot accept inappropriate player stats. Try again!"
+        "message": "Stat error. Cannot accept inappropriate player stats. Try again!"
     },
     {
         "number": 5,
-        "message": "ERROR: Not Ready. Caused by attempting an action too early, like changing rooms before sending START or CHARACTER."
+        "message": "Not Ready. Caused by attempting an action too early, like changing rooms before sending START or CHARACTER."
     },
     {
         "number": 6,
-        "message": "ERROR: No target. Cannot loot nonexistent characters, fight players in different rooms, or message someone offline."
+        "message": "No target. Cannot loot nonexistent characters, fight players in different rooms, or message someone offline."
     },
     {
         "number": 7,
-        "message": "ERROR: No fight. Fight cannot happen for some reason, like no live monsters in room."
+        "message": "No fight. Fight cannot happen for some reason, like no live monsters in room."
     },
     {
         "number": 8,
-        "message": "ERROR: Player vs. player combat is currently not supported on this server."
+        "message": "Player vs. player combat is currently not supported on this server."
     },
     {
         "number": 9,
-        "message": "ERROR: Monster. Cannot create or reprise a monster character."
+        "message": "Monster. Cannot create or reprise a monster character."
     }
 ]
