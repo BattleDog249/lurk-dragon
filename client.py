@@ -7,8 +7,8 @@ import lurk
 import socket
 import sys
 import threading
-from PyQt6.QtWidgets import QMainWindow, QWidget, QLabel, QLineEdit, QTextEdit, QPushButton, QMessageBox, QVBoxLayout, QHBoxLayout
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter
+from PyQt6.QtCore import QThread, pyqtSignal, Qt
 
 from colorama import Fore
 
@@ -27,7 +27,7 @@ class ReceiveMessagesThread(QThread):
                 print("DEBUG: Detected NONE from lurk.recv()!")
                 break
             lurk_type = int.from_bytes(lurk_type, byteorder='little')
-            self.message_received.emit(f"Received type: {lurk_type}")
+            #self.message_received.emit(f"Received type: {lurk_type}")
             if lurk_type == lurk.MESSAGE:
                 message = lurk.Message.recv_message(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received MESSAGE: {message}")
@@ -59,7 +59,8 @@ class ReceiveMessagesThread(QThread):
             elif lurk_type == lurk.GAME:
                 game = lurk.Game.recv_game(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")
-                self.message_received.emit(repr(game))
+                self.message_received.emit(f"Server has {game.initial_points} initial points and a stat limit of {game.stat_limit}")
+                self.message_received.emit(f"{game.description}")
             elif lurk_type == lurk.LEAVE:
                 print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
             elif lurk_type == lurk.CONNECTION:
@@ -68,54 +69,74 @@ class ReceiveMessagesThread(QThread):
             elif lurk_type == lurk.VERSION:
                 version = lurk.Version.recv_version(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
-                self.message_received.emit(repr(version))
+                self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
             else:
                 print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
         self.message_received.emit("Connection to server lost!")
-        MainWindow.server_disconnected_handler()
+        MainWindow.disconnect_from_server()
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        
+        self.init_ui()
 
-        # Initialize widgets
-        self.ip_address_label = QLabel("IP address:", self)
-        self.ip_address_textbox = QLineEdit(self)
-        self.port_label = QLabel("Port:", self)
-        self.port_textbox = QLineEdit(self)
-        self.connect_button = QPushButton("Connect", self)
-        self.connect_button.clicked.connect(self.connect_to_server)
-        self.incoming_messages_textbox = QTextEdit(self)
-        self.send_message_textbox = QTextEdit(self)
-        self.send_message_button = QPushButton("Send", self)
-        self.send_message_button.clicked.connect(self.send_message)
+    def init_ui(self):
+        self.setWindowTitle("Chat Window")
+        self.setMinimumSize(400, 400)
 
-        # Initialize layout managers
-        self.top_layout = QHBoxLayout()
-        self.bottom_layout = QVBoxLayout()
-        self.main_layout = QVBoxLayout()
+        # Create widgets
+        self.text_edit_incoming = QTextEdit()
+        self.text_edit_outgoing = QTextEdit()
+        self.text_edit_outgoing.setFixedHeight(50)
+        self.line_edit = QLineEdit()
+        self.line_edit.setPlaceholderText("Enter message...")
+        self.button_send = QPushButton("Send")
+        self.button_send.setEnabled(False)
+        self.button_connect = QPushButton("Connect")
+        self.button_disconnect = QPushButton("Disconnect")
+        self.button_disconnect.setEnabled(False)
+        self.ip_address_textbox = QLineEdit()
+        self.ip_address_textbox.setPlaceholderText("IP Address")
+        self.port_textbox = QLineEdit()
+        self.port_textbox.setPlaceholderText("Port")
+        self.port_textbox.setFixedWidth(100)
+
+        # Set up splitter widget
+        splitter = QSplitter(Qt.Orientation.Vertical)
+        splitter.addWidget(self.text_edit_incoming)
+        splitter.addWidget(self.text_edit_outgoing)
+
+        # Create layouts
+        central_widget = QWidget()
+        main_layout = QVBoxLayout()
+        incoming_layout = QHBoxLayout()
+        outgoing_layout = QHBoxLayout()
+        button_layout = QHBoxLayout()
+        address_layout = QHBoxLayout()
 
         # Add widgets to layouts
-        self.top_layout.addWidget(self.ip_address_label)
-        self.top_layout.addWidget(self.ip_address_textbox)
-        self.top_layout.addWidget(self.port_label)
-        self.top_layout.addWidget(self.port_textbox)
-        self.top_layout.addWidget(self.connect_button)
+        incoming_layout.addWidget(splitter)
+        outgoing_layout.addWidget(self.line_edit)
+        outgoing_layout.addWidget(self.button_send)
+        button_layout.addWidget(self.button_connect)
+        button_layout.addWidget(self.button_disconnect)
+        address_layout.addWidget(self.ip_address_textbox)
+        address_layout.addWidget(self.port_textbox)
 
-        self.bottom_layout.addWidget(self.incoming_messages_textbox)
-        self.bottom_layout.addWidget(self.send_message_textbox)
-        self.bottom_layout.addWidget(self.send_message_button)
-
-        self.main_layout.addLayout(self.top_layout)
-        self.main_layout.addLayout(self.bottom_layout)
-
-        # Set the central widget of the main window to the main layout
-        central_widget = QWidget()
-        central_widget.setLayout(self.main_layout)
+        # Add layouts to main layout
+        main_layout.addLayout(address_layout)
+        main_layout.addLayout(incoming_layout)
+        main_layout.addLayout(outgoing_layout)
+        main_layout.addLayout(button_layout)
+        central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
-        
-        self.setWindowTitle("Lurk Dragon")
-        self.setMinimumSize(600, 400)
+
+        # Connect signals and slots
+        self.button_connect.clicked.connect(self.connect_to_server)
+        self.button_disconnect.clicked.connect(self.disconnect_from_server)
+        self.line_edit.returnPressed.connect(self.send_message)
+        self.button_send.clicked.connect(self.send_message)
 
         # Socket to receive messages
         self.socket = None
@@ -140,31 +161,36 @@ class MainWindow(QMainWindow):
 
         # Save the socket object and disable the IP address and port fields
         self.socket = socket_obj
+        self.button_connect.setEnabled(False)
+        self.button_disconnect.setEnabled(True)
+        self.button_send.setEnabled(True)
         self.ip_address_textbox.setEnabled(False)
         self.port_textbox.setEnabled(False)
-        self.connect_button.setEnabled(False)
         
         # Create and start the receive messages thread
         self.receive_thread = ReceiveMessagesThread(self.socket)
         self.receive_thread.message_received.connect(self.receive_message_handler)
         self.receive_thread.start()
-
-    def server_disconnected_handler(self):
-        # Enable IP address, port, and connect button when server is disconnected
+    
+    def disconnect_from_server(self):
+        # Add code to disconnect from server here
+        self.button_connect.setEnabled(True)
+        self.button_disconnect.setEnabled(False)
+        self.button_send.setEnabled(False)
         self.ip_address_textbox.setEnabled(True)
         self.port_textbox.setEnabled(True)
-        self.connect_button.setEnabled(True)
+        lurk.Leave.send_leave(self.socket)
 
     def receive_message_handler(self, message):
         # Append received message to incoming messages text box
-        self.incoming_messages_textbox.append(message)
+        self.text_edit_incoming.append(message)
 
     def send_message(self):
         # Send a message to the server
-        message = self.send_message_textbox.toPlainText()
+        message = self.text_edit_outgoing.toPlainText()
         if message:
             self.socket.sendall(message.encode())
-            self.send_message_textbox.clear()
+            self.text_edit_outgoing.clear()
 
 if __name__ == "__main__":
     import sys

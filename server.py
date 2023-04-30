@@ -370,7 +370,7 @@ def handle_client(skt):
             print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
             lurk.Error.send_error(skt, 0)
         elif lurk_type == lurk.LEAVE:
-            print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type} from {sockets[skt]}")
+            print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
             break
         elif lurk_type == lurk.CONNECTION:
             connection = lurk.Connection.recv_connection(skt)
