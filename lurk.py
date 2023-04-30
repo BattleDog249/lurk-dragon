@@ -437,12 +437,12 @@ class Game:
         """Receives a game message from the given socket, and unpacks it into a game object that is returned, or None if an error occurred."""
         if not isinstance(skt, socket.socket):
             raise TypeError("Provided skt parameter must be a socket object!")
-        game_header = recv(skt, CONNECTION_LEN - 1)
+        game_header = recv(skt, GAME_LEN - 1)
         if not game_header:
             print(f"{Fore.RED}ERROR: recv_game: Socket connection broken, returning None!")
             return None
         try:
-            init_points, stat_limit, description_len = struct.unpack('<3H', game_header)
+            initial_points, stat_limit, description_len = struct.unpack('<3H', game_header)
         except struct.error as exc:
             raise struct.error("Failed to unpack game_header!") from exc
         game_data = recv(skt, description_len)
@@ -453,7 +453,7 @@ class Game:
             description, = struct.unpack(f'<{description_len}s', game_data)
         except struct.error as exc:
             raise struct.error("Failed to unpack game_data!") from exc
-        game = Game(init_points=init_points,stat_limit=stat_limit, description_len=description_len, description=description.decode())
+        game = Game(initial_points=initial_points, stat_limit=stat_limit, description_len=description_len, description=description.decode())
         return game
     def send_game(skt, game):
         """Packs a game message into bytes with the given game object and sends it to the given socket object. Returns the number of bytes sent, or None if the socket connection is broken. Raises a TypeError if the skt parameter is not a socket object, or if the game parameter is not a Game object."""
