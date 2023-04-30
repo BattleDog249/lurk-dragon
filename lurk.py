@@ -1,6 +1,7 @@
 """LURK protocol-related variables and functions that can be used in a client or server."""
 #!/usr/bin/env python3
-
+# TODO: Fix recv and send to handle unexepected socket disconnections vs recv unintended data, yet connection is still alive
+    # Cleanup client vs wait for another message?
 import socket
 import struct
 import threading
@@ -51,11 +52,15 @@ def recv(socket, message_length):
     lock.acquire()
     message = b''
     while len(message) < message_length:
-        if chunk := socket.recv(message_length - len(message)):
-            message += chunk
-        else:
+        try:
+            if chunk := socket.recv(message_length - len(message)):
+                message += chunk
+            else:
+                print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
+                lock.release()
+                return None
+        except ConnectionResetError as exc:
             print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
-            lock.release()
             return None
     lock.release()
     return message
