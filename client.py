@@ -103,6 +103,8 @@ class MainWindow(QMainWindow):
             self.textbox_output.insertPlainText('\n')
 
     def connect_to_server(self):
+        '''Handle connecting to the server'''
+
         # Get IP address and port from input fields
         server_ip = self.textbox_ip.text()
         print(f"DEBUG: Connecting to {server_ip}...")
@@ -135,7 +137,7 @@ class MainWindow(QMainWindow):
         self.receive_thread.start()
     
     def disconnect_from_server(self):
-        # Add code to disconnect from server here
+        '''Disconnect from the server by sending a LEAVE message and closing the socket'''
         self.button_connect.setEnabled(True)
         self.button_disconnect.setEnabled(False)
         self.button_send.setEnabled(False)
