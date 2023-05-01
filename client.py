@@ -3,18 +3,20 @@
 
 # Isoptera IP: 74.118.22.194
 
-import lurk
 import socket
 import sys
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
+from PyQt6.QtGui import QIntValidator, QKeySequence
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox
 
 from colorama import Fore
 
+import lurk
+
 class MainWindow(QMainWindow):
+    """Main window for LURK client"""
     def __init__(self):
         super().__init__()
-        
         self.init_ui()
 
     def init_ui(self):
@@ -22,25 +24,26 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(400, 400)
 
         # Create widgets
-        self.text_edit_incoming = QTextEdit()
-        self.text_edit_incoming.setPlaceholderText("Incoming Messages")
-        self.text_edit_outgoing = QTextEdit()
-        self.text_edit_outgoing.setPlaceholderText("LURK Message")
+        self.textbox_ip = QLineEdit()
+        self.textbox_ip.setPlaceholderText("IP Address")
+        self.textbox_port = QLineEdit()
+        self.textbox_port.setPlaceholderText("Port")
+        self.textbox_port.setFixedWidth(100)
+        self.textbox_port.setValidator(QIntValidator(0, 65535, self))
+        self.textbox_input = QTextEdit()
+        self.textbox_input.setPlaceholderText("Messages from server will appear here")
+        self.textbox_output = QTextEdit()
+        self.textbox_output.setPlaceholderText("LURK Message to send to server")
         self.button_send = QPushButton("Send")
         self.button_send.setEnabled(False)
         self.button_connect = QPushButton("Connect")
         self.button_disconnect = QPushButton("Disconnect")
         self.button_disconnect.setEnabled(False)
-        self.ip_address_textbox = QLineEdit()
-        self.ip_address_textbox.setPlaceholderText("IP Address")
-        self.port_textbox = QLineEdit()
-        self.port_textbox.setPlaceholderText("Port")
-        self.port_textbox.setFixedWidth(100)
 
         # Set up splitter widget
         splitter = QSplitter(Qt.Orientation.Vertical)
-        splitter.addWidget(self.text_edit_incoming)
-        splitter.addWidget(self.text_edit_outgoing)
+        splitter.addWidget(self.textbox_input)
+        splitter.addWidget(self.textbox_output)
 
         # Create layouts
         central_widget = QWidget()
@@ -55,8 +58,8 @@ class MainWindow(QMainWindow):
         outgoing_layout.addWidget(self.button_send)
         button_layout.addWidget(self.button_connect)
         button_layout.addWidget(self.button_disconnect)
-        address_layout.addWidget(self.ip_address_textbox)
-        address_layout.addWidget(self.port_textbox)
+        address_layout.addWidget(self.textbox_ip)
+        address_layout.addWidget(self.textbox_port)
 
         # Add layouts to main layout
         main_layout.addLayout(address_layout)
@@ -67,9 +70,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         # Connect signals and slots
+        self.button_send.clicked.connect(self.send_message)
         self.button_connect.clicked.connect(self.connect_to_server)
         self.button_disconnect.clicked.connect(self.disconnect_from_server)
-        self.button_send.clicked.connect(self.send_message)
+        self.textbox_output.keyPressEvent = self.handle_key_press
 
         # Socket to receive messages
         self.socket = None
@@ -77,11 +81,36 @@ class MainWindow(QMainWindow):
         # Thread to receive messages
         self.receive_thread = None
 
+    def handle_key_press(self, event):
+        if event.key() == QKeySequence('Return'):
+            print("Enter pressed, evaluating potential command!")
+            if self.textbox_output.toPlainText().split('\n')[-1] == '/make':
+                print("Detected /make command")
+            self.send_message()
+        elif event.key() == QKeySequence('Backspace'):
+            print("Backspace pressed!")
+            self.textbox_output.textCursor().deletePreviousChar()
+        else:
+            super().keyPressEvent(event)
+            self.textbox_output.insertPlainText(event.text())
+
+    def send_message(self):
+        # Send a message to the server
+        message = self.textbox_output.toPlainText().split('\n')[-1]
+        if message:
+            self.socket.sendall(message.encode())
+            #self.textbox_output.clear()
+            self.textbox_output.insertPlainText('\n')
+
     def connect_to_server(self):
         # Get IP address and port from input fields
-        server_ip = self.ip_address_textbox.text()
+        server_ip = self.textbox_ip.text()
         print(f"DEBUG: Connecting to {server_ip}...")
-        server_port = int(self.port_textbox.text())
+        server_port = int(self.textbox_port.text())
+        if server_port < 0 or server_port > 65535:
+            self.textbox_port.clear()
+            QMessageBox.warning(self, "Invalid Port", "Port must be a valid integer between 0 and 65535.")
+            return
         print(f"DEBUG: On port {server_port}...")
 
         # Create a socket object and connect to the server
@@ -97,8 +126,8 @@ class MainWindow(QMainWindow):
         self.button_connect.setEnabled(False)
         self.button_disconnect.setEnabled(True)
         self.button_send.setEnabled(True)
-        self.ip_address_textbox.setEnabled(False)
-        self.port_textbox.setEnabled(False)
+        self.textbox_ip.setEnabled(False)
+        self.textbox_port.setEnabled(False)
         
         # Create and start the receive messages thread
         self.receive_thread = ReceiveMessagesThread(self.socket)
@@ -110,20 +139,13 @@ class MainWindow(QMainWindow):
         self.button_connect.setEnabled(True)
         self.button_disconnect.setEnabled(False)
         self.button_send.setEnabled(False)
-        self.ip_address_textbox.setEnabled(True)
-        self.port_textbox.setEnabled(True)
+        self.textbox_ip.setEnabled(True)
+        self.textbox_port.setEnabled(True)
         lurk.Leave.send_leave(self.socket)
 
     def receive_message_handler(self, message):
         # Append received message to incoming messages text box
-        self.text_edit_incoming.append(message)
-
-    def send_message(self):
-        # Send a message to the server
-        message = self.text_edit_outgoing.toPlainText()
-        if message:
-            self.socket.sendall(message.encode())
-            self.text_edit_outgoing.clear()
+        self.textbox_input.append(message)
 
 class ReceiveMessagesThread(QThread):
     message_received = pyqtSignal(object)
