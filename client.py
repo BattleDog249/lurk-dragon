@@ -7,7 +7,7 @@ import socket
 import sys
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from PyQt6.QtGui import QIntValidator, QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel
 
 from colorama import Fore
 
@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
         self.textbox_ip.setPlaceholderText("IP Address")
         self.textbox_port = QLineEdit()
         self.textbox_port.setPlaceholderText("Port")
-        self.textbox_port.setFixedWidth(100)
+        self.textbox_port.setFixedWidth(50)
         self.textbox_port.setValidator(QIntValidator(0, 65535, self))
         self.textbox_input = QTextEdit()
         self.textbox_input.setPlaceholderText("Messages from server will appear here")
@@ -39,6 +39,14 @@ class MainWindow(QMainWindow):
         self.button_connect = QPushButton("Connect")
         self.button_disconnect = QPushButton("Disconnect")
         self.button_disconnect.setEnabled(False)
+
+        # Added: Information bar
+        self.info_bar = QLabel()
+        self.info_bar.setText("LURK Version: Extension Size: ")
+        self.info_bar.setWordWrap(True)
+        self.game_info = QLabel()
+        self.game_info.setText("Initial Points: Stat Limit: \nDescription: ")
+        self.game_info.setWordWrap(True)
 
         # Set up splitter widget
         splitter = QSplitter(Qt.Orientation.Vertical)
@@ -56,13 +64,17 @@ class MainWindow(QMainWindow):
         # Add widgets to layouts
         incoming_layout.addWidget(splitter)
         outgoing_layout.addWidget(self.button_send)
-        button_layout.addWidget(self.button_connect)
-        button_layout.addWidget(self.button_disconnect)
+        #button_layout.addWidget(self.button_connect)
+        #button_layout.addWidget(self.button_disconnect)
         address_layout.addWidget(self.textbox_ip)
         address_layout.addWidget(self.textbox_port)
+        address_layout.addWidget(self.button_connect)
+        address_layout.addWidget(self.button_disconnect)
 
         # Add layouts to main layout
         main_layout.addLayout(address_layout)
+        main_layout.addWidget(self.info_bar)  # Added
+        main_layout.addWidget(self.game_info)  # Added
         main_layout.addLayout(incoming_layout)
         main_layout.addLayout(outgoing_layout)
         main_layout.addLayout(button_layout)
@@ -143,6 +155,8 @@ class MainWindow(QMainWindow):
         self.button_send.setEnabled(False)
         self.textbox_ip.setEnabled(True)
         self.textbox_port.setEnabled(True)
+        main_window.game_info.setText("")
+        main_window.info_bar.setText("")
         lurk.Leave.send_leave(self.socket)
 
     def receive_message_handler(self, message):
@@ -197,8 +211,9 @@ class ReceiveMessagesThread(QThread):
             elif lurk_type == lurk.GAME:
                 game = lurk.Game.recv_game(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")
-                self.message_received.emit(f"Server has {game.initial_points} initial points and a stat limit of {game.stat_limit}")
-                self.message_received.emit(f"{game.description}")
+                #self.message_received.emit(f"Server has {game.initial_points} initial points and a stat limit of {game.stat_limit}")
+                #self.message_received.emit(f"{game.description}")
+                main_window.game_info.setText(f"Initial Points: {game.initial_points}, Stat Limit: {game.stat_limit}\n{game.description}")
             elif lurk_type == lurk.LEAVE:
                 print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
             elif lurk_type == lurk.CONNECTION:
@@ -207,7 +222,8 @@ class ReceiveMessagesThread(QThread):
             elif lurk_type == lurk.VERSION:
                 version = lurk.Version.recv_version(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
-                self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
+                #self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
+                main_window.info_bar.setText(f"LURK Version {version.major}.{version.minor} with extension length: {version.extensions_len}")
             else:
                 print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
         self.message_received.emit("Connection to server lost!")
