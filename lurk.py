@@ -318,7 +318,7 @@ class Room:
     name: str
     description_len: c_uint16
     description: str
-    connections: list
+    connections: list = ()
     lurk_type: c_uint8 = ROOM
     # Key (int): number, Value (tuple): (name, description_len, description, connections)
     rooms = {}

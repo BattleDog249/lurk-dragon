@@ -5,7 +5,7 @@
 
 import socket
 import sys
-from PyQt6.QtCore import QThread, pyqtSignal, Qt
+from PyQt6.QtCore import QThread, Qt, pyqtSignal
 from PyQt6.QtGui import QIntValidator, QKeySequence
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel, QSpinBox, QCheckBox
 
@@ -18,6 +18,12 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.init_ui()
+        
+        # Socket to receive messages
+        self.socket = None
+        
+        # Thread to receive messages
+        self.receive_thread = None
 
     def init_ui(self):
         self.setWindowTitle("Lurk Dragon")
@@ -134,12 +140,6 @@ class MainWindow(QMainWindow):
         self.button_send_character.clicked.connect(self.send_character)
         self.button_send_start.clicked.connect(self.send_start)
         self.textbox_output.keyPressEvent = self.handle_key_press
-
-        # Socket to receive messages
-        self.socket = None
-        
-        # Thread to receive messages
-        self.receive_thread = None
 
     def handle_key_press(self, event):
         if event.key() == QKeySequence('Return'):
@@ -296,8 +296,9 @@ class ReceiveMessagesThread(QThread):
                 print(f"{Fore.WHITE}DEBUG: Received ACCEPT: {lurk_type}")
                 self.message_received.emit(f"Server accepted message type {accept.accept_type}")
             elif lurk_type == lurk.ROOM:
-                print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
-                lurk.Error.send_error(self.socket_obj, 0)
+                room = lurk.Room.recv_room(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received ROOM: {room}")
+                self.message_received.emit(f"Room {room.number}: {room.description}")
             elif lurk_type == lurk.CHARACTER:
                 player = lurk.Character.recv_character(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
