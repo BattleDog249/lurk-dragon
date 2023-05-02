@@ -7,7 +7,7 @@ import socket
 import sys
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from PyQt6.QtGui import QIntValidator, QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel, QSpinBox, QCheckBox
 
 from colorama import Fore
 
@@ -24,9 +24,9 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(400, 400)
 
         # Create widgets
-        self.textbox_ip = QLineEdit()
+        self.textbox_ip = QLineEdit("isoptera.lcsc.edu")
         self.textbox_ip.setPlaceholderText("IP Address")
-        self.textbox_port = QLineEdit()
+        self.textbox_port = QLineEdit("5010")
         self.textbox_port.setPlaceholderText("Port")
         self.textbox_port.setFixedWidth(50)
         self.textbox_port.setValidator(QIntValidator(0, 65535, self))
@@ -47,6 +47,39 @@ class MainWindow(QMainWindow):
         self.game_info = QLabel()
         self.game_info.setText("Initial Points: Stat Limit: \nDescription: ")
         self.game_info.setWordWrap(True)
+        
+        # Added: New QHBoxLayout with requested widgets
+        self.character_name = QLineEdit()
+        self.character_name.setMaxLength(32)
+        self.character_name.setPlaceholderText("Character Name")
+        self.auto_join_fight = QCheckBox("Auto join fights")
+        self.attack_value = QSpinBox()
+        self.attack_value.setRange(0, 100)
+        self.attack_value.setSuffix(" Attack")
+        self.defense_value = QSpinBox()
+        self.defense_value.setRange(0, 100)
+        self.defense_value.setSuffix(" Defense")
+        self.regen_value = QSpinBox()
+        self.regen_value.setRange(0, 100)
+        self.regen_value.setSuffix(" Regen")
+        self.health_value = QSpinBox()
+        self.health_value.setRange(0, 65535)
+        self.health_value.setSuffix(" Health")
+        self.health_value.setEnabled(True)
+        self.gold_value = QSpinBox()
+        self.gold_value.setRange(0, 65535)
+        self.gold_value.setSuffix(" Gold")
+        self.gold_value.setEnabled(True)
+        self.room_value = QSpinBox()
+        self.room_value.setRange(0, 65535)
+        self.room_value.setPrefix("Room ")
+        self.room_value.setEnabled(True)
+        self.character_description = QLineEdit()
+        self.character_description.setPlaceholderText("Character Description")
+        self.button_send_character = QPushButton("Character")
+        self.button_send_character.setEnabled(False)
+        self.button_send_start = QPushButton("Start")
+        self.button_send_start.setEnabled(False)
 
         # Set up splitter widget
         splitter = QSplitter(Qt.Orientation.Vertical)
@@ -60,21 +93,34 @@ class MainWindow(QMainWindow):
         outgoing_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
         address_layout = QHBoxLayout()
+        character_layout = QHBoxLayout()
+        character_description_layout = QHBoxLayout()
 
         # Add widgets to layouts
         incoming_layout.addWidget(splitter)
         outgoing_layout.addWidget(self.button_send)
-        #button_layout.addWidget(self.button_connect)
-        #button_layout.addWidget(self.button_disconnect)
         address_layout.addWidget(self.textbox_ip)
         address_layout.addWidget(self.textbox_port)
         address_layout.addWidget(self.button_connect)
         address_layout.addWidget(self.button_disconnect)
+        character_layout.addWidget(self.character_name)
+        character_layout.addWidget(self.auto_join_fight)
+        character_layout.addWidget(self.attack_value)
+        character_layout.addWidget(self.defense_value)
+        character_layout.addWidget(self.regen_value)
+        character_layout.addWidget(self.health_value)
+        character_layout.addWidget(self.gold_value)
+        character_layout.addWidget(self.room_value)
+        character_layout.addWidget(self.button_send_character)
+        character_description_layout.addWidget(self.character_description)
+        character_description_layout.addWidget(self.button_send_start)
 
         # Add layouts to main layout
         main_layout.addLayout(address_layout)
         main_layout.addWidget(self.info_bar)  # Added
         main_layout.addWidget(self.game_info)  # Added
+        main_layout.addLayout(character_layout)
+        main_layout.addLayout(character_description_layout)
         main_layout.addLayout(incoming_layout)
         main_layout.addLayout(outgoing_layout)
         main_layout.addLayout(button_layout)
@@ -85,6 +131,8 @@ class MainWindow(QMainWindow):
         self.button_send.clicked.connect(self.send_message)
         self.button_connect.clicked.connect(self.connect_to_server)
         self.button_disconnect.clicked.connect(self.disconnect_from_server)
+        self.button_send_character.clicked.connect(self.send_character)
+        self.button_send_start.clicked.connect(self.send_start)
         self.textbox_output.keyPressEvent = self.handle_key_press
 
         # Socket to receive messages
@@ -142,6 +190,8 @@ class MainWindow(QMainWindow):
         self.button_send.setEnabled(True)
         self.textbox_ip.setEnabled(False)
         self.textbox_port.setEnabled(False)
+        self.button_send_character.setEnabled(True)
+        self.button_send_start.setEnabled(True)
         
         # Create and start the receive messages thread
         self.receive_thread = ReceiveMessagesThread(self.socket)
@@ -155,6 +205,8 @@ class MainWindow(QMainWindow):
         self.button_send.setEnabled(False)
         self.textbox_ip.setEnabled(True)
         self.textbox_port.setEnabled(True)
+        self.button_send_character.setEnabled(False)
+        self.button_send_start.setEnabled(False)
         main_window.game_info.setText("")
         main_window.info_bar.setText("")
         lurk.Leave.send_leave(self.socket)
@@ -162,6 +214,38 @@ class MainWindow(QMainWindow):
     def receive_message_handler(self, message):
         # Append received message to incoming messages text box
         self.textbox_input.append(message)
+    
+    def send_start(self):
+        lurk.Start.send_start(self.socket)
+    
+    def send_character(self):
+        name = self.character_name.text()
+        if not name:
+            QMessageBox.warning(self, "Invalid Name", "Name must be a valid string.")
+            return
+        if len(name) > 32:
+            QMessageBox.warning(self, "Invalid Name", "Name must be less than 32 characters.")
+            return
+        flag = self.auto_join_fight.isChecked()
+        if flag is True:
+            flag = 255 #Testing
+        flag = 128
+        attack = self.attack_value.value()
+        print(f"DEBUG: attack: {attack}")
+        defense = self.defense_value.value()
+        regen = self.regen_value.value()
+        if attack + defense + regen > 100:          # This shouldn't be hardcoded, but grabbed from initial_points of server
+            QMessageBox.warning(self, "Invalid Stats", "Total stats must be less than 100.")
+            return
+        health = self.health_value.value()
+        gold = self.gold_value.value()
+        room = self.room_value.value()
+        description = self.character_description.text()
+        description_len = len(description)
+        
+        player = lurk.Character(name, flag, attack, defense, regen, health, gold, room, description_len, description)
+        print(f"DEBUG: Sending CHARACTER: {player}")
+        lurk.Character.send_character(self.socket, player)
 
 class ReceiveMessagesThread(QThread):
     message_received = pyqtSignal(object)
@@ -201,13 +285,33 @@ class ReceiveMessagesThread(QThread):
                 self.message_received.emit(f"ERROR {error.number}: {error.description}")
             elif lurk_type == lurk.ACCEPT:
                 accept = lurk.Accept.recv_accept(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received ACCEPT: {accept}")
+                print(f"{Fore.WHITE}DEBUG: Received ACCEPT: {lurk_type}")
+                self.message_received.emit(f"Server accepted message type {accept.accept_type}")
             elif lurk_type == lurk.ROOM:
                 print(f"{Fore.RED}ERROR: Server does not support receiving this message, sending ERROR code 0!")
                 lurk.Error.send_error(self.socket_obj, 0)
             elif lurk_type == lurk.CHARACTER:
-                desired_player = lurk.Character.recv_character(self.socket_obj)
-                print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {desired_player}")
+                player = lurk.Character.recv_character(self.socket_obj)
+                print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
+                if player.name.replace('\x00', '') == main_window.character_name.text(): # If the character is the one we're playing
+                    print(f"DEBUG: Received CHARACTER is the one we're playing: {player}")
+                    main_player = player
+                    main_window.character_name.setText(main_player.name)
+                    main_window.character_name.setEnabled(False)
+                    main_window.attack_value.setValue(main_player.attack)
+                    main_window.attack_value.setEnabled(False)
+                    main_window.defense_value.setValue(main_player.defense)
+                    main_window.defense_value.setEnabled(False)
+                    main_window.regen_value.setValue(main_player.regen)
+                    main_window.regen_value.setEnabled(False)
+                    main_window.health_value.setValue(main_player.health)
+                    main_window.health_value.setEnabled(False)
+                    main_window.gold_value.setValue(main_player.gold)
+                    main_window.gold_value.setEnabled(False)
+                    main_window.room_value.setValue(main_player.room)
+                    main_window.room_value.setEnabled(False)
+                    main_window.character_description.setText(main_player.description)
+                    main_window.character_description.setEnabled(False)
             elif lurk_type == lurk.GAME:
                 game = lurk.Game.recv_game(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")

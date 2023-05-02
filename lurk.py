@@ -282,9 +282,20 @@ class Accept:
     """A class that represents an accept message in the game. This class is used to store information about an accept message, and to retrieve information about an accept message."""
     accept_type: c_uint8
     lurk_type: c_uint8 = ACCEPT
-    def recv_accept():
-        """"""
-        pass
+    def recv_accept(skt):
+        """Receives an accept message from the given socket, and unpacks it into a accept object that is returned, or None if an error occurred."""
+        if not isinstance(skt, socket.socket):
+            raise TypeError("Provided skt parameter must be a socket object!")
+        accept_header = recv(skt, ACCEPT_LEN - 1)
+        if not accept_header:
+            print(f"{Fore.RED}ERROR: recv_accept: Socket connection broken, returning None!")
+            return None
+        try:
+            code, = struct.unpack('<B', accept_header)
+        except struct.error as exc:
+            raise struct.error("Failed to unpack accept_header!") from exc
+        accept = Accept(accept_type=code)
+        return accept
     def send_accept(skt, code):
         """Packs an accept message with the given code that corresponds to the accepted lurk type into bytes and sends it to the given socket object."""
         if not isinstance(skt, socket.socket):
