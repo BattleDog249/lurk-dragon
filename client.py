@@ -31,6 +31,8 @@ class MainWindow(QMainWindow):
         
         # Create connection info widgets
         # Include a label for the IP address, a textbox for the IP address, a label for the port, a textbox for the port, a connect button, and a disconnect button
+        self.connection_box = QGroupBox("Server Connection")
+        
         self.textbox_ip = QLineEdit("isoptera.lcsc.edu")
         self.textbox_ip.setPlaceholderText("IP Address")
         
@@ -44,6 +46,17 @@ class MainWindow(QMainWindow):
         self.button_disconnect = QPushButton("Disconnect")
         self.button_disconnect.setEnabled(False)
         
+        # Create game info widgets
+        self.game_box = QGroupBox("Game Info")
+        
+        self.version_info = QLabel()
+        self.version_info.setText("LURK Version: Extension Size: ")
+        self.version_info.setWordWrap(True)
+        
+        self.game_info = QLabel()
+        self.game_info.setText("Initial Points: Stat Limit: \nDescription: ")
+        self.game_info.setWordWrap(True)
+        
         # Create widgets
         self.textbox_input = QTextEdit()
         self.textbox_input.setPlaceholderText("Messages from server will appear here")
@@ -51,14 +64,6 @@ class MainWindow(QMainWindow):
         self.textbox_output.setPlaceholderText("LURK Message to send to server")
         self.button_send = QPushButton("Send")
         self.button_send.setEnabled(False)
-
-        # Added: Information bar
-        self.info_bar = QLabel()
-        self.info_bar.setText("LURK Version: Extension Size: ")
-        self.info_bar.setWordWrap(True)
-        self.game_info = QLabel()
-        self.game_info.setText("Initial Points: Stat Limit: \nDescription: ")
-        self.game_info.setWordWrap(True)
         
         # Added: New QHBoxLayout with requested widgets
         self.character_name = QLineEdit()
@@ -107,7 +112,6 @@ class MainWindow(QMainWindow):
         incoming_layout = QHBoxLayout()
         outgoing_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
-        connection_box = QGroupBox("Connection Info")
         address_layout = QHBoxLayout()
         character_layout = QHBoxLayout()
         character_description_layout = QHBoxLayout()
@@ -120,7 +124,7 @@ class MainWindow(QMainWindow):
         address_layout.addWidget(self.textbox_port)
         address_layout.addWidget(self.button_connect)
         address_layout.addWidget(self.button_disconnect)
-        connection_box.setLayout(address_layout)
+        self.connection_box.setLayout(address_layout)
         character_layout.addWidget(self.character_name)
         character_layout.addWidget(self.auto_join_fight)
         character_layout.addWidget(self.attack_value)
@@ -135,8 +139,8 @@ class MainWindow(QMainWindow):
         list_of_characters_layout.addWidget(self.list_of_characters)
 
         # Add layouts to main layout
-        main_layout.addWidget(connection_box)  # Added
-        main_layout.addWidget(self.info_bar)  # Added
+        main_layout.addWidget(self.connection_box)  # Added
+        main_layout.addWidget(self.version_info)  # Added
         main_layout.addWidget(self.game_info)  # Added
         main_layout.addLayout(character_layout)
         main_layout.addLayout(character_description_layout)
@@ -230,7 +234,7 @@ class MainWindow(QMainWindow):
         self.button_send_character.setEnabled(False)
         self.button_send_start.setEnabled(False)
         main_window.game_info.setText("")
-        main_window.info_bar.setText("")
+        main_window.version_info.setText("")
         lurk.Leave.send_leave(self.socket)
 
     def receive_message_handler(self, message):
@@ -352,7 +356,7 @@ class ReceiveMessagesThread(QThread):
                 version = lurk.Version.recv_version(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
                 #self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
-                main_window.info_bar.setText(f"LURK Version {version.major}.{version.minor} with extension length: {version.extensions_len}")
+                main_window.version_info.setText(f"LURK Version {version.major}.{version.minor} with extension length: {version.extensions_len}")
             else:
                 print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
         self.message_received.emit("Connection to server lost!")
