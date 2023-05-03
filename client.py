@@ -7,7 +7,7 @@ import socket
 import sys
 from PyQt6.QtCore import QThread, Qt, pyqtSignal
 from PyQt6.QtGui import QIntValidator, QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel, QSpinBox, QCheckBox, QGroupBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel, QSpinBox, QCheckBox, QGroupBox, QGridLayout
 
 from colorama import Fore
 
@@ -27,10 +27,9 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("Lurk Dragon")
-        self.setMinimumSize(400, 400)
+        self.setMinimumSize(700, 600)
         
-        # Create connection info widgets
-        # Include a label for the IP address, a textbox for the IP address, a label for the port, a textbox for the port, a connect button, and a disconnect button
+        # Create and configure server connection info widgets
         self.connection_box = QGroupBox("Server Connection")
         
         self.textbox_ip = QLineEdit("isoptera.lcsc.edu")
@@ -46,7 +45,7 @@ class MainWindow(QMainWindow):
         self.button_disconnect = QPushButton("Disconnect")
         self.button_disconnect.setEnabled(False)
         
-        # Create game info widgets
+        # Create and configure game info widgets
         self.game_box = QGroupBox("Game Info")
         
         self.version_info = QLabel()
@@ -57,6 +56,80 @@ class MainWindow(QMainWindow):
         self.game_info.setText("Initial Points: Stat Limit: \nDescription: ")
         self.game_info.setWordWrap(True)
         
+        # Create and configure character info widgets
+        self.character_box = QGroupBox("Character Info")
+        
+        self.character_name = QLineEdit()
+        self.character_name.setMaxLength(32)
+        self.character_name.setPlaceholderText("Name")
+        
+        self.auto_join_fight = QCheckBox("Join fights?")
+        
+        self.attack_value = QSpinBox()
+        self.attack_value.setRange(0, 65535)
+        self.attack_value.setSuffix(" Attack")
+        
+        self.defense_value = QSpinBox()
+        self.defense_value.setRange(0, 65535)
+        self.defense_value.setSuffix(" Defense")
+        
+        self.regen_value = QSpinBox()
+        self.regen_value.setRange(0, 65535)
+        self.regen_value.setSuffix(" Regen")
+        
+        self.health_value = QSpinBox()
+        self.health_value.setRange(0, 65535)
+        self.health_value.setSuffix(" Health")
+        self.health_value.setEnabled(True)
+        
+        self.gold_value = QSpinBox()
+        self.gold_value.setRange(0, 65535)
+        self.gold_value.setSuffix(" Gold")
+        self.gold_value.setEnabled(True)
+        
+        self.room_value = QSpinBox()
+        self.room_value.setRange(0, 65535)
+        self.room_value.setPrefix("Room ")
+        self.room_value.setEnabled(True)
+        
+        self.character_description = QLineEdit()
+        self.character_description.setPlaceholderText("Description")
+        
+        self.button_send_character = QPushButton("Character")
+        self.button_send_character.setEnabled(False)
+        
+        self.button_send_start = QPushButton("Start")
+        self.button_send_start.setEnabled(False)
+        
+        self.list_of_characters = QTextEdit()
+        self.list_of_characters.setPlaceholderText("No NPCs or Players in current room")
+        self.list_of_characters.setReadOnly(True)
+        
+        self.list_of_monsters = QTextEdit()
+        self.list_of_monsters.setPlaceholderText("No Monsters in current room")
+        self.list_of_monsters.setReadOnly(True)
+        
+        # Create and configure room info widgets
+        self.room_box = QGroupBox("Room Info")
+        
+        self.current_room_box = QGroupBox("Current Room")
+        self.connections_box = QGroupBox("Connections")
+        self.changeroom_box = QGroupBox("Change Room")
+        
+        self.current_room = QTextEdit()
+        self.current_room.setPlaceholderText("No room info available")
+        self.current_room.setReadOnly(True)
+        
+        self.connections = QTextEdit()
+        self.connections.setPlaceholderText("No connections available")
+        self.connections.setReadOnly(True)
+        
+        self.changeroom = QLineEdit()
+        self.changeroom.setPlaceholderText("Room to change to")
+        
+        self.button_send_changeroom = QPushButton("Change Room")
+        self.button_send_changeroom.setEnabled(False)
+        
         # Create widgets
         self.textbox_input = QTextEdit()
         self.textbox_input.setPlaceholderText("Messages from server will appear here")
@@ -64,42 +137,6 @@ class MainWindow(QMainWindow):
         self.textbox_output.setPlaceholderText("LURK Message to send to server")
         self.button_send = QPushButton("Send")
         self.button_send.setEnabled(False)
-        
-        # Added: New QHBoxLayout with requested widgets
-        self.character_name = QLineEdit()
-        self.character_name.setMaxLength(32)
-        self.character_name.setPlaceholderText("Character Name")
-        self.auto_join_fight = QCheckBox("Auto join fights")
-        self.attack_value = QSpinBox()
-        self.attack_value.setRange(0, 100)
-        self.attack_value.setSuffix(" Attack")
-        self.defense_value = QSpinBox()
-        self.defense_value.setRange(0, 100)
-        self.defense_value.setSuffix(" Defense")
-        self.regen_value = QSpinBox()
-        self.regen_value.setRange(0, 100)
-        self.regen_value.setSuffix(" Regen")
-        self.health_value = QSpinBox()
-        self.health_value.setRange(0, 65535)
-        self.health_value.setSuffix(" Health")
-        self.health_value.setEnabled(True)
-        self.gold_value = QSpinBox()
-        self.gold_value.setRange(0, 65535)
-        self.gold_value.setSuffix(" Gold")
-        self.gold_value.setEnabled(True)
-        self.room_value = QSpinBox()
-        self.room_value.setRange(0, 65535)
-        self.room_value.setPrefix("Room ")
-        self.room_value.setEnabled(True)
-        self.character_description = QLineEdit()
-        self.character_description.setPlaceholderText("Character Description")
-        self.button_send_character = QPushButton("Character")
-        self.button_send_character.setEnabled(False)
-        self.button_send_start = QPushButton("Start")
-        self.button_send_start.setEnabled(False)
-        self.list_of_characters = QTextEdit()
-        self.list_of_characters.setPlaceholderText("Characters in room appear here")
-        self.list_of_characters.setReadOnly(True)
 
         # Set up splitter widget
         splitter = QSplitter(Qt.Orientation.Vertical)
@@ -107,15 +144,14 @@ class MainWindow(QMainWindow):
         splitter.addWidget(self.textbox_output)
 
         # Create layouts
-        central_widget = QWidget()
         main_layout = QVBoxLayout()
+        central_widget = QWidget()
         incoming_layout = QHBoxLayout()
         outgoing_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
         address_layout = QHBoxLayout()
-        character_layout = QHBoxLayout()
-        character_description_layout = QHBoxLayout()
-        list_of_characters_layout = QHBoxLayout()
+        character_layout = QGridLayout()
+        room_layout = QHBoxLayout()
 
         # Add widgets to layouts
         incoming_layout.addWidget(splitter)
@@ -125,26 +161,31 @@ class MainWindow(QMainWindow):
         address_layout.addWidget(self.button_connect)
         address_layout.addWidget(self.button_disconnect)
         self.connection_box.setLayout(address_layout)
-        character_layout.addWidget(self.character_name)
-        character_layout.addWidget(self.auto_join_fight)
-        character_layout.addWidget(self.attack_value)
-        character_layout.addWidget(self.defense_value)
-        character_layout.addWidget(self.regen_value)
-        character_layout.addWidget(self.health_value)
-        character_layout.addWidget(self.gold_value)
-        character_layout.addWidget(self.room_value)
-        character_layout.addWidget(self.button_send_character)
-        character_description_layout.addWidget(self.character_description)
-        character_description_layout.addWidget(self.button_send_start)
-        list_of_characters_layout.addWidget(self.list_of_characters)
+        character_layout.addWidget(self.character_name, 0, 0)
+        character_layout.addWidget(self.auto_join_fight, 0, 1)
+        character_layout.addWidget(self.attack_value, 0, 2)
+        character_layout.addWidget(self.defense_value, 0, 3)
+        character_layout.addWidget(self.regen_value, 0, 4)
+        character_layout.addWidget(self.health_value, 0, 5)
+        character_layout.addWidget(self.gold_value, 0, 6)
+        character_layout.addWidget(self.room_value, 0, 7)
+        character_layout.addWidget(self.button_send_character, 0, 8)
+        character_layout.addWidget(self.character_description, 1, 0, 1, 8)
+        character_layout.addWidget(self.button_send_start, 1, 8)
+        character_layout.addWidget(self.list_of_characters, 2, 0, 1, 4)
+        character_layout.addWidget(self.list_of_monsters, 2, 4, 1, 4)
+        self.character_box.setLayout(character_layout)
+        room_layout.addWidget(self.current_room_box)
+        room_layout.addWidget(self.connections_box)
+        room_layout.addWidget(self.changeroom_box)
+        self.room_box.setLayout(room_layout)
 
         # Add layouts to main layout
         main_layout.addWidget(self.connection_box)  # Added
         main_layout.addWidget(self.version_info)  # Added
         main_layout.addWidget(self.game_info)  # Added
-        main_layout.addLayout(character_layout)
-        main_layout.addLayout(character_description_layout)
-        main_layout.addLayout(list_of_characters_layout)
+        main_layout.addWidget(self.character_box)
+        main_layout.addWidget(self.room_box)
         main_layout.addLayout(incoming_layout)
         main_layout.addLayout(outgoing_layout)
         main_layout.addLayout(button_layout)
