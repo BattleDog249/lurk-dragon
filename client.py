@@ -86,6 +86,9 @@ class MainWindow(QMainWindow):
         self.button_send_character.setEnabled(False)
         self.button_send_start = QPushButton("Start")
         self.button_send_start.setEnabled(False)
+        self.list_of_characters = QTextEdit()
+        self.list_of_characters.setPlaceholderText("Characters in room appear here")
+        self.list_of_characters.setReadOnly(True)
 
         # Set up splitter widget
         splitter = QSplitter(Qt.Orientation.Vertical)
@@ -101,6 +104,7 @@ class MainWindow(QMainWindow):
         address_layout = QHBoxLayout()
         character_layout = QHBoxLayout()
         character_description_layout = QHBoxLayout()
+        list_of_characters_layout = QHBoxLayout()
 
         # Add widgets to layouts
         incoming_layout.addWidget(splitter)
@@ -120,6 +124,7 @@ class MainWindow(QMainWindow):
         character_layout.addWidget(self.button_send_character)
         character_description_layout.addWidget(self.character_description)
         character_description_layout.addWidget(self.button_send_start)
+        list_of_characters_layout.addWidget(self.list_of_characters)
 
         # Add layouts to main layout
         main_layout.addLayout(address_layout)
@@ -127,6 +132,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.game_info)  # Added
         main_layout.addLayout(character_layout)
         main_layout.addLayout(character_description_layout)
+        main_layout.addLayout(list_of_characters_layout)
         main_layout.addLayout(incoming_layout)
         main_layout.addLayout(outgoing_layout)
         main_layout.addLayout(button_layout)
@@ -321,6 +327,8 @@ class ReceiveMessagesThread(QThread):
                     main_window.room_value.setEnabled(False)
                     main_window.character_description.setText(main_player.description)
                     main_window.character_description.setEnabled(False)
+                else:
+                    main_window.list_of_characters.append(f"{player.name}: {player.attack} {player.defense} {player.regen} {player.health} {player.gold} is in room {player.room}")
             elif lurk_type == lurk.GAME:
                 game = lurk.Game.recv_game(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")
