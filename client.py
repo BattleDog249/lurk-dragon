@@ -7,7 +7,7 @@ import socket
 import sys
 from PyQt6.QtCore import QThread, Qt, pyqtSignal
 from PyQt6.QtGui import QIntValidator, QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel, QSpinBox, QCheckBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QSplitter, QMessageBox, QLabel, QSpinBox, QCheckBox, QGroupBox
 
 from colorama import Fore
 
@@ -28,23 +28,29 @@ class MainWindow(QMainWindow):
     def init_ui(self):
         self.setWindowTitle("Lurk Dragon")
         self.setMinimumSize(400, 400)
-
-        # Create widgets
+        
+        # Create connection info widgets
+        # Include a label for the IP address, a textbox for the IP address, a label for the port, a textbox for the port, a connect button, and a disconnect button
         self.textbox_ip = QLineEdit("isoptera.lcsc.edu")
         self.textbox_ip.setPlaceholderText("IP Address")
+        
         self.textbox_port = QLineEdit("5010")
         self.textbox_port.setPlaceholderText("Port")
         self.textbox_port.setFixedWidth(50)
         self.textbox_port.setValidator(QIntValidator(0, 65535, self))
+        
+        self.button_connect = QPushButton("Connect")
+        
+        self.button_disconnect = QPushButton("Disconnect")
+        self.button_disconnect.setEnabled(False)
+        
+        # Create widgets
         self.textbox_input = QTextEdit()
         self.textbox_input.setPlaceholderText("Messages from server will appear here")
         self.textbox_output = QTextEdit()
         self.textbox_output.setPlaceholderText("LURK Message to send to server")
         self.button_send = QPushButton("Send")
         self.button_send.setEnabled(False)
-        self.button_connect = QPushButton("Connect")
-        self.button_disconnect = QPushButton("Disconnect")
-        self.button_disconnect.setEnabled(False)
 
         # Added: Information bar
         self.info_bar = QLabel()
@@ -101,6 +107,7 @@ class MainWindow(QMainWindow):
         incoming_layout = QHBoxLayout()
         outgoing_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
+        connection_box = QGroupBox("Connection Info")
         address_layout = QHBoxLayout()
         character_layout = QHBoxLayout()
         character_description_layout = QHBoxLayout()
@@ -113,6 +120,7 @@ class MainWindow(QMainWindow):
         address_layout.addWidget(self.textbox_port)
         address_layout.addWidget(self.button_connect)
         address_layout.addWidget(self.button_disconnect)
+        connection_box.setLayout(address_layout)
         character_layout.addWidget(self.character_name)
         character_layout.addWidget(self.auto_join_fight)
         character_layout.addWidget(self.attack_value)
@@ -127,7 +135,7 @@ class MainWindow(QMainWindow):
         list_of_characters_layout.addWidget(self.list_of_characters)
 
         # Add layouts to main layout
-        main_layout.addLayout(address_layout)
+        main_layout.addWidget(connection_box)  # Added
         main_layout.addWidget(self.info_bar)  # Added
         main_layout.addWidget(self.game_info)  # Added
         main_layout.addLayout(character_layout)
