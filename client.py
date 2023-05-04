@@ -45,16 +45,25 @@ class MainWindow(QMainWindow):
         self.button_disconnect = QPushButton("Disconnect")
         self.button_disconnect.setEnabled(False)
         
-        # Create and configure game info widgets
-        self.game_box = QGroupBox("Game Info")
+        self.label_version = QLabel()
+        self.label_version.setText("LURK Version: ")
+        self.label_version.setWordWrap(True)
         
-        self.version_info = QLabel()
-        self.version_info.setText("LURK Version: Extension Size: ")
-        self.version_info.setWordWrap(True)
+        self.label_extensions = QLabel()
+        self.label_extensions.setText("Extensions: ")
+        self.label_extensions.setWordWrap(True)
         
-        self.game_info = QLabel()
-        self.game_info.setText("Initial Points: Stat Limit: \nDescription: ")
-        self.game_info.setWordWrap(True)
+        self.label_init_points = QLabel()
+        self.label_init_points.setText("Initial Points: ")
+        self.label_init_points.setWordWrap(True)
+        
+        self.label_stat_limit = QLabel()
+        self.label_stat_limit.setText("Stat Limit: ")
+        self.label_stat_limit.setWordWrap(True)
+        
+        self.label_game_description = QLabel()
+        self.label_game_description.setText("Description: ")
+        self.label_game_description.setWordWrap(True)
         
         # Create and configure character info widgets
         self.character_box = QGroupBox("Character Info")
@@ -112,10 +121,6 @@ class MainWindow(QMainWindow):
         # Create and configure room info widgets
         self.room_box = QGroupBox("Room Info")
         
-        self.current_room_box = QGroupBox("Current Room")
-        self.connections_box = QGroupBox("Connections")
-        self.changeroom_box = QGroupBox("Change Room")
-        
         self.current_room = QTextEdit()
         self.current_room.setPlaceholderText("No room info available")
         self.current_room.setReadOnly(True)
@@ -125,42 +130,36 @@ class MainWindow(QMainWindow):
         self.connections.setReadOnly(True)
         
         self.changeroom = QLineEdit()
-        self.changeroom.setPlaceholderText("Room to change to")
+        self.changeroom.setPlaceholderText("Room number to change to")
         
         self.button_send_changeroom = QPushButton("Change Room")
         self.button_send_changeroom.setEnabled(False)
         
-        # Create widgets
+        # Create and configure incoming messages widgets
         self.textbox_input = QTextEdit()
         self.textbox_input.setPlaceholderText("Messages from server will appear here")
-        self.textbox_output = QTextEdit()
-        self.textbox_output.setPlaceholderText("LURK Message to send to server")
-        self.button_send = QPushButton("Send")
-        self.button_send.setEnabled(False)
-
-        # Set up splitter widget
-        splitter = QSplitter(Qt.Orientation.Vertical)
-        splitter.addWidget(self.textbox_input)
-        splitter.addWidget(self.textbox_output)
 
         # Create layouts
         main_layout = QVBoxLayout()
         central_widget = QWidget()
         incoming_layout = QHBoxLayout()
-        outgoing_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
-        address_layout = QHBoxLayout()
+        connection_layout = QGridLayout()
         character_layout = QGridLayout()
         room_layout = QHBoxLayout()
-
+        
         # Add widgets to layouts
-        incoming_layout.addWidget(splitter)
-        outgoing_layout.addWidget(self.button_send)
-        address_layout.addWidget(self.textbox_ip)
-        address_layout.addWidget(self.textbox_port)
-        address_layout.addWidget(self.button_connect)
-        address_layout.addWidget(self.button_disconnect)
-        self.connection_box.setLayout(address_layout)
+        connection_layout.addWidget(self.textbox_ip, 0, 0)
+        connection_layout.addWidget(self.textbox_port, 0, 1)
+        connection_layout.addWidget(self.button_connect, 0, 2)
+        connection_layout.addWidget(self.button_disconnect, 0, 3)
+        connection_layout.addWidget(self.label_version, 1, 0, 1, 3)
+        connection_layout.addWidget(self.label_extensions, 1, 3, 1, 3)
+        connection_layout.addWidget(self.label_stat_limit, 2, 3, 1, 3)
+        connection_layout.addWidget(self.label_init_points, 2, 0, 1, 3)
+        connection_layout.addWidget(self.label_game_description, 3, 0, 1, 8)
+        self.connection_box.setLayout(connection_layout)
+        
         character_layout.addWidget(self.character_name, 0, 0)
         character_layout.addWidget(self.auto_join_fight, 0, 1)
         character_layout.addWidget(self.attack_value, 0, 2)
@@ -175,51 +174,27 @@ class MainWindow(QMainWindow):
         character_layout.addWidget(self.list_of_characters, 2, 0, 1, 4)
         character_layout.addWidget(self.list_of_monsters, 2, 4, 1, 4)
         self.character_box.setLayout(character_layout)
-        room_layout.addWidget(self.current_room_box)
-        room_layout.addWidget(self.connections_box)
-        room_layout.addWidget(self.changeroom_box)
+        
+        room_layout.addWidget(self.current_room)
+        room_layout.addWidget(self.connections)
+        room_layout.addWidget(self.changeroom)
+        room_layout.addWidget(self.button_send_changeroom)
         self.room_box.setLayout(room_layout)
 
         # Add layouts to main layout
-        main_layout.addWidget(self.connection_box)  # Added
-        main_layout.addWidget(self.version_info)  # Added
-        main_layout.addWidget(self.game_info)  # Added
+        main_layout.addWidget(self.connection_box)
         main_layout.addWidget(self.character_box)
         main_layout.addWidget(self.room_box)
         main_layout.addLayout(incoming_layout)
-        main_layout.addLayout(outgoing_layout)
         main_layout.addLayout(button_layout)
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
         # Connect signals and slots
-        self.button_send.clicked.connect(self.send_message)
         self.button_connect.clicked.connect(self.connect_to_server)
         self.button_disconnect.clicked.connect(self.disconnect_from_server)
         self.button_send_character.clicked.connect(self.send_character)
         self.button_send_start.clicked.connect(self.send_start)
-        self.textbox_output.keyPressEvent = self.handle_key_press
-
-    def handle_key_press(self, event):
-        if event.key() == QKeySequence('Return'):
-            print("Enter pressed, evaluating potential command!")
-            if self.textbox_output.toPlainText().split('\n')[-1] == '/make':
-                print("Detected /make command")
-            self.send_message()
-        elif event.key() == QKeySequence('Backspace'):
-            print("Backspace pressed!")
-            self.textbox_output.textCursor().deletePreviousChar()
-        else:
-            super().keyPressEvent(event)
-            self.textbox_output.insertPlainText(event.text())
-
-    def send_message(self):
-        # Send a message to the server
-        message = self.textbox_output.toPlainText().split('\n')[-1]
-        if message:
-            self.socket.sendall(message.encode())
-            #self.textbox_output.clear()
-            self.textbox_output.insertPlainText('\n')
 
     def connect_to_server(self):
         '''Handle connecting to the server'''
@@ -235,8 +210,8 @@ class MainWindow(QMainWindow):
         print(f"DEBUG: On port {server_port}...")
 
         # Create a socket object and connect to the server
-        socket_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
+            socket_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             socket_obj.connect((server_ip, server_port))
         except:
             QMessageBox.warning(self, "Connection Error", "Failed to connect to server.")
@@ -246,11 +221,11 @@ class MainWindow(QMainWindow):
         self.socket = socket_obj
         self.button_connect.setEnabled(False)
         self.button_disconnect.setEnabled(True)
-        self.button_send.setEnabled(True)
         self.textbox_ip.setEnabled(False)
         self.textbox_port.setEnabled(False)
         self.button_send_character.setEnabled(True)
         self.button_send_start.setEnabled(True)
+        self.button_send_changeroom.setEnabled(True)
         
         # Create and start the receive messages thread
         self.receive_thread = ReceiveMessagesThread(self.socket)
@@ -261,7 +236,6 @@ class MainWindow(QMainWindow):
         '''Disconnect from the server by sending a LEAVE message and closing the socket'''
         self.button_connect.setEnabled(True)
         self.button_disconnect.setEnabled(False)
-        self.button_send.setEnabled(False)
         self.textbox_ip.setEnabled(True)
         self.textbox_port.setEnabled(True)
         self.character_name.setEnabled(True)
@@ -274,10 +248,15 @@ class MainWindow(QMainWindow):
         self.character_description.setEnabled(True)
         self.button_send_character.setEnabled(False)
         self.button_send_start.setEnabled(False)
-        main_window.game_info.setText("")
-        main_window.version_info.setText("")
-        lurk.Leave.send_leave(self.socket)
-
+        self.label_version.setText("LURK Version: ")
+        self.label_extensions.setText("Extensions: ")
+        self.label_init_points.setText("Initial Points: ")
+        self.label_stat_limit.setText("Stat Limit: ")
+        self.label_game_description.setText("Description: ")
+        try:
+            lurk.Leave.send_leave(self.socket)
+        except:
+            pass
     def receive_message_handler(self, message):
         # Append received message to incoming messages text box
         self.textbox_input.append(message)
@@ -308,6 +287,9 @@ class MainWindow(QMainWindow):
         gold = self.gold_value.value()
         room = self.room_value.value()
         description = self.character_description.text()
+        if not description:
+            QMessageBox.warning(self, "Invalid Description", "Description must be a valid string.")
+            return
         description_len = len(description)
         
         player = lurk.Character(name, flag, attack, defense, regen, health, gold, room, description_len, description)
@@ -316,6 +298,8 @@ class MainWindow(QMainWindow):
 
 class ReceiveMessagesThread(QThread):
     message_received = pyqtSignal(object)
+    room_received = pyqtSignal(object)  # Testing
+    connection_received = pyqtSignal(object) # Testing
 
     def __init__(self, socket_obj):
         super().__init__()
@@ -357,7 +341,8 @@ class ReceiveMessagesThread(QThread):
             elif lurk_type == lurk.ROOM:
                 room = lurk.Room.recv_room(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received ROOM: {room}")
-                self.message_received.emit(f"Room {room.number}: {room.description}")
+                #self.message_received.emit(f"Room {room.number}: {room.description}")
+                main_window.current_room.setPlainText(f"Room {room.number}: {room.name}\n{room.description}")
             elif lurk_type == lurk.CHARACTER:
                 player = lurk.Character.recv_character(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
@@ -385,19 +370,21 @@ class ReceiveMessagesThread(QThread):
             elif lurk_type == lurk.GAME:
                 game = lurk.Game.recv_game(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received GAME: {game}")
-                #self.message_received.emit(f"Server has {game.initial_points} initial points and a stat limit of {game.stat_limit}")
-                #self.message_received.emit(f"{game.description}")
-                main_window.game_info.setText(f"Initial Points: {game.initial_points}, Stat Limit: {game.stat_limit}\n{game.description}")
+                main_window.label_init_points.setText(f"Initial Points: {game.initial_points}")
+                main_window.label_stat_limit.setText(f"Stat Limit: {game.stat_limit}")
+                main_window.label_game_description.setText(f"Description: {game.description}")
             elif lurk_type == lurk.LEAVE:
                 print(f"{Fore.WHITE}DEBUG: Received LEAVE: {lurk_type}")
             elif lurk_type == lurk.CONNECTION:
                 connection = lurk.Connection.recv_connection(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received CONNECTION: {connection}")
+                main_window.connections.setPlainText(f"Room {connection.number}: {connection.name}\n{connection.description}")
             elif lurk_type == lurk.VERSION:
                 version = lurk.Version.recv_version(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received VERSION: {version}")
                 #self.message_received.emit(f"LURK Version {version.major}.{version.minor} with extensions: {version.extensions}")
-                main_window.version_info.setText(f"LURK Version {version.major}.{version.minor} with extension length: {version.extensions_len}")
+                main_window.label_version.setText(f"LURK Version: {version.major}.{version.minor}")
+                main_window.label_extensions.setText(f"Extensions: {version.extensions}")
             else:
                 print(f"{Fore.RED}ERROR: lurk_type {lurk_type} not recognized, sending ERROR code 0!")
         self.message_received.emit("Connection to server lost!")
