@@ -389,7 +389,7 @@ class ReceiveMessagesThread(QThread):
                 room = lurk.Room.recv_room(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received ROOM: {room}")
                 #self.message_received.emit(f"Room {room.number}: {room.description}")
-                main_window.current_room.setPlainText(f"Room {room.number}: {room.name}\n{room.description}")
+                #main_window.current_room.setPlainText(f"Room {room.number}: {room.name}\n{room.description}")
             elif lurk_type == lurk.CHARACTER:
                 player = lurk.Character.recv_character(self.socket_obj)
                 print(f"{Fore.WHITE}DEBUG: Received CHARACTER: {player}")
