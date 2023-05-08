@@ -135,10 +135,41 @@ class MainWindow(QMainWindow):
         self.button_send_changeroom = QPushButton("Change Room")
         self.button_send_changeroom.setEnabled(False)
         
+        # Create and configure messages widgets
+        self.message_box = QGroupBox("Messages")
+        
+        self.messages = QTextEdit()
+        self.messages.setPlaceholderText("Messages will appear here")
+        self.messages.setReadOnly(True)
+        
+        self.line_recipient = QLineEdit()
+        self.line_recipient.setPlaceholderText("Recipient")
+        
+        self.line_sender = QLineEdit()
+        self.line_sender.setPlaceholderText("Sender")
+        
+        self.message = QLineEdit()
+        self.message.setPlaceholderText("Message")
+        
+        self.button_send_message = QPushButton("Send")
+        self.button_send_message.setEnabled(False)
+        
+        # Create and configure control button widgets
+        self.fight_box = QGroupBox("Fight")
+        
+        self.button_fight = QPushButton("Fight")
+        self.button_fight.setEnabled(False)
+        
+        self.button_pvpfight = QPushButton("PvP Fight")
+        self.button_pvpfight.setEnabled(False)
+        
+        self.button_loot = QPushButton("Loot")
+        self.button_pvpfight.setEnabled(False)
+        
         # Create and configure incoming messages widgets
         self.textbox_input = QTextEdit()
         self.textbox_input.setPlaceholderText("Messages from server will appear here")
-
+        
         # Create layouts
         main_layout = QVBoxLayout()
         central_widget = QWidget()
@@ -146,7 +177,9 @@ class MainWindow(QMainWindow):
         button_layout = QHBoxLayout()
         connection_layout = QGridLayout()
         character_layout = QGridLayout()
-        room_layout = QHBoxLayout()
+        room_layout = QGridLayout()
+        messages_layout = QGridLayout()
+        fight_layout = QHBoxLayout()
         
         # Add widgets to layouts
         connection_layout.addWidget(self.textbox_ip, 0, 0)
@@ -175,21 +208,35 @@ class MainWindow(QMainWindow):
         character_layout.addWidget(self.list_of_monsters, 2, 4, 1, 4)
         self.character_box.setLayout(character_layout)
         
-        room_layout.addWidget(self.current_room)
-        room_layout.addWidget(self.connections)
-        room_layout.addWidget(self.changeroom)
-        room_layout.addWidget(self.button_send_changeroom)
+        room_layout.addWidget(self.current_room, 0, 0, 1, 4)
+        room_layout.addWidget(self.connections, 1, 0, 1, 4)
+        room_layout.addWidget(self.changeroom, 2, 0, 1, 3)
+        room_layout.addWidget(self.button_send_changeroom, 2, 3)
         self.room_box.setLayout(room_layout)
-
+        
+        messages_layout.addWidget(self.messages, 0, 0, 1, 4)
+        messages_layout.addWidget(self.line_recipient, 1, 0)
+        messages_layout.addWidget(self.line_sender, 1, 1)
+        messages_layout.addWidget(self.message, 1, 2)
+        messages_layout.addWidget(self.button_send_message, 1, 3)
+        self.message_box.setLayout(messages_layout)
+        
+        fight_layout.addWidget(self.button_fight)
+        fight_layout.addWidget(self.button_pvpfight)
+        fight_layout.addWidget(self.button_loot)
+        self.fight_box.setLayout(fight_layout)
+        
         # Add layouts to main layout
         main_layout.addWidget(self.connection_box)
         main_layout.addWidget(self.character_box)
         main_layout.addWidget(self.room_box)
+        main_layout.addWidget(self.message_box)
+        main_layout.addWidget(self.fight_box)
         main_layout.addLayout(incoming_layout)
         main_layout.addLayout(button_layout)
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
-
+        
         # Connect signals and slots
         self.button_connect.clicked.connect(self.connect_to_server)
         self.button_disconnect.clicked.connect(self.disconnect_from_server)
