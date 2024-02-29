@@ -382,9 +382,9 @@ class Server:
         if server_skt == -1:
             print(f"{Fore.RED}ERROR: Server socket creation error, stopping!")
             sys.exit(0)
-        # Assigned range: 5010 - 5014
+        # Assigned range: 5055 - 5059
         ADDRESS = '0.0.0.0'
-        PORTS = [5010, 5011, 5012, 5013, 5014]
+        PORTS = [5055, 5056, 5057, 5058, 5059]
         for port in PORTS:
             try:
                 server_skt.bind((ADDRESS, port))
