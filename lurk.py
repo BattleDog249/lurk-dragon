@@ -49,34 +49,31 @@ READY = 0b00001000
 def recv(socket, message_length):
     """Receives a message of a specified length from the specified socket and returns it in byte format."""
     lock = threading.Lock()
-    lock.acquire()
     message = b''
-    while len(message) < message_length:
-        try:
-            if chunk := socket.recv(message_length - len(message)):
-                message += chunk
-            else:
+    with lock:
+        while len(message) < message_length:
+            try:
+                if chunk := socket.recv(message_length - len(message)):
+                    message += chunk
+                else:
+                    print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
+                    return None
+            except ConnectionResetError as exc:
                 print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
-                lock.release()
                 return None
-        except ConnectionResetError as exc:
-            print(f"{Fore.RED}ERROR: recv: Socket connection broken, returning None!")
-            return None
-    lock.release()
     return message
 
 def send(skt, message):
     """Sends a packed bytes message to the specified socket."""
     lock = threading.Lock()
-    lock.acquire()
     total_sent = 0
     message_length = len(message)
-    while total_sent < message_length:
-        sent = skt.send(message[total_sent:])
-        if sent == 0:
-            break
-        total_sent += sent
-    lock.release()
+    with lock:
+        while total_sent < message_length:
+            sent = skt.send(message[total_sent:])
+            if sent == 0:
+                break
+            total_sent += sent
     return total_sent
 
 @dataclass
